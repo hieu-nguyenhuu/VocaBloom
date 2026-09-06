@@ -1,0 +1,363 @@
+{
+  "topic": {
+    "name": "Nghề nghiệp",
+    "description": "2 từ vựng tiếng Anh về nghề nghiệp"
+  },
+  "vocab": [
+    {
+      "temp_id": "v1",
+      "word": "teacher",
+      "pinyin": null,
+      "meaning_vi": "giáo viên",
+      "collocation": "a primary school teacher",
+      "collocation_pinyin": null,
+      "collocation_meaning_vi": "một giáo viên tiểu học",
+      "example_sentence": "She wants to become a teacher.",
+      "example_meaning_vi": "Cô ấy muốn trở thành giáo viên.",
+      "lang": "en"
+    },
+    {
+      "temp_id": "v2",
+      "word": "doctor",
+      "pinyin": null,
+      "meaning_vi": "bác sĩ, người chữa bệnh",
+      "collocation": "see a doctor",
+      "collocation_pinyin": null,
+      "collocation_meaning_vi": "đi khám bác sĩ",
+      "example_sentence": "He works as a doctor at the hospital.",
+      "example_meaning_vi": "Anh ấy làm bác sĩ tại bệnh viện.",
+      "lang": "en"
+    }
+  ],
+  "exercises": [
+    {
+      "vocab_temp_id": "v1",
+      "type": "grammar",
+      "payload": {
+        "content_target": "'Teacher' is a countable noun. Use 'a' before it in singular form: a teacher.",
+        "pinyin": null,
+        "content_vi": "'teacher' là danh từ đếm được. Dùng 'a' trước nó ở dạng số ít: a teacher."
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "grammar",
+      "payload": {
+        "content_target": "'Doctor' can be used with 'a' in singular, or as a title before a name: Dr. Smith.",
+        "pinyin": null,
+        "content_vi": "'doctor' có thể dùng với 'a' ở số ít, hoặc làm danh xưng trước tên riêng: Dr. Smith."
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "selection",
+      "payload": {
+        "distractors": [
+          "a farmer",
+          "a driver",
+          "a chef"
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "selection",
+      "payload": {
+        "distractors": [
+          "a teacher",
+          "a nurse",
+          "a lawyer"
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "audio_recognition",
+      "payload": {
+        "distractors": [
+          "a farmer",
+          "a driver",
+          "a chef"
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "audio_recognition",
+      "payload": {
+        "distractors": [
+          "a teacher",
+          "a nurse",
+          "a lawyer"
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "fast_decision",
+      "payload": {
+        "wrong_meaning": "người nông dân"
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "fast_decision",
+      "payload": {
+        "wrong_meaning": "y tá"
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "select_on_describe",
+      "payload": {
+        "description": "Người làm công việc giảng dạy kiến thức cho học sinh ở trường học.",
+        "distractors": [
+          {
+            "word": "doctor",
+            "pinyin": null
+          },
+          {
+            "word": "farmer",
+            "pinyin": null
+          },
+          {
+            "word": "driver",
+            "pinyin": null
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "select_on_describe",
+      "payload": {
+        "description": "Người khám và chữa bệnh cho bệnh nhân tại bệnh viện hoặc phòng khám.",
+        "distractors": [
+          {
+            "word": "teacher",
+            "pinyin": null
+          },
+          {
+            "word": "nurse",
+            "pinyin": null
+          },
+          {
+            "word": "lawyer",
+            "pinyin": null
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "select_sentence",
+      "payload": {
+        "correct_sentence": {
+          "text": "She wants to become a teacher.",
+          "pinyin": null
+        },
+        "wrong_sentences": [
+          {
+            "text": "She want to become a teacher.",
+            "pinyin": null
+          },
+          {
+            "text": "She wants to becomes a teacher.",
+            "pinyin": null
+          },
+          {
+            "text": "She wants to become teacher.",
+            "pinyin": null
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "select_sentence",
+      "payload": {
+        "correct_sentence": {
+          "text": "He works as a doctor at the hospital.",
+          "pinyin": null
+        },
+        "wrong_sentences": [
+          {
+            "text": "He work as a doctor at the hospital.",
+            "pinyin": null
+          },
+          {
+            "text": "He works as doctor at the hospital.",
+            "pinyin": null
+          },
+          {
+            "text": "He works a doctor at the hospital.",
+            "pinyin": null
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "arrange_words",
+      "payload": {
+        "tokens": [
+          {
+            "text": "She",
+            "pinyin": null
+          },
+          {
+            "text": "wants",
+            "pinyin": null
+          },
+          {
+            "text": "to",
+            "pinyin": null
+          },
+          {
+            "text": "become",
+            "pinyin": null
+          },
+          {
+            "text": "a",
+            "pinyin": null
+          },
+          {
+            "text": "teacher",
+            "pinyin": null
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "arrange_words",
+      "payload": {
+        "tokens": [
+          {
+            "text": "He",
+            "pinyin": null
+          },
+          {
+            "text": "works",
+            "pinyin": null
+          },
+          {
+            "text": "as",
+            "pinyin": null
+          },
+          {
+            "text": "a",
+            "pinyin": null
+          },
+          {
+            "text": "doctor",
+            "pinyin": null
+          },
+          {
+            "text": "at",
+            "pinyin": null
+          },
+          {
+            "text": "the",
+            "pinyin": null
+          },
+          {
+            "text": "hospital",
+            "pinyin": null
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "trans_sentence",
+      "payload": {
+        "vietnamese_sentence": "Cô giáo của tôi rất tận tâm với học sinh."
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "trans_sentence",
+      "payload": {
+        "vietnamese_sentence": "Bác sĩ đã khám cho tôi rất kỹ càng."
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn đang tham gia buổi hướng nghiệp ở trường và được hỏi về công việc mơ ước.",
+        "given_sentence_zh": "The counselor asked about your future career.",
+        "given_sentence_pinyin": null
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn bị sốt cao và cần đến bệnh viện để kiểm tra.",
+        "given_sentence_zh": "The nurse called your name.",
+        "given_sentence_pinyin": null
+      }
+    }
+  ],
+  "dialogue": {
+    "lines": [
+      {
+        "speaker": "A",
+        "text_zh": "What do you want to be in the future?",
+        "pinyin": "",
+        "text_vi": "Sau này bạn muốn làm nghề gì?",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "B",
+        "text_zh": "I want to become a teacher.",
+        "pinyin": "",
+        "text_vi": "Tôi muốn trở thành giáo viên.",
+        "highlight_vocab_temp_ids": [
+          "v1"
+        ]
+      },
+      {
+        "speaker": "A",
+        "text_zh": "That's a great choice! Teaching is very meaningful.",
+        "pinyin": "",
+        "text_vi": "Lựa chọn tuyệt vời đấy! Dạy học rất ý nghĩa.",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "B",
+        "text_zh": "What about you?",
+        "pinyin": "",
+        "text_vi": "Còn bạn thì sao?",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "A",
+        "text_zh": "I'm planning to become a doctor.",
+        "pinyin": "",
+        "text_vi": "Tôi đang dự định trở thành bác sĩ.",
+        "highlight_vocab_temp_ids": [
+          "v2"
+        ]
+      },
+      {
+        "speaker": "B",
+        "text_zh": "Being a doctor is a noble job too.",
+        "pinyin": "",
+        "text_vi": "Làm bác sĩ cũng là một công việc cao quý.",
+        "highlight_vocab_temp_ids": [
+          "v2"
+        ]
+      },
+      {
+        "speaker": "A",
+        "text_zh": "I hope we both achieve our dreams.",
+        "pinyin": "",
+        "text_vi": "Hy vọng cả hai chúng ta đều đạt được ước mơ.",
+        "highlight_vocab_temp_ids": []
+      }
+    ]
+  }
+}

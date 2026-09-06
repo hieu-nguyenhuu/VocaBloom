@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vocabloom.app/schemas/import.schema.json",
+  "title": "VocaBloom Import File",
+  "description": "Schema chính thức cho 1 file JSON import vào VocaBloom (1 file = 1 topic). Đây là nguồn sự thật hình thức (formal) — validate bằng ajv (JS/TS) hoặc jsonschema (Python) trước khi import. Lưu ý: schema này chỉ kiểm tra CẤU TRÚC/KIỂU DỮ LIỆU; việc đối chiếu temp_id có tồn tại chéo giữa các mảng (vocab/exercises/dialogue) KHÔNG thể biểu diễn bằng JSON Schema thuần túy — dùng kèm scripts/validate_import.py để kiểm tra đầy đủ cả 2 lớp.",
+  "type": "object",
+  "required": ["topic", "vocab", "exercises"],
+  "additionalProperties": false,
+  "properties": {
+    "topic": { "$ref": "#/$defs/topic" },
+    "vocab": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/vocabItem" }
+    },
+    "exercises": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/exerciseItem" }
+    },
+    "dialogue": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/dialogue" }
+      ]
+    }
+  },
+
+  "$defs": {
+
+    "topic": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" }
+      }
+    },
+
+    "langEnum": { "enum": ["zh", "en"] },
+
+    "nullableString": { "type": ["string", "null"] },
+
+    "wordPinyinPair": {
+      "type": "object",
+      "required": ["word", "pinyin"],
+      "additionalProperties": false,
+      "properties": {
+        "word": { "type": "string", "minLength": 1 },
+        "pinyin": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+
+    "textPinyinPair": {
+      "type": "object",
+      "required": ["text", "pinyin"],
+      "additionalProperties": false,
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "pinyin": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+
+    "vocabItem": {
+      "type": "object",
+      "required": [
+        "temp_id", "word", "pinyin", "meaning_vi",
+        "collocation", "collocation_pinyin", "collocation_meaning_vi",
+        "example_sentence", "example_meaning_vi", "lang"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "temp_id": { "type": "string", "minLength": 1 },
+        "word": { "type": "string", "minLength": 1 },
+        "pinyin": { "$ref": "#/$defs/nullableString" },
+        "meaning_vi": { "type": "string", "minLength": 1 },
+        "collocation": { "type": "string", "minLength": 1 },
+        "collocation_pinyin": { "$ref": "#/$defs/nullableString" },
+        "collocation_meaning_vi": { "type": "string", "minLength": 1 },
+        "example_sentence": { "type": "string", "minLength": 1 },
+        "example_meaning_vi": { "type": "string", "minLength": 1 },
+        "lang": { "$ref": "#/$defs/langEnum" }
+      },
+      "allOf": [
+        {
+          "$comment": "Nếu lang=zh, pinyin và collocation_pinyin bắt buộc phải là string (không null)",
+          "if": { "properties": { "lang": { "const": "zh" } } },
+          "then": {
+            "properties": {
+              "pinyin": { "type": "string", "minLength": 1 },
+              "collocation_pinyin": { "type": "string", "minLength": 1 }
+            },
+            "required": ["pinyin", "collocation_pinyin"]
+          }
+        }
+      ]
+    },
+
+    "exerciseTypeEnum": {
+      "$comment": "CHỈ 11/17 giá trị — đúng field exercises[].type của app thật. 6 dạng 'không cần record' (flashcard, matching, translate, listen_fill, make_sentence, trans_collocation) tuyệt đối KHÔNG được xuất hiện ở đây (xem payload-schemas.md mục 2).",
+      "enum": [
+        "grammar", "selection", "audio_recognition", "fast_decision",
+        "select_dialog", "select_on_describe",
+        "fill_dialog", "select_sentence", "arrange_words",
+        "trans_sentence", "complete_situation"
+      ]
+    },
+
+    "exerciseItem": {
+      "type": "object",
+      "required": ["vocab_temp_id", "type", "payload"],
+      "additionalProperties": false,
+      "properties": {
+        "vocab_temp_id": { "type": "string", "minLength": 1 },
+        "type": { "$ref": "#/$defs/exerciseTypeEnum" },
+        "payload": { "type": "object" }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "grammar" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadGrammar" } } } },
+
+        { "if": { "properties": { "type": { "const": "selection" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadDistractorsOnly" } } } },
+
+        { "if": { "properties": { "type": { "const": "audio_recognition" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadDistractorsOnly" } } } },
+
+        { "if": { "properties": { "type": { "const": "fast_decision" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadFastDecision" } } } },
+
+        { "if": { "properties": { "type": { "const": "select_on_describe" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadSelectOnDescribe" } } } },
+
+        { "if": { "properties": { "type": { "const": "select_sentence" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadSelectSentence" } } } },
+
+        { "if": { "properties": { "type": { "const": "arrange_words" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadArrangeWords" } } } },
+
+        { "if": { "properties": { "type": { "const": "trans_sentence" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadTransSentence" } } } },
+
+        { "if": { "properties": { "type": { "const": "complete_situation" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadCompleteSituation" } } } },
+
+        { "if": { "properties": { "type": { "const": "select_dialog" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadSelectDialog" } } } },
+
+        { "if": { "properties": { "type": { "const": "fill_dialog" } } },
+          "then": { "properties": { "payload": { "$ref": "#/$defs/payloadFillDialog" } } } }
+      ]
+    },
+
+    "payloadGrammar": {
+      "type": "object",
+      "required": ["content_target", "pinyin", "content_vi"],
+      "additionalProperties": false,
+      "properties": {
+        "content_target": { "type": "string", "minLength": 1 },
+        "pinyin": { "$ref": "#/$defs/nullableString" },
+        "content_vi": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "payloadDistractorsOnly": {
+      "type": "object",
+      "required": ["distractors"],
+      "additionalProperties": false,
+      "properties": {
+        "distractors": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+
+    "payloadFastDecision": {
+      "type": "object",
+      "required": ["wrong_meaning"],
+      "additionalProperties": false,
+      "properties": {
+        "wrong_meaning": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "payloadSelectOnDescribe": {
+      "type": "object",
+      "required": ["description", "distractors"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "distractors": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/wordPinyinPair" }
+        }
+      }
+    },
+
+    "payloadSelectSentence": {
+      "type": "object",
+      "required": ["correct_sentence", "wrong_sentences"],
+      "additionalProperties": false,
+      "properties": {
+        "correct_sentence": { "$ref": "#/$defs/textPinyinPair" },
+        "wrong_sentences": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/textPinyinPair" }
+        }
+      }
+    },
+
+    "payloadArrangeWords": {
+      "type": "object",
+      "required": ["tokens"],
+      "additionalProperties": false,
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/textPinyinPair" }
+        }
+      }
+    },
+
+    "payloadTransSentence": {
+      "type": "object",
+      "required": ["vietnamese_sentence"],
+      "additionalProperties": false,
+      "properties": {
+        "vietnamese_sentence": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "payloadCompleteSituation": {
+      "type": "object",
+      "required": ["situation_vi", "given_sentence_zh", "given_sentence_pinyin"],
+      "additionalProperties": false,
+      "properties": {
+        "situation_vi": { "type": "string", "minLength": 1 },
+        "given_sentence_zh": { "type": "string", "minLength": 1 },
+        "given_sentence_pinyin": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+
+    "payloadSelectDialog": {
+      "type": "object",
+      "required": [
+        "dialog_a", "dialog_a_pinyin", "dialog_b", "dialog_b_pinyin",
+        "blank_a_answer", "blank_b_vocab_id", "distractors"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "dialog_a": { "type": "string", "pattern": ".*___.*" },
+        "dialog_a_pinyin": { "$ref": "#/$defs/nullableString" },
+        "dialog_b": { "type": "string", "pattern": ".*___.*" },
+        "dialog_b_pinyin": { "$ref": "#/$defs/nullableString" },
+        "blank_a_answer": { "type": "string", "minLength": 1 },
+        "blank_b_vocab_id": { "type": "string", "minLength": 1 },
+        "distractors": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/wordPinyinPair" }
+        }
+      }
+    },
+
+    "payloadFillDialog": {
+      "type": "object",
+      "required": [
+        "dialog_a", "dialog_a_pinyin", "dialog_b", "dialog_b_pinyin",
+        "blank_a_answer", "blank_b_vocab_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "dialog_a": { "type": "string", "pattern": ".*___.*" },
+        "dialog_a_pinyin": { "$ref": "#/$defs/nullableString" },
+        "dialog_b": { "type": "string", "pattern": ".*___.*" },
+        "dialog_b_pinyin": { "$ref": "#/$defs/nullableString" },
+        "blank_a_answer": { "type": "string", "minLength": 1 },
+        "blank_b_vocab_id": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "dialogueLine": {
+      "type": "object",
+      "required": ["speaker", "text_zh", "pinyin", "text_vi", "highlight_vocab_temp_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "speaker": { "enum": ["A", "B"] },
+        "text_zh": { "type": "string", "minLength": 1, "description": "Giữ nguyên tên field 'text_zh' kể cả khi lang=en của topic — chứa câu tiếng Anh trong trường hợp đó, KHÔNG đổi tên field." },
+        "pinyin": { "$ref": "#/$defs/nullableString" },
+        "text_vi": { "type": "string", "minLength": 1 },
+        "highlight_vocab_temp_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "dialogue": {
+      "type": "object",
+      "required": ["lines"],
+      "additionalProperties": false,
+      "properties": {
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Khuyến nghị 7-10 câu (không bắt buộc cứng — validate_import.py chỉ cảnh báo nếu ngoài khoảng này, không chặn import).",
+          "items": { "$ref": "#/$defs/dialogueLine" }
+        }
+      }
+    }
+  }
+}

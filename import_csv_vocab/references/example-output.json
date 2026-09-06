@@ -1,0 +1,364 @@
+{
+  "topic": {
+    "name": "Trái cây",
+    "description": "5 từ vựng tiếng Trung về các loại trái cây thường gặp: 苹果, 香蕉, 橙子, 葡萄, 西瓜"
+  },
+
+  "vocab": [
+    {
+      "temp_id": "v1",
+      "word": "苹果",
+      "pinyin": "píngguǒ",
+      "meaning_vi": "quả táo",
+      "collocation": "一个苹果",
+      "collocation_pinyin": "yí ge píngguǒ",
+      "collocation_meaning_vi": "một quả táo",
+      "example_sentence": "我每天吃一个苹果。",
+      "example_meaning_vi": "Mỗi ngày tôi ăn một quả táo.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v2",
+      "word": "香蕉",
+      "pinyin": "xiāngjiāo",
+      "meaning_vi": "quả chuối",
+      "collocation": "一根香蕉",
+      "collocation_pinyin": "yì gēn xiāngjiāo",
+      "collocation_meaning_vi": "một quả chuối",
+      "example_sentence": "猴子喜欢吃香蕉。",
+      "example_meaning_vi": "Khỉ thích ăn chuối.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v3",
+      "word": "橙子",
+      "pinyin": "chéngzi",
+      "meaning_vi": "quả cam",
+      "collocation": "一个橙子",
+      "collocation_pinyin": "yí ge chéngzi",
+      "collocation_meaning_vi": "một quả cam",
+      "example_sentence": "这个橙子很甜。",
+      "example_meaning_vi": "Quả cam này rất ngọt.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v4",
+      "word": "葡萄",
+      "pinyin": "pútáo",
+      "meaning_vi": "quả nho",
+      "collocation": "一串葡萄",
+      "collocation_pinyin": "yí chuàn pútáo",
+      "collocation_meaning_vi": "một chùm nho",
+      "example_sentence": "她买了一串葡萄。",
+      "example_meaning_vi": "Cô ấy đã mua một chùm nho.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v5",
+      "word": "西瓜",
+      "pinyin": "xīguā",
+      "meaning_vi": "quả dưa hấu",
+      "collocation": "一片西瓜",
+      "collocation_pinyin": "yí piàn xīguā",
+      "collocation_meaning_vi": "một miếng dưa hấu",
+      "example_sentence": "夏天吃西瓜很爽。",
+      "example_meaning_vi": "Mùa hè ăn dưa hấu rất sảng khoái.",
+      "lang": "zh"
+    }
+  ],
+
+  "exercises": [
+
+    { "vocab_temp_id": "v1", "type": "grammar",
+      "payload": {
+        "content_target": "苹果是圆形水果，用量词\"个\"：一个苹果，两个苹果。不能用\"只\"或\"条\"。",
+        "pinyin": "píngguǒ shì yuánxíng shuǐguǒ, yòng liàngcí \"ge\": yí ge píngguǒ, liǎng ge píngguǒ.",
+        "content_vi": "苹果 (táo) là trái cây hình tròn, dùng lượng từ \"个\": một quả táo, hai quả táo. Không dùng \"只\" hay \"条\"."
+      }
+    },
+    { "vocab_temp_id": "v2", "type": "grammar",
+      "payload": {
+        "content_target": "香蕉是长条形水果，用量词\"根\"：一根香蕉。因为形状细长，像\"根\"一样。",
+        "pinyin": "xiāngjiāo shì chángtiáoxíng shuǐguǒ, yòng liàngcí \"gēn\": yì gēn xiāngjiāo.",
+        "content_vi": "香蕉 (chuối) là trái cây dài, dùng lượng từ \"根\" (giống que/nhánh) vì hình dáng thon dài: một quả chuối."
+      }
+    },
+    { "vocab_temp_id": "v3", "type": "grammar",
+      "payload": {
+        "content_target": "橙子和苹果一样，是圆形水果，也用量词\"个\"：一个橙子。",
+        "pinyin": "chéngzi hé píngguǒ yíyàng, shì yuánxíng shuǐguǒ, yě yòng liàngcí \"ge\": yí ge chéngzi.",
+        "content_vi": "橙子 (cam) giống táo, là trái cây hình tròn, cũng dùng lượng từ \"个\": một quả cam."
+      }
+    },
+    { "vocab_temp_id": "v4", "type": "grammar",
+      "payload": {
+        "content_target": "葡萄一颗一颗长在一起，成串生长，所以用量词\"串\"：一串葡萄。单独一颗则用\"颗\"。",
+        "pinyin": "pútáo yì kē yì kē zhǎng zài yìqǐ, chéngchuàn shēngzhǎng, suǒyǐ yòng liàngcí \"chuàn\": yí chuàn pútáo.",
+        "content_vi": "葡萄 (nho) mọc thành từng chùm nên dùng lượng từ \"串\" (chùm): một chùm nho. Nếu tính từng quả riêng lẻ thì dùng \"颗\"."
+      }
+    },
+    { "vocab_temp_id": "v5", "type": "grammar",
+      "payload": {
+        "content_target": "西瓜整个用\"个\"：一个西瓜。切开后一块一块用\"片\"：一片西瓜。",
+        "pinyin": "xīguā zhěnggè yòng \"ge\": yí ge xīguā. qiē kāi hòu yí piàn xīguā.",
+        "content_vi": "西瓜 (dưa hấu) nguyên quả dùng \"个\": một quả dưa hấu. Sau khi cắt thành từng miếng thì dùng \"片\": một miếng dưa hấu."
+      }
+    },
+
+    { "vocab_temp_id": "v1", "type": "selection",
+      "payload": { "distractors": ["quả chuối", "quả cam", "quả lê"] } },
+    { "vocab_temp_id": "v2", "type": "selection",
+      "payload": { "distractors": ["quả táo", "quả nho", "quả xoài"] } },
+    { "vocab_temp_id": "v3", "type": "selection",
+      "payload": { "distractors": ["quả quýt", "quả chanh", "quả bưởi"] } },
+    { "vocab_temp_id": "v4", "type": "selection",
+      "payload": { "distractors": ["quả dâu tây", "quả việt quất", "quả anh đào"] } },
+    { "vocab_temp_id": "v5", "type": "selection",
+      "payload": { "distractors": ["quả dưa lưới", "quả dưa chuột", "quả bí đỏ"] } },
+
+    { "vocab_temp_id": "v1", "type": "audio_recognition",
+      "payload": { "distractors": ["quả chuối", "quả cam", "quả lê"] } },
+    { "vocab_temp_id": "v2", "type": "audio_recognition",
+      "payload": { "distractors": ["quả táo", "quả nho", "quả xoài"] } },
+    { "vocab_temp_id": "v3", "type": "audio_recognition",
+      "payload": { "distractors": ["quả quýt", "quả chanh", "quả bưởi"] } },
+    { "vocab_temp_id": "v4", "type": "audio_recognition",
+      "payload": { "distractors": ["quả dâu tây", "quả việt quất", "quả anh đào"] } },
+    { "vocab_temp_id": "v5", "type": "audio_recognition",
+      "payload": { "distractors": ["quả dưa lưới", "quả dưa chuột", "quả bí đỏ"] } },
+
+    { "vocab_temp_id": "v1", "type": "fast_decision", "payload": { "wrong_meaning": "quả chuối" } },
+    { "vocab_temp_id": "v2", "type": "fast_decision", "payload": { "wrong_meaning": "quả táo" } },
+    { "vocab_temp_id": "v3", "type": "fast_decision", "payload": { "wrong_meaning": "quả quýt" } },
+    { "vocab_temp_id": "v4", "type": "fast_decision", "payload": { "wrong_meaning": "quả dâu tây" } },
+    { "vocab_temp_id": "v5", "type": "fast_decision", "payload": { "wrong_meaning": "quả dưa lưới" } },
+
+    { "vocab_temp_id": "v1", "type": "select_on_describe",
+      "payload": {
+        "description": "Một loại trái cây hình tròn, vỏ có thể màu đỏ, xanh hoặc vàng, thịt giòn và ngọt. Có câu tục ngữ phương Tây: 'mỗi ngày một quả để tránh xa bác sĩ'.",
+        "distractors": [
+          { "word": "香蕉", "pinyin": "xiāngjiāo" },
+          { "word": "橙子", "pinyin": "chéngzi" },
+          { "word": "葡萄", "pinyin": "pútáo" }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v2", "type": "select_on_describe",
+      "payload": {
+        "description": "Một loại trái cây dài, hơi cong, vỏ màu vàng khi chín, ruột mềm và ngọt, là món ăn khoái khẩu của loài khỉ.",
+        "distractors": [
+          { "word": "苹果", "pinyin": "píngguǒ" },
+          { "word": "西瓜", "pinyin": "xīguā" },
+          { "word": "葡萄", "pinyin": "pútáo" }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v3", "type": "select_on_describe",
+      "payload": {
+        "description": "Một loại trái cây hình tròn, vỏ màu cam dày, bên trong chia thành nhiều múi, vị chua ngọt, giàu vitamin C.",
+        "distractors": [
+          { "word": "苹果", "pinyin": "píngguǒ" },
+          { "word": "香蕉", "pinyin": "xiāngjiāo" },
+          { "word": "西瓜", "pinyin": "xīguā" }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v4", "type": "select_on_describe",
+      "payload": {
+        "description": "Một loại trái cây nhỏ, tròn, mọc thành từng chùm trên dây leo, có thể ăn tươi hoặc dùng để làm rượu vang.",
+        "distractors": [
+          { "word": "苹果", "pinyin": "píngguǒ" },
+          { "word": "橙子", "pinyin": "chéngzi" },
+          { "word": "西瓜", "pinyin": "xīguā" }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v5", "type": "select_on_describe",
+      "payload": {
+        "description": "Một loại trái cây to, vỏ xanh, ruột đỏ hoặc vàng, chứa rất nhiều nước, thường được ăn vào mùa hè để giải nhiệt.",
+        "distractors": [
+          { "word": "香蕉", "pinyin": "xiāngjiāo" },
+          { "word": "橙子", "pinyin": "chéngzi" },
+          { "word": "葡萄", "pinyin": "pútáo" }
+        ]
+      }
+    },
+
+    { "vocab_temp_id": "v1", "type": "select_sentence",
+      "payload": {
+        "correct_sentence": { "text": "我每天吃一个苹果。", "pinyin": "Wǒ měitiān chī yí ge píngguǒ." },
+        "wrong_sentences": [
+          { "text": "我每天吃一个苹果们。", "pinyin": "Wǒ měitiān chī yí ge píngguǒmen." },
+          { "text": "我每天吃了苹果一个。", "pinyin": "Wǒ měitiān chīle píngguǒ yí ge." },
+          { "text": "我每天喝一个苹果。", "pinyin": "Wǒ měitiān hē yí ge píngguǒ." }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v2", "type": "select_sentence",
+      "payload": {
+        "correct_sentence": { "text": "猴子喜欢吃香蕉。", "pinyin": "Hóuzi xǐhuān chī xiāngjiāo." },
+        "wrong_sentences": [
+          { "text": "猴子喜欢吃一个香蕉。", "pinyin": "Hóuzi xǐhuān chī yí ge xiāngjiāo." },
+          { "text": "猴子喜欢香蕉吃。", "pinyin": "Hóuzi xǐhuān xiāngjiāo chī." },
+          { "text": "猴子喜欢吃香蕉们。", "pinyin": "Hóuzi xǐhuān chī xiāngjiāomen." }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v3", "type": "select_sentence",
+      "payload": {
+        "correct_sentence": { "text": "这个橙子很甜。", "pinyin": "Zhège chéngzi hěn tián." },
+        "wrong_sentences": [
+          { "text": "这个橙子很甜们。", "pinyin": "Zhège chéngzi hěn tiánmen." },
+          { "text": "甜很这个橙子。", "pinyin": "Tián hěn zhège chéngzi." },
+          { "text": "这个橙子很甜苹果。", "pinyin": "Zhège chéngzi hěn tián píngguǒ." }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v4", "type": "select_sentence",
+      "payload": {
+        "correct_sentence": { "text": "她买了一串葡萄。", "pinyin": "Tā mǎile yí chuàn pútáo." },
+        "wrong_sentences": [
+          { "text": "她买了一个葡萄。", "pinyin": "Tā mǎile yí ge pútáo." },
+          { "text": "她买葡萄了一串。", "pinyin": "Tā mǎi pútáo le yí chuàn." },
+          { "text": "她一串葡萄买了。", "pinyin": "Tā yí chuàn pútáo mǎile." }
+        ]
+      }
+    },
+    { "vocab_temp_id": "v5", "type": "select_sentence",
+      "payload": {
+        "correct_sentence": { "text": "夏天吃西瓜很爽。", "pinyin": "Xiàtiān chī xīguā hěn shuǎng." },
+        "wrong_sentences": [
+          { "text": "夏天吃西瓜很爽的。", "pinyin": "Xiàtiān chī xīguā hěn shuǎng de." },
+          { "text": "西瓜夏天吃很爽。", "pinyin": "Xīguā xiàtiān chī hěn shuǎng." },
+          { "text": "夏天吃了西瓜很爽。", "pinyin": "Xiàtiān chīle xīguā hěn shuǎng." }
+        ]
+      }
+    },
+
+    { "vocab_temp_id": "v1", "type": "arrange_words",
+      "payload": { "tokens": [
+        { "text": "我", "pinyin": "wǒ" },
+        { "text": "每天", "pinyin": "měitiān" },
+        { "text": "吃", "pinyin": "chī" },
+        { "text": "一个", "pinyin": "yí ge" },
+        { "text": "苹果", "pinyin": "píngguǒ" }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "arrange_words",
+      "payload": { "tokens": [
+        { "text": "猴子", "pinyin": "hóuzi" },
+        { "text": "喜欢", "pinyin": "xǐhuān" },
+        { "text": "吃", "pinyin": "chī" },
+        { "text": "香蕉", "pinyin": "xiāngjiāo" }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "arrange_words",
+      "payload": { "tokens": [
+        { "text": "这个", "pinyin": "zhège" },
+        { "text": "橙子", "pinyin": "chéngzi" },
+        { "text": "很", "pinyin": "hěn" },
+        { "text": "甜", "pinyin": "tián" }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "arrange_words",
+      "payload": { "tokens": [
+        { "text": "她", "pinyin": "tā" },
+        { "text": "买", "pinyin": "mǎi" },
+        { "text": "了", "pinyin": "le" },
+        { "text": "一串", "pinyin": "yí chuàn" },
+        { "text": "葡萄", "pinyin": "pútáo" }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "arrange_words",
+      "payload": { "tokens": [
+        { "text": "夏天", "pinyin": "xiàtiān" },
+        { "text": "吃", "pinyin": "chī" },
+        { "text": "西瓜", "pinyin": "xīguā" },
+        { "text": "很", "pinyin": "hěn" },
+        { "text": "爽", "pinyin": "shuǎng" }
+      ] } },
+
+    { "vocab_temp_id": "v1", "type": "select_dialog",
+      "payload": {
+        "dialog_a": "你今天吃___了吗？",
+        "dialog_a_pinyin": "Nǐ jīntiān chī ___ le ma?",
+        "dialog_b": "还没有，我买了___。",
+        "dialog_b_pinyin": "Hái méiyǒu, wǒ mǎile ___.",
+        "blank_a_answer": "苹果",
+        "blank_b_vocab_id": "v2",
+        "distractors": [
+          { "word": "电脑", "pinyin": "diànnǎo" },
+          { "word": "手机", "pinyin": "shǒujī" }
+        ]
+      }
+    },
+
+    { "vocab_temp_id": "v3", "type": "fill_dialog",
+      "payload": {
+        "dialog_a": "妈妈买了很多水果，有___。",
+        "dialog_a_pinyin": "Māma mǎile hěnduō shuǐguǒ, yǒu ___.",
+        "dialog_b": "太好了，我最喜欢吃___了。",
+        "dialog_b_pinyin": "Tài hǎo le, wǒ zuì xǐhuān chī ___ le.",
+        "blank_a_answer": "橙子",
+        "blank_b_vocab_id": "v4"
+      }
+    },
+
+    { "vocab_temp_id": "v1", "type": "trans_sentence",
+      "payload": { "vietnamese_sentence": "Tôi ăn một quả táo mỗi buổi sáng." } },
+    { "vocab_temp_id": "v2", "type": "trans_sentence",
+      "payload": { "vietnamese_sentence": "Con khỉ đang ăn một quả chuối." } },
+    { "vocab_temp_id": "v3", "type": "trans_sentence",
+      "payload": { "vietnamese_sentence": "Quả cam này có vị chua ngọt." } },
+    { "vocab_temp_id": "v4", "type": "trans_sentence",
+      "payload": { "vietnamese_sentence": "Chúng tôi đã mua một chùm nho ở chợ." } },
+    { "vocab_temp_id": "v5", "type": "trans_sentence",
+      "payload": { "vietnamese_sentence": "Vào mùa hè, mọi người thích ăn dưa hấu để giải nhiệt." } },
+
+    { "vocab_temp_id": "v1", "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn đang ở siêu thị cùng em gái. Em gái muốn mua trái cây cho bữa sáng ngày mai.",
+        "given_sentence_zh": "妹妹说她想吃水果。",
+        "given_sentence_pinyin": "Mèimei shuō tā xiǎng chī shuǐguǒ."
+      }
+    },
+    { "vocab_temp_id": "v2", "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn đang ở sở thú và thấy một con khỉ có vẻ đang đói.",
+        "given_sentence_zh": "饲养员拿来了一些食物。",
+        "given_sentence_pinyin": "Sìyǎngyuán ná láile yìxiē shíwù."
+      }
+    },
+    { "vocab_temp_id": "v3", "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn bị cảm, và bạn của bạn muốn giúp bạn bổ sung vitamin C.",
+        "given_sentence_zh": "朋友去水果店买东西。",
+        "given_sentence_pinyin": "Péngyǒu qù shuǐguǒ diàn mǎi dōngxi."
+      }
+    },
+    { "vocab_temp_id": "v4", "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn đang đi dạo ở khu chợ cuối tuần và thấy một quầy trái cây tươi.",
+        "given_sentence_zh": "摊位上摆着很多水果。",
+        "given_sentence_pinyin": "Tānwèi shàng bǎizhe hěnduō shuǐguǒ."
+      }
+    },
+    { "vocab_temp_id": "v5", "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Trời rất nóng, cả gia đình bạn muốn ăn gì đó mát lạnh.",
+        "given_sentence_zh": "妈妈打开了冰箱。",
+        "given_sentence_pinyin": "Māma dǎkāile bīngxiāng."
+      }
+    }
+  ],
+
+  "dialogue": {
+    "lines": [
+      { "speaker": "A", "text_zh": "你今天要去超市吗？", "pinyin": "Nǐ jīntiān yào qù chāoshì ma?", "text_vi": "Hôm nay bạn định đi siêu thị à?", "highlight_vocab_temp_ids": [] },
+      { "speaker": "B", "text_zh": "对，我想买一些水果。", "pinyin": "Duì, wǒ xiǎng mǎi yìxiē shuǐguǒ.", "text_vi": "Đúng vậy, tôi muốn mua một ít trái cây.", "highlight_vocab_temp_ids": [] },
+      { "speaker": "A", "text_zh": "你要买什么水果？", "pinyin": "Nǐ yào mǎi shénme shuǐguǒ?", "text_vi": "Bạn định mua trái cây gì?", "highlight_vocab_temp_ids": [] },
+      { "speaker": "B", "text_zh": "我想买一个苹果和一根香蕉。", "pinyin": "Wǒ xiǎng mǎi yí ge píngguǒ hé yì gēn xiāngjiāo.", "text_vi": "Tôi muốn mua một quả táo và một quả chuối.", "highlight_vocab_temp_ids": ["v1", "v2"] },
+      { "speaker": "A", "text_zh": "橙子怎么样？橙子很甜，也有很多维生素C。", "pinyin": "Chéngzi zěnmeyàng? Chéngzi hěn tián, yě yǒu hěnduō wéishēngsù C.", "text_vi": "Cam thì sao? Cam rất ngọt, lại có nhiều vitamin C.", "highlight_vocab_temp_ids": ["v3"] },
+      { "speaker": "B", "text_zh": "好主意！我也想买一串葡萄。", "pinyin": "Hǎo zhǔyì! Wǒ yě xiǎng mǎi yí chuàn pútáo.", "text_vi": "Ý hay đấy! Tôi cũng muốn mua một chùm nho.", "highlight_vocab_temp_ids": ["v4"] },
+      { "speaker": "A", "text_zh": "天气这么热，我们再买一个西瓜吧。", "pinyin": "Tiānqì zhème rè, wǒmen zài mǎi yí ge xīguā ba.", "text_vi": "Trời nóng thế này, chúng ta mua thêm một quả dưa hấu đi.", "highlight_vocab_temp_ids": ["v5"] },
+      { "speaker": "B", "text_zh": "好的，西瓜切开吃真的很爽。", "pinyin": "Hǎo de, xīguā qiē kāi chī zhēn de hěn shuǎng.", "text_vi": "Được, dưa hấu cắt ra ăn thật sự rất sảng khoái.", "highlight_vocab_temp_ids": ["v5"] },
+      { "speaker": "A", "text_zh": "那我们走吧！", "pinyin": "Nà wǒmen zǒu ba!", "text_vi": "Vậy chúng ta đi thôi!", "highlight_vocab_temp_ids": [] }
+    ]
+  }
+}

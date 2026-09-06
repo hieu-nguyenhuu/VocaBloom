@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+
+<!--
+  ============================================================================
+  GHI CHÚ CHO AI AGENT — đọc trước khi dùng file này để code app thật
+  ============================================================================
+  File này là THƯ VIỆN THAM CHIẾU THIẾT KẾ (design gallery), KHÔNG phải app
+  thật. Mỗi khung [data-screen-label="..."] là 1 màn hình độc lập, đặt cạnh
+  nhau để xem/so sánh — không phải cấu trúc trang thật của app.
+
+  Tài liệu đầy đủ: xem UI_DESIGN.md §10 "Ghi chú cho AI agent" (8 điều chi tiết).
+  Tóm tắt nhanh:
+  1. Khung 1280×800 + box-shadow bọc ngoài mỗi màn = vỏ trình bày gallery,
+     KHÔNG copy nguyên vào app thật — chỉ lấy nội dung bên trong.
+  2. Mọi màu là inline style, KHÔNG có biến CSS — khi code phải tự dựng lại
+     theo kiến trúc token 2 lớp (UI_DESIGN.md §2), không copy y nguyên inline.
+  3. Icon là SVG path vẽ tay nhúng trực tiếp — KHÔNG phải icon font
+     (Tabler/Lucide...). Trích xuất path gốc, đừng thay bằng icon font khác.
+  4. RIÊNG bộ 6 icon giai đoạn cây (hạt giống/mầm/chồi/lá/hoa/quả, xem khối
+     "Khu vườn của bạn" bên dưới) — ĐÂY LÀ BẢN NHÁP, CHƯA CHỐT.
+     >>> AI agent PHẢI dừng lại và trao đổi với người dùng trước khi code
+     >>> phần này, không tự ý dùng thẳng SVG path hiện có làm bản chính thức.
+     Người dùng muốn tìm bộ icon "trông thật mắt và đồng bộ" hơn — có thể
+     cần đề xuất thêm phương án khác trước khi chốt.
+  5. PC và Mobile dùng CHUNG 100% bảng màu — lệch màu ở đâu là lỗi cần hỏi
+     lại, không phải chủ ý.
+  ============================================================================
+-->
+
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#5B4FE8;text-decoration:none}
+a:hover{color:#4338CA;text-decoration:underline}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#DCD3EA;border-radius:8px}
+[data-pc-scroll]{scrollbar-width:none;-ms-overflow-style:none}
+[data-pc-scroll]::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="background:#F3F0E9;min-height:100vh;font-family:'Be Vietnam Pro',sans-serif">
+  <div style="padding:24px 40px;position:sticky;top:0;background:rgba(243,240,233,0.92);backdrop-filter:blur(8px);z-index:10;display:flex;align-items:baseline;gap:16px;border-bottom:1px solid #E6E0D2">
+    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#241B3A">VocaBloom</div>
+    <div style="font-size:13px;color:#8B8593">PC · Light + Dark mode — cuộn ngang để xem 18 màn</div>
+  </div>
+  <div style="display:flex;gap:32px;padding:32px 40px 64px;overflow-x:auto;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="01 Dashboard PC">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">01 · Dashboard</div>
+      <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+        <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0">
+          <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+          <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+          </div>
+          <div style="margin-top:auto;padding:0 12px;position:relative">
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div>
+          </div>
+        </div>
+        <div data-pc-scroll style="flex:1;overflow-y:auto;background:#FFFFFF;padding:40px 44px">
+          <div style="max-width:1000px;margin:0 auto">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">
+              <div>
+                <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#241B3A">Chào buổi sáng, An</div>
+                <div style="font-size:14px;color:#8B8593;margin-top:6px">Thứ Năm, 16 tháng 7</div>
+              </div>
+              <div style="display:inline-flex;align-items:center;gap:8px;background:#FCE4F1;padding:9px 18px;border-radius:999px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#E0449E" stroke="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-1-2-1-2 2 1 3 3 3 5a5 5 0 0 1-10 0c0-6 4-7 5-12Z"/></svg>
+                <span style="font-size:13.5px;font-weight:700;color:#A21467">Chuỗi 12 ngày liên tiếp</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:28px;align-items:flex-start">
+              <div style="flex:1.4;display:flex;flex-direction:column;gap:20px;min-width:0">
+                <div style="display:flex;gap:16px">
+                  <div style="flex:1;background:#EDEBFC;border-radius:16px;padding:20px">
+                    <div style="font-size:13px;color:#5B4FE8;font-weight:600">Đến hạn hôm nay</div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:36px;color:#241B3A;margin-top:8px">18 từ</div>
+                  </div>
+                  <div style="flex:1;background:#FEF9C3;border-radius:16px;padding:20px">
+                    <div style="font-size:13px;color:#946200;font-weight:600">Quá hạn</div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:36px;color:#241B3A;margin-top:8px">3 từ</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px">
+                  <button style="flex:1;border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15.5px;padding:16px;border-radius:14px;cursor:pointer">Bắt đầu ôn tập · 18 từ</button>
+                  <button style="flex:1;border:none;background:#E3F4FD;color:#0369A1;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:16px;border-radius:14px;cursor:pointer">Ôn theo chủ đề</button>
+                </div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:20px;min-width:0">
+                <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:18px;padding:22px">
+                  <div style="font-weight:700;font-size:15px;color:#241B3A;margin-bottom:16px">Khu vườn của bạn</div>
+                  <!-- ⚠️ AI AGENT: bộ 6 icon cây bên dưới (hạt giống→mầm→chồi→lá→hoa→quả) là BẢN NHÁP, CHƯA CHỐT. Trao đổi với người dùng để tìm bộ icon đồng bộ, đẹp hơn trước khi dùng làm bản chính thức — xem chi tiết ở comment đầu file. -->
+
+                  <div style="display:flex;justify-content:space-between">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#FEE2E2;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="4.5" ry="6.5"/><path d="M12 6.5c0 3-2 3.5-2 3.5"/></svg></div><span style="font-size:11px;font-weight:600;color:#4A4458">12</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#FFEDD5;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-8"/><path d="M12 11c0-3 2.5-4 4-4 0 3-1.5 4.5-4 4Z"/><path d="M12 13c0-2.5-2-3.5-3.5-3.5 0 2.5 1.5 3.7 3.5 3.5Z"/></svg></div><span style="font-size:11px;font-weight:600;color:#4A4458">9</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#FEF9C3;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><ellipse cx="12" cy="6.5" rx="3" ry="4"/></svg></div><span style="font-size:11px;font-weight:600;color:#4A4458">14</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#ECFCCB;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><path d="M12 11c0-4 3.5-5.5 5.5-5.5 0 4-2 6-5.5 5.5Z"/></svg></div><span style="font-size:11px;font-weight:600;color:#4A4458">7</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-6.5"/><circle cx="12" cy="8.5" r="1.4" fill="#4ade80" stroke="none"/><ellipse cx="12" cy="5.3" rx="1.7" ry="2.4"/><ellipse cx="12" cy="11.7" rx="1.7" ry="2.4"/><ellipse cx="8.9" cy="8.5" rx="2.4" ry="1.7"/><ellipse cx="15.1" cy="8.5" rx="2.4" ry="1.7"/></svg></div><span style="font-size:11px;font-weight:600;color:#4A4458">5</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#DCFCE7;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.5V6"/><circle cx="12" cy="15" r="5.5" fill="#16a34a" stroke="none"/></svg></div><span style="font-size:11px;font-weight:600;color:#4A4458">21</span></div>
+                  </div>
+                </div>
+                <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:18px;padding:22px;flex:1">
+                  <div style="font-weight:700;font-size:15px;color:#241B3A;margin-bottom:16px">Vừa ôn gần đây</div>
+                  <div style="display:flex;gap:14px;flex-wrap:wrap">
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#f97316" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="105.5" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">苹果</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#eab308" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="70.9" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">学习</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#a3e635" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="40.7" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">电脑</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="19.6" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">时间</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="131.2" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">朋友</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#16a34a" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">花园</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="12.1" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">工作</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#F0ECE4" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#f97316" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="90.5" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#4A4458;font-family:'Noto Sans SC',sans-serif">香蕉</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="02 Player MCQ PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">02 · Player — Trắc nghiệm 4 đáp án</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#F0ECE4" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="138.9" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="4.5" ry="6.5"/><path d="M12 6.5c0 3-2 3.5-2 3.5"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="#8B8593" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:40px">
+      <div style="width:100%;max-width:600px;display:flex;flex-direction:column;gap:24px">
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:20px;padding:36px 28px;text-align:center">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:44px;color:#241B3A">苹果</div>
+          <div style="font-size:15px;color:#8B8593;margin-top:10px">píngguǒ · Chọn nghĩa đúng</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:500;color:#241B3A">Quả táo</div>
+          <div style="background:#FEE2E2;border:1.5px solid #ef4444;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:600;color:#B91C1C">Quả lê</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:500;color:#241B3A">Quả cam</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:500;color:#241B3A">Quả chuối</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="03 Player Fill-in PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">03 · Player — Điền từ nhập tay</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#F0ECE4" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#f97316" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="106.6" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-8"/><path d="M12 11c0-3 2.5-4 4-4 0 3-1.5 4.5-4 4Z"/><path d="M12 13c0-2.5-2-3.5-3.5-3.5 0 2.5 1.5 3.7 3.5 3.5Z"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="#8B8593" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:40px">
+      <div style="width:100%;max-width:560px;display:flex;flex-direction:column;gap:26px">
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:20px;padding:36px 28px;text-align:center">
+          <div style="font-size:26px;font-weight:600;color:#241B3A">quả táo</div>
+          <div style="font-size:15px;color:#8B8593;margin-top:10px">Nhập từ tiếng Trung</div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:16px">
+          <div style="width:58px;height:62px;border:2px solid #5B4FE8;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans SC',sans-serif;font-size:28px;color:#241B3A">苹</div>
+          <div style="width:58px;height:62px;border-bottom:2px solid #DCD6CC;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans SC',sans-serif;font-size:28px;color:#C7C1B6">?</div>
+        </div>
+        <button style="border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Kiểm tra</button>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="04 Player Arrange PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">04 · Player — Sắp xếp từ</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#F0ECE4" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#eab308" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="73.5" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><ellipse cx="12" cy="6.5" rx="3" ry="4"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="#8B8593" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px">
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:22px">
+        <div style="font-size:15.5px;color:#4A4458;text-align:center">Sắp xếp thành câu: <b>Tôi mỗi ngày ăn một quả táo</b></div>
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:16px;padding:18px;min-height:64px;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start">
+          <div style="background:#EDEBFC;border:1.5px solid #5B4FE8;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#4338CA;font-weight:600">我</div>
+          <div style="background:#EDEBFC;border:1.5px solid #5B4FE8;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#4338CA;font-weight:600">每天</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#241B3A">吃</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#241B3A">一个</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#241B3A">苹果</div>
+        </div>
+        <button style="border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Kiểm tra</button>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="05 Player Matching PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">05 · Player — Ghép cặp</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#241B3A">Ghép cặp</div>
+      <div style="font-size:14px;font-weight:600;color:#8B8593">3/5 đã ghép</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:620px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#DCFCE7;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#15803D;font-weight:600;opacity:0.7">苹果</div>
+          <div style="background:#EDEBFC;border:1.5px solid #5B4FE8;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#4338CA;font-weight:600">学习</div>
+          <div style="background:#DCFCE7;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#15803D;font-weight:600;opacity:0.7">时间</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">朋友</div>
+          <div style="background:#DCFCE7;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#15803D;font-weight:600;opacity:0.7">电脑</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#241B3A">Bạn bè</div>
+          <div style="background:#DCFCE7;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#15803D;font-weight:600;opacity:0.7">Máy tính</div>
+          <div style="background:#DCFCE7;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#15803D;font-weight:600;opacity:0.7">Quả táo</div>
+          <div style="background:#DCFCE7;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#15803D;font-weight:600;opacity:0.7">Thời gian</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#241B3A">Học tập</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="06 Player Flashcard PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">06 · Player — Lật thẻ</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#241B3A">Flashcard</div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:28px">
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:24px;padding:56px 28px;text-align:center">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:52px;color:#241B3A">学习</div>
+          <div style="font-size:15px;color:#8B8593;margin-top:12px">xuéxí</div>
+          <div style="font-size:13px;color:#B7AFC9;margin-top:20px">Chạm để xem nghĩa</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button style="flex:1;border:none;background:#FEE2E2;color:#B91C1C;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:16px 6px;border-radius:14px;cursor:pointer">Again</button>
+          <button style="flex:1;border:none;background:#FEF9C3;color:#946200;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:16px 6px;border-radius:14px;cursor:pointer">Hard</button>
+          <button style="flex:1;border:none;background:#DCFCE7;color:#15803D;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:16px 6px;border-radius:14px;cursor:pointer">Good</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="07 Player Fast Decision PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">07 · Player — Chọn nhanh</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#F0ECE4" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="147.1" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="4.5" ry="6.5"/><path d="M12 6.5c0 3-2 3.5-2 3.5"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="#8B8593" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px">
+      <div style="width:100%;max-width:560px;display:flex;flex-direction:column;gap:22px">
+        <div style="height:10px;background:#F0ECE4;border-radius:99px;overflow:hidden"><div style="width:45%;height:100%;background:#eab308"></div></div>
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:20px;padding:40px 28px;text-align:center">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:40px;color:#241B3A">苹果</div>
+          <div style="font-size:17px;color:#4A4458;margin-top:14px">= <b>hoa</b> ?</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <button style="flex:1;border:none;background:#FEE2E2;color:#B91C1C;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px;padding:24px;border-radius:16px;cursor:pointer">Sai</button>
+          <button style="flex:1;border:none;background:#DCFCE7;color:#15803D;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px;padding:24px;border-radius:16px;cursor:pointer">Đúng</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="08 Player Dialogue fill PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">08 · Player — Hội thoại điền chỗ trống</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#F0ECE4" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#a3e635" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="110.6" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><path d="M12 11c0-4 3.5-5.5 5.5-5.5 0 4-2 6-5.5 5.5Z"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="#8B8593" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:680px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;gap:16px">
+          <div style="flex:1;background:#FBFAF6;border:1px solid #F0ECE4;border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:700;color:#8B8593;margin-bottom:8px">A</div>
+            <div style="font-family:'Noto Sans SC',sans-serif;font-size:19px;color:#241B3A">你今天 <span style="color:#5B4FE8;font-weight:700">___</span> 苹果了吗？</div>
+            <div style="font-size:12.5px;color:#8B8593;margin-top:8px">nǐ jīntiān ___ píngguǒ le ma?</div>
+          </div>
+          <div style="flex:1;background:#FBFAF6;border:1px solid #F0ECE4;border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:700;color:#8B8593;margin-bottom:8px">B</div>
+            <div style="font-family:'Noto Sans SC',sans-serif;font-size:19px;color:#241B3A">我 <span style="color:#5B4FE8;font-weight:700">___</span> 了，很好吃。</div>
+            <div style="font-size:12.5px;color:#8B8593;margin-top:8px">wǒ ___ le, hěn hǎochī.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">吃</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">买</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">看</div>
+          <div style="background:#FFFFFF;border:1px solid #E5E5E5;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">写</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;background:#5B4FE8"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #DCD3EA"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="09 Player AI Essay PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">09 · Player — Tự luận AI chấm</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F0ECE4">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#F0ECE4" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#4ade80" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="47.4" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-6.5"/><circle cx="12" cy="8.5" r="1.4" fill="#4ade80" stroke="none"/><ellipse cx="12" cy="5.3" rx="1.7" ry="2.4"/><ellipse cx="12" cy="11.7" rx="1.7" ry="2.4"/><ellipse cx="8.9" cy="8.5" rx="2.4" ry="1.7"/><ellipse cx="15.1" cy="8.5" rx="2.4" ry="1.7"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><svg width="19" height="19" viewBox="0 0 24 24" fill="#8B8593" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:18px">
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:16px;padding:18px;text-align:center">
+          <div style="font-size:15px;color:#4A4458">Đặt câu với từ: <b style="font-family:'Noto Sans SC',sans-serif">苹果</b> (quả táo)</div>
+        </div>
+        <div style="background:#F5F3EC;border:1px solid #E5E5E5;border-radius:14px;padding:18px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#4A4458;min-height:60px">我昨天买了一个苹果，很甜。</div>
+        <div style="background:#DCFCE7;border:1px solid #4ade80;border-radius:16px;padding:18px">
+          <div style="display:inline-block;background:#4ade80;color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:10px">Tốt lắm</div>
+          <div style="font-size:14.5px;color:#15803D;line-height:1.5">Câu đúng ngữ pháp và dùng từ hợp lý, tuy hơi gượng.</div>
+          <div style="font-size:14px;color:#166534;margin-top:10px;font-style:italic">Gợi ý: "我昨天买了一个苹果，味道很甜。"</div>
+        </div>
+        <button style="border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Tiếp theo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="10 Player Grammar PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">10 · Player — Ngữ pháp (đọc)</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:flex-end">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#8B8593"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:22px">
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:20px;padding:36px 30px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:23px;color:#241B3A;line-height:1.6">"了" đặt sau động từ để diễn tả hành động đã hoàn thành: 我 吃 <b>了</b> 一个苹果。</div>
+          <div style="font-size:15px;color:#8B8593;margin-top:16px;line-height:1.6">Tôi đã ăn một quả táo.</div>
+        </div>
+        <button style="border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Tiếp theo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="11 Dialogue ket thuc PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">11 · Player (topic) — Hội thoại kết thúc</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="padding:32px 64px;text-align:center;border-bottom:1px solid #F0ECE4">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#241B3A">Hội thoại: Trái cây</div>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center;padding:36px 40px;overflow-y:auto" data-pc-scroll>
+      <div style="width:100%;max-width:720px;display:flex;flex-direction:column;gap:16px">
+        <div style="align-self:flex-start;max-width:74%;background:#FBFAF6;border:1px solid #F0ECE4;border-radius:18px 18px 18px 4px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">你今天吃 <b style="color:#5B4FE8">苹果</b> 了吗？</div>
+          <div style="font-size:12px;color:#8B8593;margin-top:5px">nǐ jīntiān chī píngguǒ le ma?</div>
+        </div>
+        <div style="align-self:flex-end;max-width:74%;background:#EDE7DA;border:1px solid #E3DCCB;border-radius:18px 18px 4px 18px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">吃了，很 <b style="color:#5B4FE8">好吃</b>。</div>
+          <div style="font-size:12px;color:#8B8593;margin-top:5px">chī le, hěn hǎochī.</div>
+        </div>
+        <div style="align-self:flex-start;max-width:74%;background:#FBFAF6;border:1px solid #F0ECE4;border-radius:18px 18px 18px 4px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">你每天都 <b style="color:#5B4FE8">学习</b> 中文吗？</div>
+          <div style="font-size:12px;color:#8B8593;margin-top:5px">nǐ měitiān dōu xuéxí zhōngwén ma?</div>
+        </div>
+        <div style="align-self:flex-end;max-width:74%;background:#EDE7DA;border:1px solid #E3DCCB;border-radius:18px 18px 4px 18px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#241B3A">对，每天花一点 <b style="color:#5B4FE8">时间</b>。</div>
+          <div style="font-size:12px;color:#8B8593;margin-top:5px">duì, měitiān huā yìdiǎn shíjiān.</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;padding:0 0 36px">
+      <button style="width:100%;max-width:720px;border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Xong</button>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="12 Session summary PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">12 · Tổng kết phiên ôn tập</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex;flex-direction:column">
+    <div style="flex:1;display:flex;justify-content:center;padding:48px 40px;overflow-y:auto" data-pc-scroll>
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:20px">
+        <div style="text-align:center">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#5B4FE8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-1-2-1-2 2 1 3 3 3 5a5 5 0 0 1-10 0c0-6 4-7 5-12Z"/></svg>
+          <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:26px;color:#241B3A">Làm tốt lắm!</div>
+          <div style="font-size:14.5px;color:#8B8593;margin-top:6px">Tổng kết hôm nay · Thứ Năm, 16/7</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div style="flex:1;background:#EDEBFC;border-radius:16px;padding:20px;text-align:center">
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#4338CA">+46</div>
+            <div style="font-size:12.5px;color:#5B4FE8;font-weight:600;margin-top:4px">Điểm hôm nay</div>
+          </div>
+          <div style="flex:1;background:#F0ECE4;border-radius:16px;padding:20px;text-align:center">
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#241B3A">18</div>
+            <div style="font-size:12.5px;color:#8B8593;font-weight:600;margin-top:4px">Từ đã ôn</div>
+          </div>
+          <div style="flex:1;background:#DCFCE7;border-radius:16px;padding:20px;text-align:center">
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#15803D">7</div>
+            <div style="font-size:12.5px;color:#15803D;font-weight:600;margin-top:4px">Lên stage</div>
+          </div>
+        </div>
+        <div style="background:#FEF9C3;border:1.5px solid #EAB308;border-radius:18px;padding:20px;display:flex;align-items:center;gap:14px">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 10.5V6"/><circle cx="12" cy="15" r="5.5" fill="#16a34a" stroke="none"/></svg>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:#946200;text-transform:uppercase;letter-spacing:0.04em">Thành tích mới</div>
+            <div style="font-size:15.5px;color:#241B3A;font-weight:600;margin-top:3px">"苹果" đã đạt Mastered hôm nay</div>
+          </div>
+        </div>
+        <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:18px;padding:8px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #F0ECE4">
+            <span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;color:#241B3A">学习</span>
+            <div style="display:flex;align-items:center;gap:9px">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round"><path d="M12 19v-8"/><path d="M12 11c0-3 2.5-4 4-4 0 3-1.5 4.5-4 4Z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V9"/><ellipse cx="12" cy="6.5" rx="3" ry="4"/></svg>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
+            <span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;color:#241B3A">朋友</span>
+            <span style="font-size:13px;color:#B7AFC9;font-weight:500">chưa đủ điểm</span>
+          </div>
+        </div>
+        <div style="font-size:13.5px;color:#8B8593;text-align:center;line-height:1.5">3 từ chưa đủ điểm hôm nay sẽ tiếp tục ôn vào ngày mai.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px">
+          <div style="font-size:13.5px;color:#8B8593;text-align:center">Còn 5 từ đang chờ bạn hôm nay</div>
+          <button style="border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:16px;border-radius:14px;cursor:pointer">Ôn tiếp</button>
+          <button style="border:none;background:transparent;color:#8B8593;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:10px;border-radius:14px;cursor:pointer">Về Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="13 Vocab Master-detail PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">13 · Quản lý từ vựng — Master-detail</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+    <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:26px 32px 16px"><div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#241B3A">Từ vựng</div></div>
+      <div style="flex:1;display:flex;overflow:hidden;border-top:1px solid #F0ECE4">
+        <div data-pc-scroll style="width:300px;flex:none;border-right:1px solid #F0ECE4;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px">
+          <div style="background:#EDEBFC;border:1.5px solid #5B4FE8;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#4338CA">Trái cây</span><span style="font-size:12px;color:#5B4FE8">24 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:20%;background:#ef4444"></div><div style="width:15%;background:#f97316"></div><div style="width:20%;background:#eab308"></div><div style="width:15%;background:#a3e635"></div><div style="width:15%;background:#4ade80"></div><div style="width:15%;background:#16a34a"></div></div>
+          </div>
+          <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#241B3A">Học tập</span><span style="font-size:12px;color:#8B8593">31 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:35%;background:#ef4444"></div><div style="width:25%;background:#f97316"></div><div style="width:15%;background:#eab308"></div><div style="width:10%;background:#a3e635"></div><div style="width:10%;background:#4ade80"></div><div style="width:5%;background:#16a34a"></div></div>
+          </div>
+          <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#241B3A">Gia đình & Bạn bè</span><span style="font-size:12px;color:#8B8593">19 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:10%;background:#ef4444"></div><div style="width:10%;background:#f97316"></div><div style="width:15%;background:#eab308"></div><div style="width:15%;background:#a3e635"></div><div style="width:25%;background:#4ade80"></div><div style="width:25%;background:#16a34a"></div></div>
+          </div>
+          <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#241B3A">Công việc</span><span style="font-size:12px;color:#8B8593">12 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:50%;background:#ef4444"></div><div style="width:30%;background:#f97316"></div><div style="width:20%;background:#eab308"></div></div>
+          </div>
+        </div>
+        <div data-pc-scroll style="flex:1;overflow-y:auto;padding:24px 32px">
+          <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:18px;color:#241B3A;margin-bottom:14px">Trái cây</div>
+          <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:10px;padding:9px 14px;display:flex;align-items:center;gap:8px;margin-bottom:16px;max-width:320px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span style="font-size:13.5px;color:#8B8593">Tìm từ vựng...</span>
+          </div>
+          <div style="max-width:640px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F0ECE4">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#241B3A">苹果</span><span style="font-size:12.5px;color:#8B8593;margin-left:8px">píngguǒ</span><div style="font-size:13px;color:#4A4458;margin-top:2px">quả táo</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F0ECE4">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#241B3A">香蕉</span><span style="font-size:12.5px;color:#8B8593;margin-left:8px">xiāngjiāo</span><div style="font-size:13px;color:#4A4458;margin-top:2px">quả chuối</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F0ECE4">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#241B3A">橙子</span><span style="font-size:12.5px;color:#8B8593;margin-left:8px">chéngzi</span><div style="font-size:13px;color:#4A4458;margin-top:2px">quả cam</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F0ECE4">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#241B3A">葡萄</span><span style="font-size:12.5px;color:#8B8593;margin-left:8px">pútáo</span><div style="font-size:13px;color:#4A4458;margin-top:2px">quả nho</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="14 Vocab Edit modal PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">14 · Quản lý từ vựng — Form sửa (modal overlay)</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+    <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0;filter:blur(1px);opacity:0.5">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+    </div>
+    <div style="flex:1;filter:blur(1px);opacity:0.5;padding:26px 32px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#241B3A">Từ vựng</div>
+    </div>
+    <div style="position:absolute;inset:0;background:rgba(36,27,58,0.35);display:flex;align-items:center;justify-content:center">
+      <div style="width:480px;background:#FFFFFF;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 60px -12px rgba(36,27,58,0.4)">
+        <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:19px;color:#241B3A">Sửa từ vựng</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><div style="font-size:11.5px;font-weight:600;color:#8B8593;margin-bottom:4px">Từ (Hán tự)</div><div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:8px;padding:9px 12px;font-family:'Noto Sans SC',sans-serif;font-size:15px;color:#241B3A">苹果</div></div>
+          <div><div style="font-size:11.5px;font-weight:600;color:#8B8593;margin-bottom:4px">Pinyin</div><div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:8px;padding:9px 12px;font-size:14px;color:#241B3A">píngguǒ</div></div>
+        </div>
+        <div><div style="font-size:11.5px;font-weight:600;color:#8B8593;margin-bottom:4px">Nghĩa tiếng Việt</div><div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:8px;padding:9px 12px;font-size:14px;color:#241B3A">quả táo</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><div style="font-size:11.5px;font-weight:600;color:#8B8593;margin-bottom:4px">Cụm từ đi kèm</div><div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:8px;padding:9px 12px;font-family:'Noto Sans SC',sans-serif;font-size:14px;color:#241B3A">一个苹果</div></div>
+          <div><div style="font-size:11.5px;font-weight:600;color:#8B8593;margin-bottom:4px">Nghĩa cụm từ</div><div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:8px;padding:9px 12px;font-size:14px;color:#241B3A">một quả táo</div></div>
+        </div>
+        <div><div style="font-size:11.5px;font-weight:600;color:#8B8593;margin-bottom:4px">Câu ví dụ</div><div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:8px;padding:9px 12px;font-family:'Noto Sans SC',sans-serif;font-size:14px;color:#241B3A">我每天吃一个苹果。</div></div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button style="flex:1;border:none;background:#F0ECE4;color:#4A4458;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:13px;border-radius:12px;cursor:pointer">Hủy</button>
+          <button style="flex:1;border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:13px;border-radius:12px;cursor:pointer">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="15 Import trong PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">15 · Import — Chọn file</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+    <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;padding:40px 48px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#241B3A;margin-bottom:24px">Import từ vựng</div>
+      <div style="flex:1;border:2px dashed #C9C1E8;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#FBFAF6">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#5B4FE8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <div style="text-align:center"><div style="font-size:17px;font-weight:600;color:#241B3A">Kéo thả file JSON vào đây</div><div style="font-size:13.5px;color:#8B8593;margin-top:8px">1 file = 1 topic</div></div>
+        <div style="font-size:13px;color:#B7AFC9">hoặc</div>
+        <button style="border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:14px 28px;border-radius:12px;cursor:pointer">Chọn file</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="16 Import preview PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">16 · Import — Preview (2 cột)</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+    <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div style="flex:1;padding:40px 48px;display:flex;flex-direction:column">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#241B3A;margin-bottom:24px">Import từ vựng</div>
+      <div style="display:flex;gap:32px;flex:1">
+        <div style="flex:1;border:2px dashed #C9C1E8;border-radius:18px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#FBFAF6">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5B4FE8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/></svg>
+          <div style="font-size:15px;font-weight:600;color:#241B3A">trai_cay.json</div>
+          <div style="font-size:13px;color:#8B8593">Đã tải lên · 42 KB</div>
+        </div>
+        <div style="flex:1.4;display:flex;flex-direction:column;gap:18px">
+          <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:16px;padding:22px">
+            <div style="font-weight:700;font-size:18px;color:#241B3A;margin-bottom:12px">Trái cây</div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:14.5px;color:#4A4458">
+              <div>24 từ vựng mới</div>
+              <div>18 bài tập được tạo sẵn</div>
+              <div>8 câu hội thoại</div>
+            </div>
+          </div>
+          <div style="background:#FEF9C3;border:1px solid #EAB308;border-radius:14px;padding:16px;display:flex;gap:10px;align-items:flex-start">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#946200" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            <div style="font-size:13.5px;color:#946200;line-height:1.5">2 từ trùng với dữ liệu hiện có ("苹果", "香蕉") — vẫn sẽ được thêm mới, không ghi đè.</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:auto">
+            <button style="flex:1;border:none;background:#F0ECE4;color:#4A4458;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:15px;border-radius:12px;cursor:pointer">Hủy</button>
+            <button style="flex:1;border:none;background:#5B4FE8;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:15px;border-radius:12px;cursor:pointer">Xác nhận Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="17 Cai dat PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">17 · Cài đặt</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+    <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div data-pc-scroll style="flex:1;overflow-y:auto;padding:40px 44px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#241B3A;margin-bottom:28px">Cài đặt</div>
+      <div style="display:flex;gap:32px;max-width:960px">
+        <div style="flex:1.2;display:flex;flex-direction:column;gap:28px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#8B8593;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px">AI &amp; OpenRouter</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#4A4458">API key</span><span style="font-size:14px;color:#241B3A;font-weight:600">sk-••••3f2a</span></div>
+              <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#4A4458">Model chấm điểm</span><span style="font-size:14px;color:#241B3A;font-weight:600">claude-3.5 ›</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#8B8593;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px">Học tập</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:14px;color:#4A4458">Số từ mới/ngày</span>
+                <div style="display:flex;align-items:center;gap:12px"><div style="width:28px;height:28px;border-radius:8px;background:#F0ECE4;display:flex;align-items:center;justify-content:center;font-weight:700;color:#4A4458">−</div><span style="font-weight:700;color:#241B3A">5</span><div style="width:28px;height:28px;border-radius:8px;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">+</div></div>
+              </div>
+              <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#4A4458">Giọng đọc TTS</span><span style="font-size:14px;color:#241B3A;font-weight:600">Neural2-A ›</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:12px;font-weight:700;color:#8B8593;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px">Thông báo</div>
+          <div style="background:#FBFAF6;border:1px solid #F0ECE4;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:14px;color:#4A4458">Cảnh báo hàng đợi cạn</span>
+            <div style="width:36px;height:20px;border-radius:99px;background:#5B4FE8;position:relative"><div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="18 Thong bao PC">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">18 · Thông báo (dropdown panel)</div>
+  <div style="width:1280px;height:800px;background:#FFFFFF;border-radius:20px;box-shadow:0 24px 60px -24px rgba(37,29,64,0.28),0 1px 4px rgba(37,29,64,0.06);overflow:hidden;position:relative;border:1px solid #EFEAE0;display:flex">
+    <div style="width:220px;flex:none;background:#FBFAF6;border-right:1px solid #F0ECE4;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#241B3A">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#4A4458;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px;position:relative">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#EDEBFC;color:#5B4FE8;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div>
+        <div style="position:absolute;left:calc(100% + 12px);bottom:0;width:360px;background:#FFFFFF;border:1px solid #EFEAE0;border-radius:16px;box-shadow:0 20px 50px -12px rgba(36,27,58,0.28);padding:8px;display:flex;flex-direction:column;z-index:20">
+          <div style="padding:12px 12px 8px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;color:#241B3A">Thông báo</div>
+          <div style="display:flex;gap:12px;padding:12px;border-top:1px solid #F0ECE4;position:relative">
+            <div style="width:34px;height:34px;border-radius:10px;background:#FEF9C3;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#946200" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div>
+            <div style="flex:1"><div style="font-size:13px;color:#241B3A;line-height:1.4">Hàng đợi từ mới sắp cạn — chỉ đủ dùng ~4 ngày.</div><div style="font-size:11px;color:#B7AFC9;margin-top:4px">2 giờ trước</div></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#5B4FE8;margin-top:4px;flex-shrink:0"></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;border-top:1px solid #F0ECE4;opacity:0.6">
+            <div style="width:34px;height:34px;border-radius:10px;background:#F0ECE4;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B8593" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div>
+            <div style="flex:1"><div style="font-size:13px;color:#241B3A;line-height:1.4">Hàng đợi từ mới sắp cạn — chỉ đủ dùng ~6 ngày.</div><div style="font-size:11px;color:#B7AFC9;margin-top:4px">5 ngày trước</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;padding:40px 44px;opacity:0.4;filter:blur(1px)">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#241B3A">Chào buổi sáng, An</div>
+    </div>
+  </div>
+</div>
+
+
+  </div>
+
+  <div style="background:#101116;padding-top:24px">
+    <div style="padding:0 40px 20px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">Dark mode</div>
+      <div style="font-size:13px;color:#8B8F98;margin-top:4px">Cùng 18 màn, chế độ tối</div>
+    </div>
+    <div style="display:flex;gap:32px;padding:0 40px 64px;overflow-x:auto;align-items:flex-start">
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="01 Dashboard PC (Dark)">
+      <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">01 · Dashboard · Dark</div>
+      <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+        <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0">
+          <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+          <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+          </div>
+          <div style="margin-top:auto;padding:0 12px;position:relative">
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div>
+          </div>
+        </div>
+        <div data-pc-scroll style="flex:1;overflow-y:auto;background:#22252C;padding:40px 44px">
+          <div style="max-width:1000px;margin:0 auto">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px">
+              <div>
+                <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#EDEEF0">Chào buổi sáng, An</div>
+                <div style="font-size:14px;color:#9A9BA8;margin-top:6px">Thứ Năm, 16 tháng 7</div>
+              </div>
+              <div style="display:inline-flex;align-items:center;gap:8px;background:#3A1830;padding:9px 18px;border-radius:999px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#F472B6" stroke="none"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-1-2-1-2 2 1 3 3 3 5a5 5 0 0 1-10 0c0-6 4-7 5-12Z"/></svg>
+                <span style="font-size:13.5px;font-weight:700;color:#F9A8D4">Chuỗi 12 ngày liên tiếp</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:28px;align-items:flex-start">
+              <div style="flex:1.4;display:flex;flex-direction:column;gap:20px;min-width:0">
+                <div style="display:flex;gap:16px">
+                  <div style="flex:1;background:#262148;border-radius:16px;padding:20px">
+                    <div style="font-size:13px;color:#8B80FF;font-weight:600">Đến hạn hôm nay</div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:36px;color:#EDEEF0;margin-top:8px">18 từ</div>
+                  </div>
+                  <div style="flex:1;background:#3A330F;border-radius:16px;padding:20px">
+                    <div style="font-size:13px;color:#F3D17A;font-weight:600">Quá hạn</div>
+                    <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:36px;color:#EDEEF0;margin-top:8px">3 từ</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:14px">
+                  <button style="flex:1;border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15.5px;padding:16px;border-radius:14px;cursor:pointer">Bắt đầu ôn tập · 18 từ</button>
+                  <button style="flex:1;border:none;background:#12303D;color:#7DD3FC;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:16px;border-radius:14px;cursor:pointer">Ôn theo chủ đề</button>
+                </div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:20px;min-width:0">
+                <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:18px;padding:22px">
+                  <div style="font-weight:700;font-size:15px;color:#EDEEF0;margin-bottom:16px">Khu vườn của bạn</div>
+                  <!-- ⚠️ AI AGENT: bộ 6 icon cây bên dưới (hạt giống→mầm→chồi→lá→hoa→quả) là BẢN NHÁP, CHƯA CHỐT. Trao đổi với người dùng để tìm bộ icon đồng bộ, đẹp hơn trước khi dùng làm bản chính thức — xem chi tiết ở comment đầu file. -->
+
+                  <div style="display:flex;justify-content:space-between">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#3B1F1F;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="4.5" ry="6.5"/><path d="M12 6.5c0 3-2 3.5-2 3.5"/></svg></div><span style="font-size:11px;font-weight:600;color:#C4C2CC">12</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#3A2712;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-8"/><path d="M12 11c0-3 2.5-4 4-4 0 3-1.5 4.5-4 4Z"/><path d="M12 13c0-2.5-2-3.5-3.5-3.5 0 2.5 1.5 3.7 3.5 3.5Z"/></svg></div><span style="font-size:11px;font-weight:600;color:#C4C2CC">9</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#3A330F;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><ellipse cx="12" cy="6.5" rx="3" ry="4"/></svg></div><span style="font-size:11px;font-weight:600;color:#C4C2CC">14</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#2C3314;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><path d="M12 11c0-4 3.5-5.5 5.5-5.5 0 4-2 6-5.5 5.5Z"/></svg></div><span style="font-size:11px;font-weight:600;color:#C4C2CC">7</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#113322;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-6.5"/><circle cx="12" cy="8.5" r="1.4" fill="#4ade80" stroke="none"/><ellipse cx="12" cy="5.3" rx="1.7" ry="2.4"/><ellipse cx="12" cy="11.7" rx="1.7" ry="2.4"/><ellipse cx="8.9" cy="8.5" rx="2.4" ry="1.7"/><ellipse cx="15.1" cy="8.5" rx="2.4" ry="1.7"/></svg></div><span style="font-size:11px;font-weight:600;color:#C4C2CC">5</span></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:42px;height:42px;border-radius:50%;background:#113322;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10.5V6"/><circle cx="12" cy="15" r="5.5" fill="#16a34a" stroke="none"/></svg></div><span style="font-size:11px;font-weight:600;color:#C4C2CC">21</span></div>
+                  </div>
+                </div>
+                <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:18px;padding:22px;flex:1">
+                  <div style="font-weight:700;font-size:15px;color:#EDEEF0;margin-bottom:16px">Vừa ôn gần đây</div>
+                  <div style="display:flex;gap:14px;flex-wrap:wrap">
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#f97316" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="105.5" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">苹果</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#eab308" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="70.9" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">学习</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#a3e635" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="40.7" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">电脑</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="19.6" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">时间</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#ef4444" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="131.2" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">朋友</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#16a34a" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">花园</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#4ade80" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="12.1" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">工作</div></div>
+                    <div style="position:relative;width:56px;height:56px"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="24" fill="none" stroke="#2A2D35" stroke-width="4"/><circle cx="28" cy="28" r="24" fill="none" stroke="#f97316" stroke-width="4" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="90.5" transform="rotate(-90 28 28)"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#C4C2CC;font-family:'Noto Sans SC',sans-serif">香蕉</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="02 Player MCQ PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">02 · Player — Trắc nghiệm 4 đáp án · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#2A2D35" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="138.9" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="4.5" ry="6.5"/><path d="M12 6.5c0 3-2 3.5-2 3.5"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="#9A9BA8" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:40px">
+      <div style="width:100%;max-width:600px;display:flex;flex-direction:column;gap:24px">
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:20px;padding:36px 28px;text-align:center">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:44px;color:#EDEEF0">苹果</div>
+          <div style="font-size:15px;color:#9A9BA8;margin-top:10px">píngguǒ · Chọn nghĩa đúng</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:500;color:#EDEEF0">Quả táo</div>
+          <div style="background:#3B1F1F;border:1.5px solid #ef4444;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:600;color:#FCA5A5">Quả lê</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:500;color:#EDEEF0">Quả cam</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:14px;padding:20px;text-align:center;font-size:16.5px;font-weight:500;color:#EDEEF0">Quả chuối</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="03 Player Fill-in PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">03 · Player — Điền từ nhập tay · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#2A2D35" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#f97316" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="106.6" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-8"/><path d="M12 11c0-3 2.5-4 4-4 0 3-1.5 4.5-4 4Z"/><path d="M12 13c0-2.5-2-3.5-3.5-3.5 0 2.5 1.5 3.7 3.5 3.5Z"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="#9A9BA8" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:40px">
+      <div style="width:100%;max-width:560px;display:flex;flex-direction:column;gap:26px">
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:20px;padding:36px 28px;text-align:center">
+          <div style="font-size:26px;font-weight:600;color:#EDEEF0">quả táo</div>
+          <div style="font-size:15px;color:#9A9BA8;margin-top:10px">Nhập từ tiếng Trung</div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:16px">
+          <div style="width:58px;height:62px;border:2px solid #8B80FF;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans SC',sans-serif;font-size:28px;color:#EDEEF0">苹</div>
+          <div style="width:58px;height:62px;border-bottom:2px solid #383A42;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans SC',sans-serif;font-size:28px;color:#55565E">?</div>
+        </div>
+        <button style="border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Kiểm tra</button>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="04 Player Arrange PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">04 · Player — Sắp xếp từ · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#2A2D35" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#eab308" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="73.5" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><ellipse cx="12" cy="6.5" rx="3" ry="4"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="#9A9BA8" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px">
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:22px">
+        <div style="font-size:15.5px;color:#C4C2CC;text-align:center">Sắp xếp thành câu: <b>Tôi mỗi ngày ăn một quả táo</b></div>
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:16px;padding:18px;min-height:64px;display:flex;flex-wrap:wrap;gap:10px;align-content:flex-start">
+          <div style="background:#262148;border:1.5px solid #8B80FF;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#C7BFFF;font-weight:600">我</div>
+          <div style="background:#262148;border:1.5px solid #8B80FF;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#C7BFFF;font-weight:600">每天</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center">
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#EDEEF0">吃</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#EDEEF0">一个</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:10px 18px;font-family:'Noto Sans SC',sans-serif;font-size:18px;color:#EDEEF0">苹果</div>
+        </div>
+        <button style="border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Kiểm tra</button>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="05 Player Matching PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">05 · Player — Ghép cặp · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#EDEEF0">Ghép cặp</div>
+      <div style="font-size:14px;font-weight:600;color:#9A9BA8">3/5 đã ghép</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:620px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#113322;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#86EFAC;font-weight:600;opacity:0.7">苹果</div>
+          <div style="background:#262148;border:1.5px solid #8B80FF;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#C7BFFF;font-weight:600">学习</div>
+          <div style="background:#113322;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#86EFAC;font-weight:600;opacity:0.7">时间</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">朋友</div>
+          <div style="background:#113322;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#86EFAC;font-weight:600;opacity:0.7">电脑</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#EDEEF0">Bạn bè</div>
+          <div style="background:#113322;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#86EFAC;font-weight:600;opacity:0.7">Máy tính</div>
+          <div style="background:#113322;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#86EFAC;font-weight:600;opacity:0.7">Quả táo</div>
+          <div style="background:#113322;border:1.5px solid #4ade80;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#86EFAC;font-weight:600;opacity:0.7">Thời gian</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:14px;padding:18px;text-align:center;font-size:15.5px;color:#EDEEF0">Học tập</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="06 Player Flashcard PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">06 · Player — Lật thẻ · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#EDEEF0">Flashcard</div>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:28px">
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:24px;padding:56px 28px;text-align:center">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:52px;color:#EDEEF0">学习</div>
+          <div style="font-size:15px;color:#9A9BA8;margin-top:12px">xuéxí</div>
+          <div style="font-size:13px;color:#55566A;margin-top:20px">Chạm để xem nghĩa</div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <button style="flex:1;border:none;background:#3B1F1F;color:#FCA5A5;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:16px 6px;border-radius:14px;cursor:pointer">Again</button>
+          <button style="flex:1;border:none;background:#3A330F;color:#F3D17A;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:16px 6px;border-radius:14px;cursor:pointer">Hard</button>
+          <button style="flex:1;border:none;background:#113322;color:#86EFAC;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:16px 6px;border-radius:14px;cursor:pointer">Good</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="07 Player Fast Decision PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">07 · Player — Chọn nhanh · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#2A2D35" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="147.1" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="13" rx="4.5" ry="6.5"/><path d="M12 6.5c0 3-2 3.5-2 3.5"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="#9A9BA8" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px">
+      <div style="width:100%;max-width:560px;display:flex;flex-direction:column;gap:22px">
+        <div style="height:10px;background:#2A2D35;border-radius:99px;overflow:hidden"><div style="width:45%;height:100%;background:#eab308"></div></div>
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:20px;padding:40px 28px;text-align:center">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-weight:600;font-size:40px;color:#EDEEF0">苹果</div>
+          <div style="font-size:17px;color:#C4C2CC;margin-top:14px">= <b>hoa</b> ?</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <button style="flex:1;border:none;background:#3B1F1F;color:#FCA5A5;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px;padding:24px;border-radius:16px;cursor:pointer">Sai</button>
+          <button style="flex:1;border:none;background:#113322;color:#86EFAC;font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:18px;padding:24px;border-radius:16px;cursor:pointer">Đúng</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="08 Player Dialogue fill PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">08 · Player — Hội thoại điền chỗ trống · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#2A2D35" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#a3e635" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="110.6" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V9"/><path d="M12 11c0-4 3.5-5.5 5.5-5.5 0 4-2 6-5.5 5.5Z"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3 11.2c.6.5 1 1.2 1 2.1v.2h4v-.2c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg><span style="font-size:10.5px;font-weight:500">Gợi ý</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="#9A9BA8" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:680px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;gap:16px">
+          <div style="flex:1;background:#1E2128;border:1px solid #2A2D35;border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:700;color:#9A9BA8;margin-bottom:8px">A</div>
+            <div style="font-family:'Noto Sans SC',sans-serif;font-size:19px;color:#EDEEF0">你今天 <span style="color:#8B80FF;font-weight:700">___</span> 苹果了吗？</div>
+            <div style="font-size:12.5px;color:#9A9BA8;margin-top:8px">nǐ jīntiān ___ píngguǒ le ma?</div>
+          </div>
+          <div style="flex:1;background:#1E2128;border:1px solid #2A2D35;border-radius:16px;padding:20px">
+            <div style="font-size:13px;font-weight:700;color:#9A9BA8;margin-bottom:8px">B</div>
+            <div style="font-family:'Noto Sans SC',sans-serif;font-size:19px;color:#EDEEF0">我 <span style="color:#8B80FF;font-weight:700">___</span> 了，很好吃。</div>
+            <div style="font-size:12.5px;color:#9A9BA8;margin-top:8px">wǒ ___ le, hěn hǎochī.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:4px">
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">吃</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">买</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">看</div>
+          <div style="background:#22252C;border:1px solid #383C46;border-radius:10px;padding:12px 20px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">写</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 0 36px;display:flex;justify-content:center;gap:9px"><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;background:#8B80FF"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div><div style="width:9px;height:9px;border-radius:50%;border:1.5px solid #3A3E4A"></div></div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="09 Player AI Essay PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">09 · Player — Tự luận AI chấm · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2A2D35">
+        <div style="position:relative;width:60px;height:60px">
+          <svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#2A2D35" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#4ade80" stroke-width="5" stroke-linecap="round" stroke-dasharray="163.4" stroke-dashoffset="47.4" transform="rotate(-90 30 30)"/></svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19v-6.5"/><circle cx="12" cy="8.5" r="1.4" fill="#4ade80" stroke="none"/><ellipse cx="12" cy="5.3" rx="1.7" ry="2.4"/><ellipse cx="12" cy="11.7" rx="1.7" ry="2.4"/><ellipse cx="8.9" cy="8.5" rx="2.4" ry="1.7"/><ellipse cx="15.1" cy="8.5" rx="2.4" ry="1.7"/></svg></div>
+        </div>
+        <div style="display:flex;gap:22px"><div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><svg width="19" height="19" viewBox="0 0 24 24" fill="#9A9BA8" stroke="none"><path d="M5 5l9 7-9 7V5Z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg><span style="font-size:10.5px;font-weight:500">Bỏ qua</span></div></div>
+      </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:18px">
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:16px;padding:18px;text-align:center">
+          <div style="font-size:15px;color:#C4C2CC">Đặt câu với từ: <b style="font-family:'Noto Sans SC',sans-serif">苹果</b> (quả táo)</div>
+        </div>
+        <div style="background:#1B1E24;border:1px solid #383C46;border-radius:14px;padding:18px;font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#C4C2CC;min-height:60px">我昨天买了一个苹果，很甜。</div>
+        <div style="background:#113322;border:1px solid #4ade80;border-radius:16px;padding:18px">
+          <div style="display:inline-block;background:#4ade80;color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:99px;margin-bottom:10px">Tốt lắm</div>
+          <div style="font-size:14.5px;color:#86EFAC;line-height:1.5">Câu đúng ngữ pháp và dùng từ hợp lý, tuy hơi gượng.</div>
+          <div style="font-size:14px;color:#6EE7A0;margin-top:10px;font-style:italic">Gợi ý: "我昨天买了一个苹果，味道很甜。"</div>
+        </div>
+        <button style="border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Tiếp theo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="10 Player Grammar PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">10 · Player — Ngữ pháp (đọc) · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:36px 64px;display:flex;justify-content:flex-end">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#9A9BA8"><span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;font-weight:600;line-height:1">拼</span><span style="font-size:10.5px;font-weight:500">Phiên âm</span></div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px">
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:22px">
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:20px;padding:36px 30px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:23px;color:#EDEEF0;line-height:1.6">"了" đặt sau động từ để diễn tả hành động đã hoàn thành: 我 吃 <b>了</b> 一个苹果。</div>
+          <div style="font-size:15px;color:#9A9BA8;margin-top:16px;line-height:1.6">Tôi đã ăn một quả táo.</div>
+        </div>
+        <button style="border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Tiếp theo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="11 Dialogue ket thuc PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">11 · Player (topic) — Hội thoại kết thúc · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="padding:32px 64px;text-align:center;border-bottom:1px solid #2A2D35">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:22px;color:#EDEEF0">Hội thoại: Trái cây</div>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center;padding:36px 40px;overflow-y:auto" data-pc-scroll>
+      <div style="width:100%;max-width:720px;display:flex;flex-direction:column;gap:16px">
+        <div style="align-self:flex-start;max-width:74%;background:#1E2128;border:1px solid #2A2D35;border-radius:18px 18px 18px 4px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">你今天吃 <b style="color:#8B80FF">苹果</b> 了吗？</div>
+          <div style="font-size:12px;color:#9A9BA8;margin-top:5px">nǐ jīntiān chī píngguǒ le ma?</div>
+        </div>
+        <div style="align-self:flex-end;max-width:74%;background:#23262C;border:1px solid #33373F;border-radius:18px 18px 4px 18px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">吃了，很 <b style="color:#8B80FF">好吃</b>。</div>
+          <div style="font-size:12px;color:#9A9BA8;margin-top:5px">chī le, hěn hǎochī.</div>
+        </div>
+        <div style="align-self:flex-start;max-width:74%;background:#1E2128;border:1px solid #2A2D35;border-radius:18px 18px 18px 4px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">你每天都 <b style="color:#8B80FF">学习</b> 中文吗？</div>
+          <div style="font-size:12px;color:#9A9BA8;margin-top:5px">nǐ měitiān dōu xuéxí zhōngwén ma?</div>
+        </div>
+        <div style="align-self:flex-end;max-width:74%;background:#23262C;border:1px solid #33373F;border-radius:18px 18px 4px 18px;padding:16px 18px">
+          <div style="font-family:'Noto Sans SC',sans-serif;font-size:17px;color:#EDEEF0">对，每天花一点 <b style="color:#8B80FF">时间</b>。</div>
+          <div style="font-size:12px;color:#9A9BA8;margin-top:5px">duì, měitiān huā yìdiǎn shíjiān.</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;padding:0 0 36px">
+      <button style="width:100%;max-width:720px;border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:17px;border-radius:14px;cursor:pointer">Xong</button>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="12 Session summary PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">12 · Tổng kết phiên ôn tập · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex;flex-direction:column">
+    <div style="flex:1;display:flex;justify-content:center;padding:48px 40px;overflow-y:auto" data-pc-scroll>
+      <div style="width:100%;max-width:640px;display:flex;flex-direction:column;gap:20px">
+        <div style="text-align:center">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#8B80FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px;display:block"><path d="M12 2c1 4-3 5-3 9a3 3 0 0 0 6 0c0-1-1-2-1-2 2 1 3 3 3 5a5 5 0 0 1-10 0c0-6 4-7 5-12Z"/></svg>
+          <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:26px;color:#EDEEF0">Làm tốt lắm!</div>
+          <div style="font-size:14.5px;color:#9A9BA8;margin-top:6px">Tổng kết hôm nay · Thứ Năm, 16/7</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div style="flex:1;background:#262148;border-radius:16px;padding:20px;text-align:center">
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#C7BFFF">+46</div>
+            <div style="font-size:12.5px;color:#8B80FF;font-weight:600;margin-top:4px">Điểm hôm nay</div>
+          </div>
+          <div style="flex:1;background:#2A2D35;border-radius:16px;padding:20px;text-align:center">
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#EDEEF0">18</div>
+            <div style="font-size:12.5px;color:#9A9BA8;font-weight:600;margin-top:4px">Từ đã ôn</div>
+          </div>
+          <div style="flex:1;background:#113322;border-radius:16px;padding:20px;text-align:center">
+            <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#86EFAC">7</div>
+            <div style="font-size:12.5px;color:#86EFAC;font-weight:600;margin-top:4px">Lên stage</div>
+          </div>
+        </div>
+        <div style="background:#3A330F;border:1.5px solid #EAB308;border-radius:18px;padding:20px;display:flex;align-items:center;gap:14px">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 10.5V6"/><circle cx="12" cy="15" r="5.5" fill="#16a34a" stroke="none"/></svg>
+          <div>
+            <div style="font-size:12.5px;font-weight:700;color:#F3D17A;text-transform:uppercase;letter-spacing:0.04em">Thành tích mới</div>
+            <div style="font-size:15.5px;color:#EDEEF0;font-weight:600;margin-top:3px">"苹果" đã đạt Mastered hôm nay</div>
+          </div>
+        </div>
+        <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:18px;padding:8px 18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #2A2D35">
+            <span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;color:#EDEEF0">学习</span>
+            <div style="display:flex;align-items:center;gap:9px">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="1.8" stroke-linecap="round"><path d="M12 19v-8"/><path d="M12 11c0-3 2.5-4 4-4 0 3-1.5 4.5-4 4Z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round"><path d="M12 19V9"/><ellipse cx="12" cy="6.5" rx="3" ry="4"/></svg>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
+            <span style="font-family:'Noto Sans SC',sans-serif;font-size:16px;color:#EDEEF0">朋友</span>
+            <span style="font-size:13px;color:#55566A;font-weight:500">chưa đủ điểm</span>
+          </div>
+        </div>
+        <div style="font-size:13.5px;color:#9A9BA8;text-align:center;line-height:1.5">3 từ chưa đủ điểm hôm nay sẽ tiếp tục ôn vào ngày mai.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px">
+          <div style="font-size:13.5px;color:#9A9BA8;text-align:center">Còn 5 từ đang chờ bạn hôm nay</div>
+          <button style="border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:16px;padding:16px;border-radius:14px;cursor:pointer">Ôn tiếp</button>
+          <button style="border:none;background:transparent;color:#9A9BA8;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:10px;border-radius:14px;cursor:pointer">Về Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="13 Vocab Master-detail PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">13 · Quản lý từ vựng — Master-detail · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+    <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:26px 32px 16px"><div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#EDEEF0">Từ vựng</div></div>
+      <div style="flex:1;display:flex;overflow:hidden;border-top:1px solid #2A2D35">
+        <div data-pc-scroll style="width:300px;flex:none;border-right:1px solid #2A2D35;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px">
+          <div style="background:#262148;border:1.5px solid #8B80FF;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#C7BFFF">Trái cây</span><span style="font-size:12px;color:#8B80FF">24 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:20%;background:#ef4444"></div><div style="width:15%;background:#f97316"></div><div style="width:20%;background:#eab308"></div><div style="width:15%;background:#a3e635"></div><div style="width:15%;background:#4ade80"></div><div style="width:15%;background:#16a34a"></div></div>
+          </div>
+          <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#EDEEF0">Học tập</span><span style="font-size:12px;color:#9A9BA8">31 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:35%;background:#ef4444"></div><div style="width:25%;background:#f97316"></div><div style="width:15%;background:#eab308"></div><div style="width:10%;background:#a3e635"></div><div style="width:10%;background:#4ade80"></div><div style="width:5%;background:#16a34a"></div></div>
+          </div>
+          <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#EDEEF0">Gia đình & Bạn bè</span><span style="font-size:12px;color:#9A9BA8">19 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:10%;background:#ef4444"></div><div style="width:10%;background:#f97316"></div><div style="width:15%;background:#eab308"></div><div style="width:15%;background:#a3e635"></div><div style="width:25%;background:#4ade80"></div><div style="width:25%;background:#16a34a"></div></div>
+          </div>
+          <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:14px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font-weight:700;font-size:15px;color:#EDEEF0">Công việc</span><span style="font-size:12px;color:#9A9BA8">12 từ</span></div>
+            <div style="display:flex;height:6px;border-radius:99px;overflow:hidden"><div style="width:50%;background:#ef4444"></div><div style="width:30%;background:#f97316"></div><div style="width:20%;background:#eab308"></div></div>
+          </div>
+        </div>
+        <div data-pc-scroll style="flex:1;overflow-y:auto;padding:24px 32px">
+          <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:18px;color:#EDEEF0;margin-bottom:14px">Trái cây</div>
+          <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:10px;padding:9px 14px;display:flex;align-items:center;gap:8px;margin-bottom:16px;max-width:320px">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span style="font-size:13.5px;color:#9A9BA8">Tìm từ vựng...</span>
+          </div>
+          <div style="max-width:640px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #2A2D35">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#EDEEF0">苹果</span><span style="font-size:12.5px;color:#9A9BA8;margin-left:8px">píngguǒ</span><div style="font-size:13px;color:#C4C2CC;margin-top:2px">quả táo</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #2A2D35">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#EDEEF0">香蕉</span><span style="font-size:12.5px;color:#9A9BA8;margin-left:8px">xiāngjiāo</span><div style="font-size:13px;color:#C4C2CC;margin-top:2px">quả chuối</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #2A2D35">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#EDEEF0">橙子</span><span style="font-size:12.5px;color:#9A9BA8;margin-left:8px">chéngzi</span><div style="font-size:13px;color:#C4C2CC;margin-top:2px">quả cam</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #2A2D35">
+              <div><span style="font-family:'Noto Sans SC',sans-serif;font-size:17px;font-weight:600;color:#EDEEF0">葡萄</span><span style="font-size:12.5px;color:#9A9BA8;margin-left:8px">pútáo</span><div style="font-size:13px;color:#C4C2CC;margin-top:2px">quả nho</div></div>
+              <div style="display:flex;gap:14px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="14 Vocab Edit modal PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">14 · Quản lý từ vựng — Form sửa (modal overlay) · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+    <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0;filter:blur(1px);opacity:0.5">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+    </div>
+    <div style="flex:1;filter:blur(1px);opacity:0.5;padding:26px 32px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#EDEEF0">Từ vựng</div>
+    </div>
+    <div style="position:absolute;inset:0;background:rgba(36,27,58,0.35);display:flex;align-items:center;justify-content:center">
+      <div style="width:480px;background:#1B1E24;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 60px -12px rgba(36,27,58,0.4)">
+        <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:19px;color:#EDEEF0">Sửa từ vựng</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><div style="font-size:11.5px;font-weight:600;color:#9A9BA8;margin-bottom:4px">Từ (Hán tự)</div><div style="background:#1E2128;border:1px solid #2A2D35;border-radius:8px;padding:9px 12px;font-family:'Noto Sans SC',sans-serif;font-size:15px;color:#EDEEF0">苹果</div></div>
+          <div><div style="font-size:11.5px;font-weight:600;color:#9A9BA8;margin-bottom:4px">Pinyin</div><div style="background:#1E2128;border:1px solid #2A2D35;border-radius:8px;padding:9px 12px;font-size:14px;color:#EDEEF0">píngguǒ</div></div>
+        </div>
+        <div><div style="font-size:11.5px;font-weight:600;color:#9A9BA8;margin-bottom:4px">Nghĩa tiếng Việt</div><div style="background:#1E2128;border:1px solid #2A2D35;border-radius:8px;padding:9px 12px;font-size:14px;color:#EDEEF0">quả táo</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div><div style="font-size:11.5px;font-weight:600;color:#9A9BA8;margin-bottom:4px">Cụm từ đi kèm</div><div style="background:#1E2128;border:1px solid #2A2D35;border-radius:8px;padding:9px 12px;font-family:'Noto Sans SC',sans-serif;font-size:14px;color:#EDEEF0">一个苹果</div></div>
+          <div><div style="font-size:11.5px;font-weight:600;color:#9A9BA8;margin-bottom:4px">Nghĩa cụm từ</div><div style="background:#1E2128;border:1px solid #2A2D35;border-radius:8px;padding:9px 12px;font-size:14px;color:#EDEEF0">một quả táo</div></div>
+        </div>
+        <div><div style="font-size:11.5px;font-weight:600;color:#9A9BA8;margin-bottom:4px">Câu ví dụ</div><div style="background:#1E2128;border:1px solid #2A2D35;border-radius:8px;padding:9px 12px;font-family:'Noto Sans SC',sans-serif;font-size:14px;color:#EDEEF0">我每天吃一个苹果。</div></div>
+        <div style="display:flex;gap:10px;margin-top:8px">
+          <button style="flex:1;border:none;background:#2A2D35;color:#C4C2CC;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:13px;border-radius:12px;cursor:pointer">Hủy</button>
+          <button style="flex:1;border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:14.5px;padding:13px;border-radius:12px;cursor:pointer">Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="15 Import trong PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">15 · Import — Chọn file · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+    <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;padding:40px 48px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#EDEEF0;margin-bottom:24px">Import từ vựng</div>
+      <div style="flex:1;border:2px dashed #4A4470;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#1E2128">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B80FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+        <div style="text-align:center"><div style="font-size:17px;font-weight:600;color:#EDEEF0">Kéo thả file JSON vào đây</div><div style="font-size:13.5px;color:#9A9BA8;margin-top:8px">1 file = 1 topic</div></div>
+        <div style="font-size:13px;color:#55566A">hoặc</div>
+        <button style="border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:14px 28px;border-radius:12px;cursor:pointer">Chọn file</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="16 Import preview PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">16 · Import — Preview (2 cột) · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+    <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div style="flex:1;padding:40px 48px;display:flex;flex-direction:column">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#EDEEF0;margin-bottom:24px">Import từ vựng</div>
+      <div style="display:flex;gap:32px;flex:1">
+        <div style="flex:1;border:2px dashed #4A4470;border-radius:18px;padding:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#1E2128">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8B80FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/></svg>
+          <div style="font-size:15px;font-weight:600;color:#EDEEF0">trai_cay.json</div>
+          <div style="font-size:13px;color:#9A9BA8">Đã tải lên · 42 KB</div>
+        </div>
+        <div style="flex:1.4;display:flex;flex-direction:column;gap:18px">
+          <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:16px;padding:22px">
+            <div style="font-weight:700;font-size:18px;color:#EDEEF0;margin-bottom:12px">Trái cây</div>
+            <div style="display:flex;flex-direction:column;gap:7px;font-size:14.5px;color:#C4C2CC">
+              <div>24 từ vựng mới</div>
+              <div>18 bài tập được tạo sẵn</div>
+              <div>8 câu hội thoại</div>
+            </div>
+          </div>
+          <div style="background:#3A330F;border:1px solid #EAB308;border-radius:14px;padding:16px;display:flex;gap:10px;align-items:flex-start">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#F3D17A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+            <div style="font-size:13.5px;color:#F3D17A;line-height:1.5">2 từ trùng với dữ liệu hiện có ("苹果", "香蕉") — vẫn sẽ được thêm mới, không ghi đè.</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:auto">
+            <button style="flex:1;border:none;background:#2A2D35;color:#C4C2CC;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:15px;border-radius:12px;cursor:pointer">Hủy</button>
+            <button style="flex:1;border:none;background:#8B80FF;color:#fff;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:15px;padding:15px;border-radius:12px;cursor:pointer">Xác nhận Import</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="17 Cai dat PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">17 · Cài đặt · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+    <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px"><div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div></div>
+    </div>
+    <div data-pc-scroll style="flex:1;overflow-y:auto;padding:40px 44px">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:24px;color:#EDEEF0;margin-bottom:28px">Cài đặt</div>
+      <div style="display:flex;gap:32px;max-width:960px">
+        <div style="flex:1.2;display:flex;flex-direction:column;gap:28px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#9A9BA8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px">AI &amp; OpenRouter</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#C4C2CC">API key</span><span style="font-size:14px;color:#EDEEF0;font-weight:600">sk-••••3f2a</span></div>
+              <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#C4C2CC">Model chấm điểm</span><span style="font-size:14px;color:#EDEEF0;font-weight:600">claude-3.5 ›</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#9A9BA8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px">Học tập</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:14px;color:#C4C2CC">Số từ mới/ngày</span>
+                <div style="display:flex;align-items:center;gap:12px"><div style="width:28px;height:28px;border-radius:8px;background:#2A2D35;display:flex;align-items:center;justify-content:center;font-weight:700;color:#C4C2CC">−</div><span style="font-weight:700;color:#EDEEF0">5</span><div style="width:28px;height:28px;border-radius:8px;background:#8B80FF;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">+</div></div>
+              </div>
+              <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#C4C2CC">Giọng đọc TTS</span><span style="font-size:14px;color:#EDEEF0;font-weight:600">Neural2-A ›</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+          <div style="font-size:12px;font-weight:700;color:#9A9BA8;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px">Thông báo</div>
+          <div style="background:#1E2128;border:1px solid #2A2D35;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:14px;color:#C4C2CC">Cảnh báo hàng đợi cạn</span>
+            <div style="width:36px;height:20px;border-radius:99px;background:#8B80FF;position:relative"><div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex:none" data-screen-label="18 Thong bao PC (Dark)">
+  <div style="font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#8B7FA8;padding-left:4px">18 · Thông báo (dropdown panel) · Dark</div>
+  <div style="width:1280px;height:800px;background:#15171C;border-radius:20px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.55),0 1px 4px rgba(0,0,0,0.3);overflow:hidden;position:relative;border:1px solid #2A2D35;display:flex">
+    <div style="width:220px;flex:none;background:#17191E;border-right:1px solid #2A2D35;display:flex;flex-direction:column;padding:24px 0">
+      <div style="padding:0 24px 28px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:20px;color:#EDEEF0">VocaBloom</div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:0 12px">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg><span>Dashboard</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4Z" fill="currentColor" stroke="none"/></svg><span>Ôn tập</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5Z"/></svg><span>Từ vựng</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg><span>Import</span></div>
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;color:#C4C2CC;font-weight:500;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></svg><span>Cài đặt</span></div>
+      </div>
+      <div style="margin-top:auto;padding:0 12px;position:relative">
+        <div style="display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;background:#262148;color:#8B80FF;font-weight:600;font-size:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span>Thông báo</span></div>
+        <div style="position:absolute;left:calc(100% + 12px);bottom:0;width:360px;background:#1B1E24;border:1px solid #2A2D35;border-radius:16px;box-shadow:0 20px 50px -12px rgba(36,27,58,0.28);padding:8px;display:flex;flex-direction:column;z-index:20">
+          <div style="padding:12px 12px 8px;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15px;color:#EDEEF0">Thông báo</div>
+          <div style="display:flex;gap:12px;padding:12px;border-top:1px solid #2A2D35;position:relative">
+            <div style="width:34px;height:34px;border-radius:10px;background:#3A330F;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F3D17A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div>
+            <div style="flex:1"><div style="font-size:13px;color:#EDEEF0;line-height:1.4">Hàng đợi từ mới sắp cạn — chỉ đủ dùng ~4 ngày.</div><div style="font-size:11px;color:#55566A;margin-top:4px">2 giờ trước</div></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#8B80FF;margin-top:4px;flex-shrink:0"></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px;border-top:1px solid #2A2D35;opacity:0.6">
+            <div style="width:34px;height:34px;border-radius:10px;background:#2A2D35;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9A9BA8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></div>
+            <div style="flex:1"><div style="font-size:13px;color:#EDEEF0;line-height:1.4">Hàng đợi từ mới sắp cạn — chỉ đủ dùng ~6 ngày.</div><div style="font-size:11px;color:#55566A;margin-top:4px">5 ngày trước</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;padding:40px 44px;opacity:0.4;filter:blur(1px)">
+      <div style="font-family:'Baloo 2',sans-serif;font-weight:700;font-size:28px;color:#EDEEF0">Chào buổi sáng, An</div>
+    </div>
+  </div>
+</div>
+
+
+    </div>
+  </div>
+</div>
+
+</x-dc>

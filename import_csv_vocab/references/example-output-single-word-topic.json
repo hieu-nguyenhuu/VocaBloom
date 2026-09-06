@@ -1,0 +1,198 @@
+{
+  "topic": {
+    "name": "Thời tiết",
+    "description": "1 từ vựng tiếng Trung về thời tiết"
+  },
+  "vocab": [
+    {
+      "temp_id": "v1",
+      "word": "晴天",
+      "pinyin": "qíngtiān",
+      "meaning_vi": "trời nắng, ngày quang đãng",
+      "collocation": "大晴天",
+      "collocation_pinyin": "dà qíngtiān",
+      "collocation_meaning_vi": "một ngày nắng đẹp",
+      "example_sentence": "明天是晴天，我们去公园吧。",
+      "example_meaning_vi": "Ngày mai trời nắng, chúng ta đi công viên nhé.",
+      "lang": "zh"
+    }
+  ],
+  "exercises": [
+    {
+      "vocab_temp_id": "v1",
+      "type": "grammar",
+      "payload": {
+        "content_target": "晴天可以直接作主语或宾语，不需要量词：今天是晴天。",
+        "pinyin": "qíngtiān kěyǐ zhíjiē zuò zhǔyǔ huò bīnyǔ, bù xūyào liàngcí: jīntiān shì qíngtiān.",
+        "content_vi": "晴天 (ngày nắng) có thể trực tiếp làm chủ ngữ hoặc tân ngữ, không cần lượng từ: hôm nay là ngày nắng."
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "selection",
+      "payload": {
+        "distractors": [
+          "ngày mưa",
+          "ngày âm u",
+          "ngày có tuyết"
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "audio_recognition",
+      "payload": {
+        "distractors": [
+          "ngày mưa",
+          "ngày âm u",
+          "ngày có tuyết"
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "fast_decision",
+      "payload": {
+        "wrong_meaning": "ngày mưa"
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "select_on_describe",
+      "payload": {
+        "description": "Kiểu thời tiết có bầu trời trong xanh, không mây, ánh nắng chan hòa.",
+        "distractors": [
+          {
+            "word": "雨天",
+            "pinyin": "yǔtiān"
+          },
+          {
+            "word": "阴天",
+            "pinyin": "yīntiān"
+          },
+          {
+            "word": "雪天",
+            "pinyin": "xuětiān"
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "select_sentence",
+      "payload": {
+        "correct_sentence": {
+          "text": "明天是晴天，我们去公园吧。",
+          "pinyin": "Míngtiān shì qíngtiān, wǒmen qù gōngyuán ba."
+        },
+        "wrong_sentences": [
+          {
+            "text": "明天晴天是，我们去公园吧。",
+            "pinyin": "Míngtiān qíngtiān shì, wǒmen qù gōngyuán ba."
+          },
+          {
+            "text": "明天是晴天，我们公园去吧。",
+            "pinyin": "Míngtiān shì qíngtiān, wǒmen gōngyuán qù ba."
+          },
+          {
+            "text": "明天是雨天，我们去公园吧晴天。",
+            "pinyin": "Míngtiān shì yǔtiān, wǒmen qù gōngyuán ba qíngtiān."
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "arrange_words",
+      "payload": {
+        "tokens": [
+          {
+            "text": "明天",
+            "pinyin": "míngtiān"
+          },
+          {
+            "text": "是",
+            "pinyin": "shì"
+          },
+          {
+            "text": "晴天",
+            "pinyin": "qíngtiān"
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "trans_sentence",
+      "payload": {
+        "vietnamese_sentence": "Hôm nay là một ngày nắng đẹp."
+      }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "complete_situation",
+      "payload": {
+        "situation_vi": "Bạn đang lên kế hoạch cho một chuyến dã ngoại cuối tuần với bạn bè.",
+        "given_sentence_zh": "你打开手机看天气预报。",
+        "given_sentence_pinyin": "Nǐ dǎkāi shǒujī kàn tiānqì yùbào."
+      }
+    }
+  ],
+  "dialogue": {
+    "lines": [
+      {
+        "speaker": "A",
+        "text_zh": "今天天气怎么样？",
+        "pinyin": "Jīntiān tiānqì zěnmeyàng?",
+        "text_vi": "Hôm nay thời tiết thế nào?",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "B",
+        "text_zh": "今天是晴天，很暖和。",
+        "pinyin": "Jīntiān shì qíngtiān, hěn nuǎnhuo.",
+        "text_vi": "Hôm nay trời nắng, khá ấm áp.",
+        "highlight_vocab_temp_ids": [
+          "v1"
+        ]
+      },
+      {
+        "speaker": "A",
+        "text_zh": "太好了，我们出去走走吧。",
+        "pinyin": "Tài hǎo le, wǒmen chūqù zǒu zǒu ba.",
+        "text_vi": "Tuyệt quá, chúng ta ra ngoài đi dạo nhé.",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "B",
+        "text_zh": "好啊，晴天最适合散步了。",
+        "pinyin": "Hǎo a, qíngtiān zuì shìhé sànbù le.",
+        "text_vi": "Được đó, trời nắng thích hợp nhất để đi dạo.",
+        "highlight_vocab_temp_ids": [
+          "v1"
+        ]
+      },
+      {
+        "speaker": "A",
+        "text_zh": "那我们几点出发？",
+        "pinyin": "Nà wǒmen jǐ diǎn chūfā?",
+        "text_vi": "Vậy mấy giờ chúng ta xuất phát?",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "B",
+        "text_zh": "下午三点怎么样？",
+        "pinyin": "Xiàwǔ sān diǎn zěnmeyàng?",
+        "text_vi": "3 giờ chiều thế nào?",
+        "highlight_vocab_temp_ids": []
+      },
+      {
+        "speaker": "A",
+        "text_zh": "没问题，到时候见！",
+        "pinyin": "Méi wèntí, dào shíhou jiàn!",
+        "text_vi": "Không vấn đề gì, lúc đó gặp nhé!",
+        "highlight_vocab_temp_ids": []
+      }
+    ]
+  }
+}
