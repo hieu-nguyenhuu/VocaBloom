@@ -9,7 +9,13 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "check:db": "node scripts/check-db.mjs"
+    "check:db": "node scripts/check-db.mjs",
+    "check:auth": "node scripts/check-auth.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "check:schema": "node scripts/check-schema.mjs",
+    "test:db": "node scripts/test-maintenance.mjs",
+    "test:import": "node scripts/test-import.mjs",
+    "import:file": "node scripts/import-file.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

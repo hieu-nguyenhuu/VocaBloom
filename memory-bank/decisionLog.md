@@ -101,3 +101,117 @@ Ghi các quyết định có ảnh hưởng kiến trúc. DEC-01→DEC-23 đã c
 - **Quyết định:** Toàn bộ SRS engine là hàm thuần trong `src/lib/srs.ts`, không import React/Supabase.
 - **Lý do:** `CLAUDE.md` Bước 3 bắt buộc TDD RED→GREEN→REFACTOR cho logic tính điểm/lên stage/gap/phạt/session — logic dính UI hoặc network thì không viết test nhỏ chạy nhanh được.
 - **Trạng thái:** ✅ Chốt làm chuẩn kiến trúc.
+
+### [2026-09-09] MB-10 — Auth & RLS: chốt PHƯƠNG ÁN A (khép lại MB-06)
+- **Quyết định:** bật Supabase Auth với **đúng 1 tài khoản** + **tắt đăng ký tự do**
+  (`disable_signup = true`); mọi bảng bật RLS với 1 policy đồng dạng
+  `for all to authenticated using (auth.uid() is not null)`.
+  **KHÔNG thêm cột `user_id`** — schema `SPECIFICATION.md` §2 giữ nguyên 100%.
+- **Lý do:** `anon key` bị Vite ship thẳng vào JS bundle; nếu deploy public mà không có RLS thì
+  bất kỳ ai cũng đọc/sửa/`DELETE` toàn bộ DB qua PostgREST. Chi phí thêm rất nhỏ và cố định
+  (1 policy × 10 bảng + 1 màn Đăng nhập), đổi lại không phải làm lại hạ tầng khi DB đã có dữ liệu.
+- **Không phải over-engineering:** RLS là cơ chế **có sẵn** của Supabase, 0 package, 0 tầng mới —
+  khác hẳn việc dựng Edge Function proxy đã bị bác ở MB-04.
+- **Hệ quả kéo theo:** cần **màn Đăng nhập — KHÔNG có trong 18/19 màn mockup** → phải trình bày
+  layout và chờ duyệt riêng trước khi code (theo `CLAUDE.md` Bước 1). Không làm màn "Quên mật khẩu"
+  / "Đăng ký" (YAGNI + ngoài mockup); đổi mật khẩu làm thẳng trên Dashboard.
+- **Biến `EMAIL` rác đã xử lý:** thay bằng email thật của chủ project (SMTP free tier của Supabase
+  chỉ gửi được tới email thành viên tổ chức → dùng email khác sẽ không nhận được mail reset).
+- **Trạng thái:** ✅ Đã triển khai & kiểm chứng (`npm run check:auth` 9/9, `check:schema` 14/14).
+
+### [2026-09-09] MB-11 — Chạy migration bằng Management API, KHÔNG cài Supabase CLI
+- **Quyết định:** `scripts/db-lib.mjs` + `scripts/db-migrate.mjs` gửi thẳng SQL tới
+  `POST https://api.supabase.com/v1/projects/{ref}/database/query` bằng `fetch` có sẵn của Node.
+- **Lý do (`ponytail`):** Supabase CLI là binary ~50MB, phải `supabase link`, phải nhập DB password
+  riêng — trong khi `SUPABASE_ACCESS_TOKEN` sẵn có đã chạy được SQL tuỳ ý (đã probe HTTP 201).
+- **Đánh đổi:** không có bảng lịch sử migration ⇒ **bù bằng luật: mọi file migration phải
+  IDEMPOTENT** (`if not exists`, `drop policy if exists`, `on conflict do nothing`,
+  `create or replace`, `cron.unschedule` trước `cron.schedule`). Đã chứng minh bằng cách chạy
+  `npm run db:migrate` nhiều lần liên tiếp, lần nào cũng xanh.
+- **Kiểm chứng phụ trước khi tin:** Management API **tôn trọng `begin … rollback`** (bảng probe
+  không sót lại) — đây là điều kiện để `npm run test:db` dám `truncate` rồi seed trên DB thật.
+- **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-09] MB-12 — 4 quyết định nghiệp vụ khi hiện thực `run_daily_maintenance()`
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Từ quá hạn nhiều ngày bị **phạt MỖI ngày bỏ lỡ** (điều kiện `next_review_date <= ngay_vua_qua`) | Đúng nghĩa đen §3.5; sàn 0 đã chặn kịch bản tệ nhất; phương án "phạt 1 lần" đòi thêm cột → lệch schema §2 |
+| **Q2** | Từ mới kích hoạt với `next_review_date = hôm_nay` (theo §5.1), **bỏ** cách hiểu "+1 ngày" của sơ đồ §3.1 | Spec tự mâu thuẫn. Cron chạy 01:00 sáng → mở app buổi sáng thấy từ mới ngay; chờ thêm 1 ngày không có lý do nghiệp vụ |
+| **Q3** | Thêm index **ngoài spec** `idx_review_log_reviewed_at on review_log (reviewed_at)` | §4.6 query `review_log` theo CẢ NGÀY; index `(vocab_id, reviewed_at)` sai cột dẫn đầu → quét toàn bảng |
+| **Q4** | `pg_cron` bật được bằng `create extension` qua Management API | Không cần người dùng bấm nút Dashboard |
+
+- **Đánh đổi đã biết & chấp nhận:** chốt chống-phạt-chồng dựa trên `updated_at`, nên từ được ôn
+  trong khung **00:00–01:00 giờ VN** (trước lúc cron chạy) sẽ không bị phạt cho ngày hôm trước.
+  Cửa sổ rất hiếm và lệch về phía **khoan dung** — đúng tinh thần sản phẩm. Đã ghi chú trong
+  `supabase/migrations/0005_maintenance.sql`.
+- **Trạng thái:** ✅ Đã hiện thực, phủ bởi 9 ca TDD.
+
+### [2026-09-09] MB-13 — 3 đính chính/lỗ hổng phát hiện khi làm M1
+1. **10 bảng, không phải 9.** `SPECIFICATION.md` §2 đánh số 9 nhóm nhưng nhóm 2 chứa 2 bảng
+   (`vocab` + `vocab_topics`). `systemPatterns.md` cũng đang ghi sai. **Đếm nhầm = bỏ sót
+   `vocab_topics` khi bật RLS** ⇒ hở toàn bộ quan hệ từ vựng ↔ chủ đề. Đã sửa memory bank;
+   mọi script/migration nay liệt kê tên bảng **tường minh**.
+2. **RLS lọc DÒNG, GRANT mở CỬA.** Bảng tạo qua Management API **không** được cấp quyền mặc định
+   cho `anon`/`authenticated` (chỉ `postgres` có). Bật RLS mà quên `grant` thì chính tài khoản của
+   mình cũng nhận `403 · 42501 permission denied`. Đã bổ sung `grant` **chỉ cho `authenticated`**;
+   `anon` không có quyền nào ⇒ bị chặn ngay tầng quyền, chặt hơn cả RLS.
+3. **`SECURITY DEFINER` + PostgREST RPC = lỗ hổng.** Hàm `run_daily_maintenance()` bypass RLS, mà
+   Postgres mặc định cấp `execute` cho `public` ⇒ ai có `anon key` cũng gọi được qua
+   `POST /rest/v1/rpc/run_daily_maintenance` để ép chạy vòng phạt điểm. Đã `revoke` khỏi
+   `public` / `anon` / `authenticated`; `check:schema` canh cổng bằng `has_function_privilege`.
+- **Trạng thái:** ✅ Cả 3 đã xử lý và có assertion tự động canh.
+
+### [2026-09-09] MB-14 — M2: 4 quyết định về Import
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Phạm vi M2 = **lõi + CLI**, KHÔNG UI | Màn Đăng nhập và màn Kết quả Import đều chưa có mockup. Làm lõi trước cho ra dữ liệu thật ngay để M3/M4 có cái chạy, mà không chạm màn nào chưa chốt |
+| **Q2** | **Tự viết `importValidate.ts`**, không cài `ajv` | JSON Schema không kiểm được tham chiếu chéo `temp_id` (§10.7 tự thừa nhận) ⇒ cài `ajv` vẫn phải viết lớp 2, thành 2 nguồn sự thật phải giữ đồng bộ. Port từ `validate_import.py` cho 1 nguồn duy nhất, 0 package |
+| **Q3** | **Hàm Postgres `import_topic()`** gọi qua `rpc()` | `supabase-js` không có transaction phía client; đây là cách duy nhất đạt đúng "tất cả-hoặc-không" (§10.4) |
+| **Q4** | Import trùng topic → **luôn tạo topic mới**, chỉ cảnh báo | Nhất quán tuyệt đối với DEC-21 (không merge, không ghi đè). Spec chỉ nói về từ vựng trùng, không nói về topic |
+
+**Phát hiện kỹ thuật quan trọng:** **Node v24 strip types native** ⇒ file `.mjs` import thẳng
+được `.ts`. Nhờ đó CLI và UI (phiên sau) **dùng chung đúng một file logic validate**, không phải
+viết 2 bản. Điều kiện: `package.json` có `"type": "module"` (đã có).
+
+**Bẫy đã xử lý trong `0007_import_topic.sql`:**
+1. `blank_b_vocab_id` nằm **lồng trong payload jsonb** — phải `jsonb_set` để dịch temp_id→uuid,
+   quên là Player không tìm ra "từ B" của Select/Fill Dialog.
+2. Hội thoại **đổi tên khoá**: file import dùng `highlight_vocab_temp_ids`, schema §2 dùng
+   `highlight_vocab_ids` (uuid) — vừa dịch giá trị vừa đổi tên khoá.
+3. temp_id không map được ⇒ `raise exception` tiếng Việt, không để `NULL` chui xuống.
+4. Import **phải tự tạo `word_state`** (`stage='new'`, `next_review_date = NULL`) — spec §10 không
+   nói, nhưng thiếu thì cron không bao giờ nhỏ giọt được từ mới.
+
+**Bài học về test:** ca I5 (lỗi giữa chừng → rollback) ban đầu **xanh giả** vì exception handler
+nuốt luôn lỗi "hàm không tồn tại". Đã siết lại: bắt `SQLERRM` vào bảng rồi assert nội dung thông
+báo. → Test bắt lỗi mà chỉ assert "không có gì xảy ra" thì có thể xanh vì lý do sai.
+
+**Trạng thái:** ✅ Đã hiện thực. `npm test` 27/27 · `npm run test:import` 6/6.
+
+### [2026-09-09] MB-15 — M3: 4 quyết định lấp chỗ hổng của spec về SRS
+| Mã | Vấn đề trong `SPECIFICATION.md` | **Chốt** |
+|---|---|---|
+| **Q1** | §3.2 **tự mâu thuẫn**: bảng liệt kê Matching + ghi `Max/vòng = 4`, nhưng dấu `*` nói Matching không tính điểm; §6.1 lại ghi Matching `+1` | **Matching CÓ tính điểm `+1`**, max vòng `new` = 4, ngưỡng 3/4 (được sai 1 bài). Nếu Matching không tính thì max = 3 mà ngưỡng cũng = 3 ⇒ buộc đúng 100%, trái tinh thần "không tạo áp lực" |
+| **Q2** | §3.4 dùng `max_điểm_có_thể_đạt_tới_thời_điểm_promote` nhưng **không chỗ nào định nghĩa** | Mẫu số = max **cộng dồn** các stage đã qua: **4 / 12 / 24 / 36** |
+| **Q3** | Không nói promote được xét lúc nào | **Sau khi từ làm xong bộ bài trong lượt** — khớp §4.2 (xong bộ bài mới biết thiếu bài nào để đẩy vào retry) |
+| **Q4** | Stage `intensive` **không có dòng nào** trong bảng điểm §3.2 | Dùng nguyên luật stage2: bài stage2, `+3`/bài, ngưỡng 9/12. Khác duy nhất: không promote, chỉ chờ `total_points ≥ 30` |
+
+**Giả định đã báo trước, không bị phản đối:** dùng gợi ý ở stage `new` được `1 × 50%` làm tròn
+xuống = **0 điểm** nhưng bài vẫn tính **ĐÃ ĐẠT** (không retry) — retry câu đã trả lời đúng là vô
+nghĩa; hình phạt nằm ở chỗ mất điểm nên khó chạm ngưỡng.
+
+**Quyết định kiến trúc — gộp `xuLyTraLoi` thành 1 hàm điều phối** thay vì tách `chamBai` +
+`ketThucLuot`: `stage_after` chỉ biết được SAU khi xét promote, tách đôi sẽ đẻ ra giao thức ngầm
+("gọi A rồi vá kết quả vào dòng log của B") rất dễ sai ở tầng gọi. Các helper vẫn export riêng
+(`diemChoBai` · `tinhHealth` · `gapFactor` · `tinhPhat` · `boBaiCua` · `diemGocCua` ·
+`xuLyFlashcard` · `gomSession`) để test từng luật độc lập.
+
+**2 test chống lệch — loại có giá trị nhất ở milestone này:**
+- **X1:** đọc `0005_maintenance.sql`, regex bảng phạt, so khớp với hằng số `PHAT` trong `srs.ts`.
+  Bảng phạt tồn tại **2 nơi** (SQL của M1 + TS của M3); sửa một nơi quên nơi kia thì không có gì
+  báo lỗi, điểm cứ âm thầm sai.
+- **X2:** `MAX_CYCLE[stage]` phải luôn `= số dạng bài × điểm mỗi bài`. Đây đúng là loại mâu thuẫn
+  đã xảy ra ở §3.2 (vụ Matching) — giờ có test canh.
+- **X1c:** đọc mã nguồn `srs.ts`, khẳng định không import React/Supabase/`node:` ⇒ giữ tính thuần.
+
+**Trạng thái:** ✅ `npm test` 58/58 · `srs.ts` không có lấy một dòng `import`.

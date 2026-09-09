@@ -120,7 +120,12 @@ Toàn app dùng **SVG path vẽ tay trích từ 2 file HTML** (`stroke-width` 1.
 - **Player ở PC:** shell giữ ~420–480px **căn giữa**, KHÔNG giãn full-width. Hội thoại max-width ~560px; Tổng kết phiên ~480px.
 - Dùng `min-h-[100dvh]`, KHÔNG dùng `h-screen` / `100vh`. Chia cột bằng CSS Grid, không tính phần trăm bằng flex.
 
-## 6. Mô hình dữ liệu (9 bảng — SQL đầy đủ ở `SPECIFICATION.md` §2)
+## 6. Mô hình dữ liệu (**10 bảng** — SQL đầy đủ ở `SPECIFICATION.md` §2)
+
+> ⚠️ **Đính chính 2026-09-09:** `SPECIFICATION.md` §2 đánh số **9 nhóm** nhưng nhóm 2 chứa
+> **2 bảng** (`vocab` + `vocab_topics`) → tổng thực tế là **10 bảng**. Bản cũ của file này ghi "9 bảng".
+> Đếm nhầm = bỏ sót `vocab_topics` khi bật RLS ⇒ hở toàn bộ quan hệ từ vựng ↔ chủ đề.
+> Mọi script/migration phải liệt kê tên bảng **tường minh**, không đếm theo trí nhớ.
 
 `topics` · `vocab` · `vocab_topics` (n-n) · `word_state` (lõi SRS, PK = `vocab_id`) · `daily_retry_queue` · `exercises` (payload JSONB + `ai_explanation` lazy-cache) · `review_log` (có `stage_before`/`stage_after`, ghi ở MỌI dòng) · `topic_dialogues` (1 topic = 1 hội thoại) · `notifications` · `settings` (key-value).
 
@@ -151,3 +156,68 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 - **Bí mật:** chỉ `VITE_SUPABASE_URL` và `VITE_SUPABASE_ANON_KEY` được phép lộ ra client. `OPENROUTER_API_KEY`, `GOOGLE_TTS_API_KEY`, `SUPABASE_ACCESS_TOKEN` **KHÔNG BAO GIỜ** gắn prefix `VITE_` (Vite ship thẳng ra browser). `.env.local` đã nằm trong `.gitignore` — giữ nguyên.
 - **Git:** agent TUYỆT ĐỐI không `git add` / `commit` / `push`. Trước khi báo xong phải có bằng chứng build/test xanh.
 - **Dọn process:** kết thúc task phải tắt mọi tiến trình nền do phiên tạo (dev server, Chrome headless, script node).
+
+## 9. Database — công cụ & luật bất biến (từ M1, 2026-09-09)
+
+| Lệnh | Tác dụng |
+|---|---|
+| `npm run db:migrate` | Chạy `supabase/migrations/*.sql` qua Supabase **Management API** (không dùng CLI) |
+| `npm run check:schema` | Nghiệm thu 14 mục: bảng/enum/index/RLS/policy/GRANT/cron + 2 phép thử RLS bằng HTTP thật |
+| `npm run test:db` | 9 ca TDD cho `run_daily_maintenance()`, chạy trong `begin…rollback` |
+| `npm run check:auth` | Kiểm chứng tài khoản duy nhất + `disable_signup` |
+| `npm run test:import` | 6 ca TDD cho `import_topic()`, cũng chạy trong `begin…rollback` |
+| `npm run import:file -- <file> [--dry-run]` | Nạp 1 file JSON thật; đăng nhập rồi gọi RPC như app |
+
+**4 luật không được phá:**
+1. **Mọi migration phải idempotent** — không có bảng lịch sử migration; tính idempotent là thứ thay thế nó.
+2. **RLS lọc DÒNG, GRANT mở CỬA** — bảng tạo qua Management API **không** tự có quyền cho
+   `anon`/`authenticated`. Bật RLS mà quên `grant` thì chính mình cũng nhận `403 42501`.
+   Chủ ý hiện tại: chỉ cấp cho `authenticated`, `anon` **không có quyền nào**.
+3. **CẤM `current_date` trong mọi hàm SQL có yếu tố ngày** — DB chạy **UTC**, cron chạy 18:00 UTC
+   = 01:00 sáng GMT+7 **ngày hôm sau**. Luôn dùng `(now() at time zone 'Asia/Ho_Chi_Minh')::date`.
+4. **Hàm `security definer` phải `revoke` khỏi `public`/`anon`/`authenticated`** — nếu không, ai có
+   `anon key` cũng gọi được qua `POST /rest/v1/rpc/<tên hàm>`.
+5. **Script Node import thẳng file `.ts` được** (Node v24 strip types native + `"type": "module"`).
+   ⇒ Logic dùng chung giữa CLI và UI chỉ viết **một bản** ở `src/lib/`. Lưu ý: `tsconfig.test.json`
+   phải có `allowImportingTsExtensions` thì `npm run build` mới không đỏ.
+6. **Script chạm dữ liệu thật phải đi qua đăng nhập + PostgREST**, KHÔNG dùng Management API.
+   Cửa Management chạy quyền `postgres` (bypass RLS) ⇒ chạy được cũng không chứng minh app sẽ
+   chạy được. Chỉ dùng Management API cho migration và test.
+
+## 10. Import — 3 bẫy đã trả giá (từ M2a, 2026-09-09)
+
+1. **`blank_b_vocab_id` nằm LỒNG trong payload jsonb.** Khi đổi `temp_id → uuid` phải `jsonb_set`
+   vào trong payload, không chỉ đổi `vocab_temp_id` ở ngoài. Quên = Player không tìm ra "từ B"
+   của Select/Fill Dialog (xem §7.2).
+2. **Hội thoại ĐỔI TÊN KHOÁ:** file import dùng `highlight_vocab_temp_ids`, cột `content` trong
+   DB dùng `highlight_vocab_ids` (uuid). Phải vừa dịch giá trị vừa đổi tên khoá.
+3. **Import phải tự tạo `word_state`** (`stage='new'`, `next_review_date = NULL`). Spec §10 không
+   nói, nhưng thiếu thì cron không bao giờ nhỏ giọt được từ mới.
+
+**Bài học về test:** ca kiểm "lỗi giữa chừng → rollback sạch" từng **xanh giả** vì exception
+handler nuốt luôn lỗi "hàm chưa tồn tại". Test bắt lỗi phải assert **nội dung thông báo lỗi**,
+không chỉ assert "không có gì xảy ra".
+
+## 11. SRS engine — luật bất biến (từ M3, 2026-09-09)
+
+`src/lib/srs.ts` là **hàm thuần 100%** — 0 dòng `import`. Không đọc đồng hồ hệ thống (ngày luôn
+truyền vào), không tự ghi DB — trả về "thay đổi cần áp dụng", tầng gọi (M4) mới persist.
+
+**API duy nhất M4 cần gọi:** `xuLyTraLoi({...})` → `{ trang_thai_moi, dong_review_log,
+vao_retry_queue }`. Cố tình gộp chấm bài + xét promote vào 1 hàm vì `stage_after` chỉ biết được
+sau khi xét promote — tách đôi sẽ đẻ ra giao thức ngầm dễ sai.
+
+**4 điểm cực dễ viết sai:**
+1. **`GAP_VAO_STAGE` gắn với stage ĐÍCH, không phải stage nguồn** (§3.1): lên stage1 → +2 ngày,
+   lên stage2 → +4, lên stage3 → +7. Hiểu nhầm là lệch toàn bộ lịch ôn của app.
+2. **Chưa đạt ngưỡng ⇒ `next_review_date` GIỮ NGUYÊN**, tuyệt đối không dời. Từ vẫn due,
+   lịch "tự lành" (§1.2). Chỉ khi promote mới cộng gap.
+3. **Sai KHÔNG phạt** (DEC-08) và **không bao giờ tụt stage** (DEC-09). Phạt chỉ đến từ cron
+   bỏ lỡ NGÀY ôn — logic đó nằm ở `0005_maintenance.sql`, KHÔNG lặp lại trong `srs.ts`.
+4. **Chỉ bài ĐẠT mới ghi vào `cycle_completed_exercises`** — retry chỉ chạy bài chưa đạt (§4.2).
+   Dùng gợi ý được 0 điểm nhưng VẪN tính là đạt.
+
+**Mẫu test đáng nhân rộng — test chống lệch:** khi một bảng hằng số tồn tại ở 2 nơi, viết test
+đọc cả 2 nơi rồi so khớp. Đã có 3 ca: **X1** (bảng phạt TS ↔ `0005_maintenance.sql`),
+**X2** (`MAX_CYCLE` = số dạng bài × điểm mỗi bài — đúng loại mâu thuẫn đã xảy ra ở §3.2),
+**X1c** (đọc mã nguồn `srs.ts` khẳng định không import React/Supabase/`node:`).
