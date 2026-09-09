@@ -1,2 +1,13 @@
+# Bí mật — TUYỆT ĐỐI không commit
 .env
 .env.local
+
+# Dependency & build output
+node_modules/
+dist/
+.vite/
+coverage/
+
+# Log & cache
+*.log
+.DS_Store

@@ -62,6 +62,41 @@ Ghi các quyết định có ảnh hưởng kiến trúc. DEC-01→DEC-23 đã c
 - **Đề xuất mặc định (sẽ hỏi lại trước khi viết migration M1):** bật Supabase Auth với đúng 1 tài khoản; RLS mọi bảng dạng `auth.uid() is not null` (không cần cột `user_id` vì single-user) — chặn được người lạ có `anon key` đọc/ghi dữ liệu, mà không phải sửa schema §2.
 - **Trạng thái:** 🟡 Chờ xác nhận ở đầu M1.
 
+### [2026-09-06] MB-07 — Tailwind v4 CSS-first + hệ token 4 tầng
+- **Quyết định:** dùng **Tailwind v4**, khai token bằng `@theme inline` ngay trong
+  `src/styles/tokens.css`. **KHÔNG có `tailwind.config.js`, KHÔNG có `postcss.config.js`.**
+- **Cấu trúc 4 tầng:** A = `--raw-*` hex thô (nơi DUY NHẤT sửa khi đổi phong cách) → B = `--vb-*`
+  ngữ nghĩa (3 nhánh light/dark) → C = `--ring-0..5` bất biến → D = `@theme inline` bắc cầu.
+- **Bắt buộc `@theme inline`, không phải `@theme`:** `@theme` thường SAO CHÉP giá trị vào utility
+  → màu bị đông cứng ở bản light, dark mode chết. Đã verify trong CSS build: cả 3 nhánh còn nguyên.
+- **Đặt tên `--vb-` cho Lớp 2:** Tailwind v4 chiếm namespace `--color-*`, nếu Lớp 2 dùng cùng tên
+  sẽ đụng nhau.
+- **Thang radius/font-size đặt tên bằng SỐ** (`rounded-14`, `text-15`): mockup dùng 11 mức radius
+  và 20 mức font-size, phần lớn KHÔNG có trong thang Tailwind mặc định. Đặt tên số = ánh xạ 1:1
+  với mockup, không bịa ngữ nghĩa. (Chỉ MÀU mới bắt buộc đi qua 2 lớp — `UI_DESIGN.md` §2.)
+- **Trạng thái:** ✅ Đã áp dụng, `npm run build` + `npm test` xanh.
+
+### [2026-09-06] MB-08 — Dark mode 3 nhánh, chưa có nút toggle
+- **Quyết định:** `tokens.css` viết đủ 3 nhánh — `:root` (light) · `@media (prefers-color-scheme:
+  dark) :root:not([data-theme="light"])` · `:root[data-theme="dark"]`.
+- **Mặc định chạy theo hệ điều hành, KHÔNG thêm UI nào** — mockup màn 17 (Cài đặt) không có nút
+  đổi theme, tự thêm là bịa UI ngoài mockup.
+- **Lý do vẫn viết sẵn nhánh 3:** sau này muốn nút toggle chỉ cần set `document.documentElement
+  .dataset.theme`, không phải viết lại toàn bộ token. Test canh 2 nhánh dark luôn phủ đúng cùng
+  một bộ token, không lệch.
+- **Trạng thái:** ✅ Đã chốt. Nếu người dùng muốn nút toggle ở màn Cài đặt → phải duyệt layout riêng.
+
+### [2026-09-06] MB-09 — Màu lấy bằng SCRIPT, cấm chép tay/suy đoán
+- **Quyết định:** mọi giá trị màu vào `tokens.css` phải đến từ `node scripts/extract-colors.mjs`
+  — script cắt 2 file HTML theo `data-screen-label`, tách 37 frame light / 37 frame dark rồi đếm riêng.
+- **Lý do (bằng chứng thật):** cặp `#B7AFC9` / `#55566A` xuất hiện đúng 30 lần mỗi mã trên **cùng
+  một selector**. Suy luận trực giác ("màu nhạt thì chắc dùng cho nền tối") cho kết quả **NGƯỢC**:
+  thực tế `#B7AFC9` là LIGHT, `#55566A` là DARK. Script cũng lấp được 2 ô mà `UI_DESIGN.md` §3 bỏ
+  trống: `border-input` dark = `#383C46`, `secondary` dark = `#7DD3FC`.
+- **Phát sinh:** xác định được **6 mã vỏ gallery** phải cấm (xem `systemPatterns.md` §3), trong đó
+  `#101116` và `#8B8F98` trước đó chưa ai biết là màu của trang trưng bày.
+- **Trạng thái:** ✅ Đã áp dụng, `src/styles/tokens.test.ts` tự động chặn 6 mã đó.
+
 ### [2026-08-23] MB-05 — Logic SRS tách khỏi UI
 - **Quyết định:** Toàn bộ SRS engine là hàm thuần trong `src/lib/srs.ts`, không import React/Supabase.
 - **Lý do:** `CLAUDE.md` Bước 3 bắt buộc TDD RED→GREEN→REFACTOR cho logic tính điểm/lên stage/gap/phạt/session — logic dính UI hoặc network thì không viết test nhỏ chạy nhanh được.

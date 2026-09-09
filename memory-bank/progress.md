@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-08-23**
+> Cập nhật lần cuối: **2026-09-06**
 
 ## ✅ Đã xong
 
@@ -11,13 +11,19 @@
 - [x] **Hạ tầng agent** — `CLAUDE.md` (quy trình 4 bước), 5 skill trong `.claude/skills/`, 6 slash command trong `.claude/commands/`.
 - [x] **Memory bank khởi tạo** (2026-08-23) — 5 file; `systemPatterns.md` viết lại từ đầu vì bản cũ là template dự án khác.
 
-## 🔜 Chưa làm — lộ trình (bám `SPECIFICATION.md` §14)
+- [x] **M0 — Nền móng dự án & Hệ token** (2026-09-06). Chi tiết ngay dưới.
 
-### M0 — Nền móng dự án
-- [ ] Scaffold Vite + React + TypeScript (strict) + Tailwind, `npm run build` xanh.
-- [ ] `src/styles/tokens.css` — Lớp 1 (raw hex trích từ HTML) + Lớp 2 (semantic), có cả dark mode 3 tầng nền.
-- [ ] Nạp 3 font (Baloo 2 / Be Vietnam Pro / Noto Sans SC), khai báo trong Tailwind config.
-- [ ] `src/lib/supabase.ts` + kiểm tra kết nối tới project Supabase thật.
+### ✅ M0 — Nền móng dự án (XONG 2026-09-06)
+- [x] Scaffold Vite 8 + React 19 + TS strict + Tailwind v4 + Vitest 5 + react-router — `npm run build` xanh.
+- [x] `src/styles/tokens.css` — **4 tầng**: Lớp 1 raw hex → Lớp 2 semantic (3 nhánh light/dark)
+      → Mastery Ring bất biến → `@theme inline` bắc cầu ra Tailwind.
+- [x] `scripts/extract-colors.mjs` — trích màu tách 37 frame light / 37 frame dark, **không đoán**.
+      Giải quyết được cặp `#B7AFC9`(light) / `#55566A`(dark) mà mắt thường suy luận ngược.
+- [x] `src/styles/tokens.test.ts` — 15 assertion canh cổng kiến trúc token (TDD RED→GREEN).
+- [x] 3 font qua CDN Google Fonts, 0 package. Thang radius 11 mức + font-size 20 mức theo mockup.
+- [x] `src/lib/supabase.ts` (client singleton) + `npm run check:db` — ping Supabase thật ✅.
+- [x] Trang swatch dev `/dev/tokens` — đã chụp đối chiếu light + dark.
+- [x] Dọn: `.gitignore` đầy đủ, xoá file demo của template, sửa lỗi `#FFF8F0` trong memory-bank.
 
 ### M1 — Database
 - [ ] Migration toàn bộ SQL §2 (9 bảng + 2 enum + index).
@@ -62,5 +68,6 @@
 |---|---|
 | Dashboard, ring Player, Quản lý từ vựng | 🔴 Bộ 6 icon cây chưa chốt (`activeContext.md` #1) |
 | ~~`ai.ts`, `tts.ts`~~ | ✅ Đã gỡ chặn — chốt gọi thẳng từ frontend (MB-04) |
-| RLS / migration bảo mật | 🟡 Chưa chốt có Supabase Auth hay không (#3, MB-06) |
+| ~~Kết nối Supabase~~ | ✅ Đã gỡ chặn 2026-09-06 — project khôi phục, `check:db` xanh |
+| RLS / migration bảo mật | 🟡 Chưa chốt có Supabase Auth hay không (#2, MB-06) |
 | Màn chọn topic, màn kết quả Import, các empty/loading/error state | 🟡 Chưa có mockup, cần duyệt layout trước khi code (#4) |

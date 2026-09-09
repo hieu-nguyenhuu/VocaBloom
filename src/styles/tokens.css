@@ -1,0 +1,410 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   VocaBloom — HỆ TOKEN 4 TẦNG
+   ----------------------------------------------------------------------------
+   Nguồn màu: VocaBloom_PCView.html + VocaBloom_MobileView.html (nguồn sự thật
+   cuối cùng, thắng UI_DESIGN.md và taste.md).
+   Cách trích: node scripts/extract-colors.mjs — cắt file theo data-screen-label,
+   tách 37 frame LIGHT / 37 frame DARK rồi đếm riêng từng nhóm. KHÔNG chép tay,
+   KHÔNG suy đoán mã nào thuộc mode nào.
+
+   TẦNG A — Lớp 1: hex thô. NƠI DUY NHẤT sửa khi đổi phong cách toàn app.
+   TẦNG B — Lớp 2: token ngữ nghĩa + 3 nhánh light/dark.
+   TẦNG C — Mastery Ring: 6 mã bất biến, KHÔNG đi qua Lớp 1/2 (DEC-12).
+   TẦNG D — Bắc cầu ra Tailwind + thang radius/font-size/font-family.
+
+   LUẬT: component CHỈ dùng utility (bg-accent, text-content-muted).
+         CẤM viết hex, CẤM var(--raw-*), CẤM bg-[#5B4FE8].
+   ========================================================================== */
+
+/* ============================================================================
+   === TẦNG A · LỚP 1 — HEX THÔ
+   ========================================================================== */
+:root {
+  /* --- Bộ LIGHT --- */
+  --raw-white: #ffffff;
+  --raw-cream-50: #fbfaf6;
+  --raw-cream-100: #f5f3ec;
+  --raw-cream-200: #ede7da;
+  --raw-cream-border: #f0ece4;
+  --raw-cream-border-2: #e3dccb;
+  --raw-cream-divider: #dcd6cc;
+  --raw-cream-faint: #c7c1b6;
+  --raw-grey-200: #e5e5e5;
+  --raw-ink-900: #241b3a;
+  --raw-ink-700: #4a4458;
+  --raw-ink-500: #8b8593;
+  --raw-lavender-300: #b7afc9;
+  --raw-lavender-200: #dcd3ea;
+  --raw-lavender-100: #c9c1e8;
+  --raw-purple-500: #5b4fe8;
+  --raw-purple-700: #4338ca;
+  --raw-purple-100: #edebfc;
+  --raw-blue-700: #0369a1;
+  --raw-blue-100: #e3f4fd;
+  --raw-pink-500: #e0449e;
+  --raw-pink-800: #a21467;
+  --raw-pink-100: #fce4f1;
+  --raw-red-100: #fee2e2;
+  --raw-red-700: #b91c1c;
+  --raw-yellow-100: #fef9c3;
+  --raw-yellow-800: #946200;
+  --raw-green-100: #dcfce7;
+  --raw-green-700: #15803d;
+  --raw-green-800: #166534;
+  --raw-orange-100: #ffedd5;
+  --raw-lime-100: #ecfccb;
+
+  /* --- Bộ DARK (3 tầng nền: app → sidebar → page) --- */
+  --raw-d-app: #15171c;
+  --raw-d-sidebar: #17191e;
+  --raw-d-sunken: #1b1e24;
+  --raw-d-card: #1e2128;
+  --raw-d-page: #22252c;
+  --raw-d-raised: #23262c;
+  --raw-d-border: #2a2d35;
+  --raw-d-border-2: #33373f;
+  --raw-d-divider: #383a42;
+  --raw-d-border-input: #383c46;
+  --raw-d-border-dot: #3a3e4a;
+  --raw-d-text: #edeef0;
+  --raw-d-nav: #c4c2cc;
+  --raw-d-muted: #9a9ba8;
+  --raw-d-subtle: #55566a;
+  --raw-d-faint: #55565e;
+  --raw-d-purple: #8b80ff;
+  --raw-d-purple-text: #c7bfff;
+  --raw-d-purple-tint: #262148;
+  --raw-d-purple-dashed: #4a4470;
+  --raw-d-blue: #7dd3fc;
+  --raw-d-blue-tint: #12303d;
+  --raw-d-pink: #f472b6;
+  --raw-d-pink-text: #f9a8d4;
+  --raw-d-pink-tint: #3a1830;
+  --raw-d-red-tint: #3b1f1f;
+  --raw-d-red-text: #fca5a5;
+  --raw-d-yellow-tint: #3a330f;
+  --raw-d-yellow-text: #f3d17a;
+  --raw-d-green-tint: #113322;
+  --raw-d-green-text: #86efac;
+  --raw-d-green-strong: #6ee7a0;
+  --raw-d-orange-tint: #3a2712;
+  --raw-d-lime-tint: #2c3314;
+
+  /* --- Dùng chung 2 mode (script xác nhận L=D tuyệt đối) --- */
+  --raw-red-500: #ef4444;
+  --raw-yellow-500: #eab308;
+  --raw-green-500: #4ade80;
+}
+
+/* ============================================================================
+   === TẦNG B · LỚP 2 — TOKEN NGỮ NGHĨA
+   Nhánh 1: :root                                  → light (mặc định)
+   Nhánh 2: @media prefers-color-scheme + :not()   → dark theo hệ điều hành
+   Nhánh 3: :root[data-theme="dark"]               → dark ép thủ công
+   (Nhánh 3 tồn tại để sau này thêm nút đổi theme mà không phải viết lại token.)
+   ========================================================================== */
+:root {
+  /* Bề mặt */
+  --vb-surface-app: var(--raw-white);
+  --vb-surface-page: var(--raw-white);
+  --vb-surface-sidebar: var(--raw-cream-50);
+  --vb-surface-card: var(--raw-cream-50);
+  --vb-surface-raised: var(--raw-white);
+  --vb-surface-sunken: var(--raw-cream-100);
+
+  /* Viền */
+  --vb-border-card: var(--raw-cream-border);
+  --vb-border-subtle: var(--raw-cream-border-2);
+  --vb-border-divider: var(--raw-cream-divider);
+  --vb-border-input: var(--raw-grey-200);
+  --vb-border-dot: var(--raw-lavender-200);
+  --vb-border-dashed: var(--raw-lavender-100);
+
+  /* Chữ */
+  --vb-content-primary: var(--raw-ink-900);
+  --vb-content-nav: var(--raw-ink-700);
+  --vb-content-muted: var(--raw-ink-500);
+  --vb-content-subtle: var(--raw-lavender-300);
+  --vb-content-faint: var(--raw-cream-faint);
+
+  /* Accent chính — TÍM: mọi hành động chính */
+  --vb-accent: var(--raw-purple-500);
+  --vb-accent-text: var(--raw-purple-700);
+  --vb-accent-tint: var(--raw-purple-100);
+
+  /* Accent phụ — XANH DƯƠNG: chỉ hành động thứ hai ("Ôn theo chủ đề") */
+  --vb-secondary: var(--raw-blue-700);
+  --vb-secondary-tint: var(--raw-blue-100);
+
+  /* Trang trí — HỒNG: chỉ streak/thành tích, CẤM đặt trên phần tử click được */
+  --vb-award-icon: var(--raw-pink-500);
+  --vb-award-text: var(--raw-pink-800);
+  --vb-award-bg: var(--raw-pink-100);
+
+  /* Feedback — sai (không phạt điểm, chỉ báo sai) */
+  --vb-danger: var(--raw-red-500);
+  --vb-danger-bg: var(--raw-red-100);
+  --vb-danger-text: var(--raw-red-700);
+
+  /* Feedback — gợi ý / quá hạn (dùng vàng, KHÔNG dùng đỏ) */
+  --vb-warn: var(--raw-yellow-500);
+  --vb-warn-bg: var(--raw-yellow-100);
+  --vb-warn-text: var(--raw-yellow-800);
+
+  /* Feedback — đúng / lên stage */
+  --vb-success: var(--raw-green-500);
+  --vb-success-bg: var(--raw-green-100);
+  --vb-success-text: var(--raw-green-700);
+  --vb-success-strong: var(--raw-green-800);
+
+  /* Tint phụ trợ */
+  --vb-tint-orange: var(--raw-orange-100);
+  --vb-tint-lime: var(--raw-lime-100);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --vb-surface-app: var(--raw-d-app);
+    --vb-surface-page: var(--raw-d-page);
+    --vb-surface-sidebar: var(--raw-d-sidebar);
+    --vb-surface-card: var(--raw-d-card);
+    --vb-surface-raised: var(--raw-d-raised);
+    --vb-surface-sunken: var(--raw-d-sunken);
+
+    --vb-border-card: var(--raw-d-border);
+    --vb-border-subtle: var(--raw-d-border-2);
+    --vb-border-divider: var(--raw-d-divider);
+    --vb-border-input: var(--raw-d-border-input);
+    --vb-border-dot: var(--raw-d-border-dot);
+    --vb-border-dashed: var(--raw-d-purple-dashed);
+
+    --vb-content-primary: var(--raw-d-text);
+    --vb-content-nav: var(--raw-d-nav);
+    --vb-content-muted: var(--raw-d-muted);
+    --vb-content-subtle: var(--raw-d-subtle);
+    --vb-content-faint: var(--raw-d-faint);
+
+    --vb-accent: var(--raw-d-purple);
+    --vb-accent-text: var(--raw-d-purple-text);
+    --vb-accent-tint: var(--raw-d-purple-tint);
+
+    --vb-secondary: var(--raw-d-blue);
+    --vb-secondary-tint: var(--raw-d-blue-tint);
+
+    --vb-award-icon: var(--raw-d-pink);
+    --vb-award-text: var(--raw-d-pink-text);
+    --vb-award-bg: var(--raw-d-pink-tint);
+
+    --vb-danger: var(--raw-red-500);
+    --vb-danger-bg: var(--raw-d-red-tint);
+    --vb-danger-text: var(--raw-d-red-text);
+
+    --vb-warn: var(--raw-yellow-500);
+    --vb-warn-bg: var(--raw-d-yellow-tint);
+    --vb-warn-text: var(--raw-d-yellow-text);
+
+    --vb-success: var(--raw-green-500);
+    --vb-success-bg: var(--raw-d-green-tint);
+    --vb-success-text: var(--raw-d-green-text);
+    --vb-success-strong: var(--raw-d-green-strong);
+
+    --vb-tint-orange: var(--raw-d-orange-tint);
+    --vb-tint-lime: var(--raw-d-lime-tint);
+  }
+}
+
+:root[data-theme='dark'] {
+  --vb-surface-app: var(--raw-d-app);
+  --vb-surface-page: var(--raw-d-page);
+  --vb-surface-sidebar: var(--raw-d-sidebar);
+  --vb-surface-card: var(--raw-d-card);
+  --vb-surface-raised: var(--raw-d-raised);
+  --vb-surface-sunken: var(--raw-d-sunken);
+
+  --vb-border-card: var(--raw-d-border);
+  --vb-border-subtle: var(--raw-d-border-2);
+  --vb-border-divider: var(--raw-d-divider);
+  --vb-border-input: var(--raw-d-border-input);
+  --vb-border-dot: var(--raw-d-border-dot);
+  --vb-border-dashed: var(--raw-d-purple-dashed);
+
+  --vb-content-primary: var(--raw-d-text);
+  --vb-content-nav: var(--raw-d-nav);
+  --vb-content-muted: var(--raw-d-muted);
+  --vb-content-subtle: var(--raw-d-subtle);
+  --vb-content-faint: var(--raw-d-faint);
+
+  --vb-accent: var(--raw-d-purple);
+  --vb-accent-text: var(--raw-d-purple-text);
+  --vb-accent-tint: var(--raw-d-purple-tint);
+
+  --vb-secondary: var(--raw-d-blue);
+  --vb-secondary-tint: var(--raw-d-blue-tint);
+
+  --vb-award-icon: var(--raw-d-pink);
+  --vb-award-text: var(--raw-d-pink-text);
+  --vb-award-bg: var(--raw-d-pink-tint);
+
+  --vb-danger: var(--raw-red-500);
+  --vb-danger-bg: var(--raw-d-red-tint);
+  --vb-danger-text: var(--raw-d-red-text);
+
+  --vb-warn: var(--raw-yellow-500);
+  --vb-warn-bg: var(--raw-d-yellow-tint);
+  --vb-warn-text: var(--raw-d-yellow-text);
+
+  --vb-success: var(--raw-green-500);
+  --vb-success-bg: var(--raw-d-green-tint);
+  --vb-success-text: var(--raw-d-green-text);
+  --vb-success-strong: var(--raw-d-green-strong);
+
+  --vb-tint-orange: var(--raw-d-orange-tint);
+  --vb-tint-lime: var(--raw-d-lime-tint);
+}
+
+/* ============================================================================
+   === TẦNG C · MASTERY RING — BẤT BIẾN
+   6 mã gắn thẳng với Ý NGHĨA DỮ LIỆU (điểm số), không phải phong cách thị giác.
+   KHÔNG đi qua Lớp 1/2. KHÔNG đổi giữa light/dark — script đã xác nhận cả 6 mã
+   xuất hiện với số lần bằng nhau tuyệt đối ở 2 mode.
+   Ring % = min(total_points, 30) / 30  (DEC-12, SPECIFICATION.md §12)
+   ========================================================================== */
+:root {
+  --ring-0: #ef4444;
+  --ring-1: #f97316;
+  --ring-2: #eab308;
+  --ring-3: #a3e635;
+  --ring-4: #4ade80;
+  --ring-5: #16a34a;
+}
+
+/* ============================================================================
+   === TẦNG D · BẮC CẦU RA TAILWIND
+   Bắt buộc dùng `@theme inline`: `@theme` thường sẽ SAO CHÉP giá trị vào utility
+   → dark mode chết vì màu bị đông cứng ở bản light.
+   ========================================================================== */
+@theme inline {
+  /* Bề mặt */
+  --color-surface-app: var(--vb-surface-app);
+  --color-surface-page: var(--vb-surface-page);
+  --color-surface-sidebar: var(--vb-surface-sidebar);
+  --color-surface-card: var(--vb-surface-card);
+  --color-surface-raised: var(--vb-surface-raised);
+  --color-surface-sunken: var(--vb-surface-sunken);
+
+  /* Viền */
+  --color-border-card: var(--vb-border-card);
+  --color-border-subtle: var(--vb-border-subtle);
+  --color-border-divider: var(--vb-border-divider);
+  --color-border-input: var(--vb-border-input);
+  --color-border-dot: var(--vb-border-dot);
+  --color-border-dashed: var(--vb-border-dashed);
+
+  /* Chữ */
+  --color-content-primary: var(--vb-content-primary);
+  --color-content-nav: var(--vb-content-nav);
+  --color-content-muted: var(--vb-content-muted);
+  --color-content-subtle: var(--vb-content-subtle);
+  --color-content-faint: var(--vb-content-faint);
+
+  /* Accent */
+  --color-accent: var(--vb-accent);
+  --color-accent-text: var(--vb-accent-text);
+  --color-accent-tint: var(--vb-accent-tint);
+  --color-secondary: var(--vb-secondary);
+  --color-secondary-tint: var(--vb-secondary-tint);
+  --color-award-icon: var(--vb-award-icon);
+  --color-award-text: var(--vb-award-text);
+  --color-award-bg: var(--vb-award-bg);
+
+  /* Feedback */
+  --color-danger: var(--vb-danger);
+  --color-danger-bg: var(--vb-danger-bg);
+  --color-danger-text: var(--vb-danger-text);
+  --color-warn: var(--vb-warn);
+  --color-warn-bg: var(--vb-warn-bg);
+  --color-warn-text: var(--vb-warn-text);
+  --color-success: var(--vb-success);
+  --color-success-bg: var(--vb-success-bg);
+  --color-success-text: var(--vb-success-text);
+  --color-success-strong: var(--vb-success-strong);
+  --color-tint-orange: var(--vb-tint-orange);
+  --color-tint-lime: var(--vb-tint-lime);
+
+  /* Mastery Ring — dùng qua utility: text-ring-3, bg-ring-5... */
+  --color-ring-0: var(--ring-0);
+  --color-ring-1: var(--ring-1);
+  --color-ring-2: var(--ring-2);
+  --color-ring-3: var(--ring-3);
+  --color-ring-4: var(--ring-4);
+  --color-ring-5: var(--ring-5);
+
+  /* Font (UI_DESIGN.md §4) */
+  --font-display: 'Baloo 2', system-ui, sans-serif;
+  --font-body: 'Be Vietnam Pro', system-ui, sans-serif;
+  --font-han: 'Noto Sans SC', system-ui, sans-serif;
+
+  /* Radius — 11 mức trích từ mockup (10px và 14px dùng nhiều nhất) */
+  --radius-8: 8px;
+  --radius-9: 9px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-14: 14px;
+  --radius-16: 16px;
+  --radius-18: 18px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-36: 36px;
+  --radius-pill: 99px;
+
+  /* Font-size — 20 mức trích từ mockup */
+  --text-10: 10px;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-19: 19px;
+  --text-20: 20px;
+  --text-22: 22px;
+  --text-24: 24px;
+  --text-26: 26px;
+  --text-28: 28px;
+  --text-30: 30px;
+  --text-36: 36px;
+  --text-40: 40px;
+  --text-44: 44px;
+  --text-52: 52px;
+}
+
+/* Biến thể `dark:` — hiếm khi cần (token ở TẦNG B đã tự đổi theo mode), giữ lại
+   cho các trường hợp không biểu diễn được bằng token, ví dụ đổi opacity/shadow. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme='light'], [data-theme='light'] *)) {
+      @slot;
+    }
+  }
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--vb-surface-page);
+    color: var(--vb-content-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Mọi nội dung chữ Hán dùng Noto Sans SC — ưu tiên rõ nét sư phạm (UI_DESIGN.md §4) */
+  :lang(zh) {
+    font-family: var(--font-han);
+  }
+}

@@ -1,42 +1,69 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-08-23**
+> Cập nhật lần cuối: **2026-09-06** (kết thúc M0)
 
 ## Trạng thái hiện tại
 
-Dự án đang ở **Ngày 0 — mới có tài liệu, chưa có 1 dòng code app nào.**
+**M0 (Nền móng dự án & Hệ token) — ✅ HOÀN THÀNH.**
 
-Repo hiện chỉ chứa: tài liệu đặc tả (`SPECIFICATION.md`, `UI_DESIGN.md`), 2 file mockup HTML, bộ skill `.claude/`, skill sinh dữ liệu import `import_csv_vocab/`, và `memory-bank/` vừa khởi tạo. **Chưa có `package.json`, chưa scaffold Vite/React/Tailwind, chưa có project Supabase nào được migrate.**
+Repo đã chạy được: Vite 8 + React 19 + TypeScript strict + Tailwind v4 + Vitest 5 + react-router,
+hệ token 4 tầng dựng xong từ màu trích thật, và đã ping thành công Supabase thật.
 
-## Trọng tâm phiên hiện tại
+### Bằng chứng nghiệm thu (đều đã chạy, không phải "về logic thì đúng")
+| Lệnh | Kết quả |
+|---|---|
+| `npm run build` | ✅ xanh — 76 module, CSS 20.63 kB, JS 234.99 kB |
+| `npm test` | ✅ 15/15 pass (test canh cổng token) |
+| `npm run check:db` | ✅ auth HTTP 200 + REST nhận anon key |
+| `/dev/tokens` | ✅ đã chụp cả light lẫn dark, đối chiếu khớp mockup |
 
-- [x] Đọc toàn bộ `.claude/skills/` + toàn bộ tài liệu repo.
-- [x] Khởi tạo 5 file `memory-bank/` (productContext, systemPatterns, activeContext, progress, decisionLog).
-- [ ] Chờ người dùng chốt các câu hỏi mở bên dưới trước khi bước vào Bước 1 (Brainstorm) của milestone đầu tiên.
+### Supabase — đã thông hoàn toàn (2026-09-06)
+- Project `myjdweopndizbhexqufo` · region `ap-southeast-1` · status `ACTIVE_HEALTHY`.
+- **Bối cảnh:** đầu phiên project ở trạng thái bị pause/thu hồi (DNS trả `Non-existent domain`,
+  access token 401). Người dùng đã khôi phục project và tạo lại access token trong phiên.
+- `.env.local`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_ACCESS_TOKEN` đều hợp lệ.
+- Query `vocab` trả `PGRST205` — **đúng như mong đợi**, schema trống vì migration nằm ở M1.
 
-## Việc kế tiếp (đề xuất, theo `SPECIFICATION.md` §14)
+## Việc kế tiếp — M1 (Database)
 
-1. Scaffold Vite + React + TS + Tailwind, dựng `tokens.css` 2 lớp từ bảng màu thật.
-2. Migration DB — toàn bộ SQL §2.
-3. `run_daily_maintenance()` + đăng ký `pg_cron`.
-4. Import validator + luồng Import (phải có trước, không có dữ liệu thì không test được gì khác).
-5. SRS engine (hàm thuần, TDD).
+1. **Chốt Auth & RLS trước khi viết migration** (xem MB-06 + câu hỏi mở #2 bên dưới).
+2. Migration toàn bộ SQL `SPECIFICATION.md` §2 — 9 bảng + 2 enum + index.
+3. `run_daily_maintenance()` (§5, 5 bước) + đăng ký `pg_cron` 18:00 UTC.
+
+Sau M1 là M2 (Import) — làm sớm vì không có dữ liệu thì không test được gì khác.
 
 ## ⚠️ Câu hỏi mở — CẦN NGƯỜI DÙNG TRẢ LỜI
 
-1. **🔴 Bộ 6 icon giai đoạn cây chưa chốt.** SVG trong 2 file HTML mới là bản nháp; người dùng muốn bộ icon "thật mắt và đồng bộ" hơn. Chặn mọi task chạm Dashboard / ring Player / Quản lý từ vựng.
-2. ~~API key gọi từ đâu?~~ ✅ **ĐÃ CHỐT 2026-08-23: gọi thẳng từ frontend**, không dựng Edge Function proxy. Key đọc từ bảng `settings` (xem MB-04).
-3. **🟡 Auth & RLS** (chưa chốt, chỉ cần trước khi viết migration M1). `.env.local` có `EMAIL`/`PASSWORD` → có vẻ định dùng Supabase Auth 1 tài khoản. Đề xuất mặc định: bật Auth 1 tài khoản + RLS `auth.uid() is not null` trên mọi bảng (không cần thêm cột `user_id`). Xem MB-06.
-4. **🟡 Màn hình chưa có mockup.** 2 file HTML không có: màn chọn topic để "Ôn theo chủ đề", màn kết quả sau Import (§10.4 bước "Kết quả"), trạng thái rỗng/loading/lỗi của các màn. Theo `CLAUDE.md`, phải trình bày & chờ xác nhận trước khi tự dựng layout mới.
-5. **🟡 Skill `vocab-csv-to-import` nằm ở `import_csv_vocab/` (gốc repo), không ở `.claude/skills/`** → Claude Code không tự nạp được. Có muốn chuyển vào `.claude/skills/vocab-csv-to-import/` để gọi được không?
-6. **🟢 `support.js`** được 2 file HTML tham chiếu nhưng không có trong repo — xác nhận không cần (chỉ phục vụ cuộn gallery).
+1. **🔴 Bộ 6 icon giai đoạn cây chưa chốt.** SVG trong 2 file HTML mới là bản nháp; người dùng
+   muốn bộ icon "thật mắt và đồng bộ" hơn. Chặn mọi task chạm Dashboard / ring Player / Quản lý
+   từ vựng. **M0 không bị ảnh hưởng** (không render icon nào).
+2. **🟡 Auth & RLS — chặn M1.** Đề xuất mặc định: bật Supabase Auth 1 tài khoản + RLS
+   `auth.uid() is not null` trên mọi bảng (không thêm cột `user_id` vì single-user). Xem MB-06.
+3. **🟡 Biến `EMAIL` trong `.env.local` chỉ có 1 ký tự** — gần như chắc chắn là giá trị rác.
+   Liên quan trực tiếp câu 2, cần làm rõ khi chốt Auth.
+4. **🟡 Màn hình chưa có mockup:** màn chọn topic để "Ôn theo chủ đề", màn kết quả sau Import
+   (§10.4), trạng thái rỗng/loading/lỗi. Phải trình bày & chờ duyệt trước khi tự dựng layout.
+5. **🟡 Skill `vocab-csv-to-import` nằm ở `import_csv_vocab/`** (gốc repo), không ở
+   `.claude/skills/` → Claude Code không tự nạp được. Có chuyển vào không?
 
-## Sai lệch tài liệu đã phát hiện (đã ghi nhận, không tự sửa file gốc)
+## Ghi chú kỹ thuật cần nhớ cho phiên sau
 
-- `UI_DESIGN.md` gọi mockup là `PcView.html` / `MobileView.html`; **tên thật** là `VocaBloom_PCView.html` / `VocaBloom_MobileView.html`.
-- `UI_DESIGN.md` ghi "8 màn hình" ở §8 và "36-38 khung" ở §3; **số thật**: PC 18 màn (36 khung), Mobile 19 màn (38 khung).
-- `memory-bank/systemPatterns.md` bản cũ là template của dự án khác (Convex Cloud, "Mục tiêu tiết kiệm") → **đã viết lại toàn bộ**.
+- **Component CHỈ dùng utility Tailwind** (`bg-accent`, `text-content-muted`). Cấm hex, cấm
+  `var(--raw-*)`, cấm `bg-[#5B4FE8]`. Test `tokens.test.ts` canh một phần luật này.
+- **Class Tailwind phải là chuỗi nguyên vẹn trong mã nguồn** — ghép động (`bg-${x}`) sẽ không
+  sinh ra CSS. Trong `TokenSheet.tsx` đã phải liệt kê class dạng mảng chuỗi vì lý do này.
+- **Thang radius/font-size đặt tên bằng SỐ** (`rounded-14`, `text-15`), không phải `rounded-xl`
+  — vì mockup dùng 11 mức radius và 20 mức font-size, phần lớn không có trong thang Tailwind.
+- `scripts/extract-colors.mjs` chạy lại được bất cứ lúc nào để đối chiếu màu với mockup.
+
+## Sai lệch tài liệu đã phát hiện (ghi nhận, không tự sửa file gốc của người dùng)
+
+- `UI_DESIGN.md` gọi mockup là `PcView.html` / `MobileView.html`; **tên thật** là
+  `VocaBloom_PCView.html` / `VocaBloom_MobileView.html`.
+- `UI_DESIGN.md` ghi "8 màn hình" ở §8; **số thật**: PC 18 màn, Mobile 19 màn.
+- `systemPatterns.md` từng ghi card bài tập là `#FFF8F0` — **mã không tồn tại**, đã sửa thành
+  `#FFFFFF` (2026-09-06).
 
 ## Blockers
 
-Không có blocker cho **M0 (scaffold + hệ token)** — sẵn sàng bắt đầu. Còn chờ: câu 1 (icon cây) chặn các màn có ring; câu 3 (Auth/RLS) chặn migration M1; câu 4 chặn các màn chưa có mockup.
+Không có blocker cho việc tiếp tục. M1 cần trả lời câu hỏi #2 (Auth/RLS) trước khi viết migration.

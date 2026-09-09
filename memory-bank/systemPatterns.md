@@ -7,8 +7,9 @@
 
 | Lớp | Công nghệ | Ghi chú |
 |---|---|---|
-| Frontend | **React + Vite** | Chưa scaffold (tính đến 2026-08-23 repo chưa có `package.json`) |
-| Styling | **Tailwind CSS** | Bắt buộc đi qua kiến trúc token 2 lớp ở §4 |
+| Frontend | **React 19 + Vite 8** | ✅ Đã scaffold 2026-09-06 (M0). TS strict + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` |
+| Styling | **Tailwind CSS v4** (CSS-first) | ✅ `src/styles/tokens.css` 4 tầng. KHÔNG có `tailwind.config.js` — token khai bằng `@theme inline` ngay trong CSS (MB-07) |
+| Test | **Vitest 5** | `npm test`. Test chạy trong Node → tách `tsconfig.test.json`, app giữ thuần browser |
 | Backend/DB | **Supabase** (Postgres + Storage + pg_cron) | KHÔNG phải Convex |
 | AI chấm bài + giải thích | **OpenRouter** | Model + API key do người dùng cấu hình ở màn Cài đặt (lưu bảng `settings`) |
 | TTS | **Google Cloud TTS** giọng `cmn-CN-Neural2-*` | Gọi 1 lần/từ sau Import, cache mp3 vào Supabase Storage |
@@ -50,6 +51,24 @@
 
 **Bắt buộc:** giá trị cụ thể (hex, spacing, radius) không có trong `UI_DESIGN.md` §3/§9 → **trích thẳng từ file HTML** (grep hex / parse thuộc tính style), KHÔNG suy đoán từ màu gần giống.
 
+> ⚠️ **Đính chính 2026-09-06:** bảng màu bản cũ ghi card bài tập là `#FFF8F0` — **mã này KHÔNG tồn tại**
+> trong cả 2 file HTML (đã grep toàn bộ). Card bài tập màn 02 thật dùng `#FFFFFF` + `#FBFAF6`.
+
+### 🚫 6 mã màu VỎ GALLERY — cấm đưa vào token
+Đây là màu của **trang trưng bày mockup**, không phải màu app. Bằng chứng đếm được
+(`node scripts/extract-colors.mjs`, đã tách 37 frame light / 37 frame dark):
+
+| Mã | Bằng chứng | Thực chất |
+|---|---|---|
+| `#8B7FA8` | đúng 37 light + 37 dark, luôn `color:` | nhãn `01 · Dashboard` trên mỗi khung |
+| `#EFEAE0` | 38 lần `border:1px solid`, 0 lần ở dark | viền khung 1280×800 (1 lần còn lại là panel thật → dùng `--vb-border-card`) |
+| `#F3F0E9` | 2 lần, `background` ngoài cùng | nền trang gallery |
+| `#E6E0D2` | 2 lần, `border-bottom` header | viền header gallery |
+| `#101116` | 2 lần, `background` | dải nền bọc khu vực dark |
+| `#8B8F98` | 2 lần, `color` | dòng chú thích "Cùng 18 màn, chỉ khác..." |
+
+`src/styles/tokens.test.ts` tự động chặn 6 mã này — không cần nhớ thủ công.
+
 **Lưu ý khi đọc 2 file HTML:**
 - Khung `1280×800` + `box-shadow` bọc ngoài mỗi màn = vỏ gallery, **không copy vào app**.
 - Toàn bộ màu là **inline style**, không có biến CSS → phải tự dựng lại theo token 2 lớp (§4).
@@ -68,7 +87,7 @@ Lớp 1 = giá trị hex thô (nơi DUY NHẤT sửa khi đổi phong cách). L�
 | Nền content | `#FFFFFF` | `#22252C` |
 | Nền sidebar | `#FBFAF6` | `#17191E` |
 | Nền khung app ngoài | — | `#15171C` |
-| Nền card | `#FBFAF6` · `#FFF8F0` (card bài tập) | `#1E2128` |
+| Nền card | `#FBFAF6` · `#FFFFFF` (card bài tập) | `#1E2128` |
 | Viền card | `#F0ECE4` | `#2A2D35` |
 | Viền input/đáp án trung tính | `#E5E5E5` | *(trích từ file)* |
 | Chữ chính / phụ | `#241B3A` / `#8B8593` | `#EDEEF0` / `#9A9BA8` |
