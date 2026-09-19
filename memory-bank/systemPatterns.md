@@ -110,7 +110,7 @@ Lớp 1 = giá trị hex thô (nơi DUY NHẤT sửa khi đổi phong cách). L�
 ### Icon
 Toàn app dùng **SVG path vẽ tay trích từ 2 file HTML** (`stroke-width` 1.7–1.8, `stroke-linecap:round`). **Không trộn icon font** (Lucide/Tabler/Phosphor). Icon phiên âm giữ nguyên ký tự **"拼"**, không đổi sang eye-icon generic. Trạng thái "đang bật phiên âm" chưa có trong mockup → tự quyết khi code (gợi ý: đổi sang accent tím).
 
-> 🔴 **GATE — bộ 6 icon giai đoạn cây CHƯA CHỐT.** SVG hiện có trong khối "Khu vườn của bạn" chỉ là bản nháp. Khi code chạm Dashboard / ring Player / Quản lý từ vựng: **DỪNG, đề xuất phương án icon, chờ người dùng xác nhận** — không tự dùng path hiện có làm bản chính thức.
+> ✅ **Bộ 6 icon giai đoạn cây ĐÃ CHỐT 2026-09-16 (MB-19)** — dùng `IconCay({ stage, size })` trong `src/components/icons.tsx`, KHÔNG dùng SVG nháp trong 2 file HTML (đã lỗi thời). Gate MB-03 gỡ.
 
 ## 5. Responsive
 

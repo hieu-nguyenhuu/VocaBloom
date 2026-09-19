@@ -15,7 +15,8 @@
     "check:schema": "node scripts/check-schema.mjs",
     "test:db": "node scripts/test-maintenance.mjs",
     "test:import": "node scripts/test-import.mjs",
-    "import:file": "node scripts/import-file.mjs"
+    "import:file": "node scripts/import-file.mjs",
+    "test:player": "node scripts/test-player.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

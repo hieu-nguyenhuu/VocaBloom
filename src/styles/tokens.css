@@ -113,10 +113,13 @@
   --vb-surface-card: var(--raw-cream-50);
   --vb-surface-raised: var(--raw-white);
   --vb-surface-sunken: var(--raw-cream-100);
+  /* Bóng chat của người B ở màn hội thoại kết thúc (mockup 11) */
+  --vb-surface-chat-b: var(--raw-cream-200);
 
   /* Viền */
   --vb-border-card: var(--raw-cream-border);
   --vb-border-subtle: var(--raw-cream-border-2);
+  --vb-border-chat-b: var(--raw-cream-border-2);
   --vb-border-divider: var(--raw-cream-divider);
   --vb-border-input: var(--raw-grey-200);
   --vb-border-dot: var(--raw-lavender-200);
@@ -172,9 +175,11 @@
     --vb-surface-card: var(--raw-d-card);
     --vb-surface-raised: var(--raw-d-raised);
     --vb-surface-sunken: var(--raw-d-sunken);
+    --vb-surface-chat-b: var(--raw-d-raised);
 
     --vb-border-card: var(--raw-d-border);
     --vb-border-subtle: var(--raw-d-border-2);
+    --vb-border-chat-b: var(--raw-d-border-2);
     --vb-border-divider: var(--raw-d-divider);
     --vb-border-input: var(--raw-d-border-input);
     --vb-border-dot: var(--raw-d-border-dot);
@@ -222,9 +227,11 @@
   --vb-surface-card: var(--raw-d-card);
   --vb-surface-raised: var(--raw-d-raised);
   --vb-surface-sunken: var(--raw-d-sunken);
+  --vb-surface-chat-b: var(--raw-d-raised);
 
   --vb-border-card: var(--raw-d-border);
   --vb-border-subtle: var(--raw-d-border-2);
+  --vb-border-chat-b: var(--raw-d-border-2);
   --vb-border-divider: var(--raw-d-divider);
   --vb-border-input: var(--raw-d-border-input);
   --vb-border-dot: var(--raw-d-border-dot);
@@ -293,10 +300,12 @@
   --color-surface-card: var(--vb-surface-card);
   --color-surface-raised: var(--vb-surface-raised);
   --color-surface-sunken: var(--vb-surface-sunken);
+  --color-surface-chat-b: var(--vb-surface-chat-b);
 
   /* Viền */
   --color-border-card: var(--vb-border-card);
   --color-border-subtle: var(--vb-border-subtle);
+  --color-border-chat-b: var(--vb-border-chat-b);
   --color-border-divider: var(--vb-border-divider);
   --color-border-input: var(--vb-border-input);
   --color-border-dot: var(--vb-border-dot);

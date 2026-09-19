@@ -43,7 +43,7 @@ export type DongReviewLog = {
 export type KetQuaTraLoi = {
   trang_thai_moi: TrangThaiTu
   dong_review_log: DongReviewLog
-  vao_retry_queue: { reason: 'below_threshold' | 'flashcard_again'; exercise_types: DangBai[] } | null
+  vao_retry_queue: { reason: 'below_threshold' | 'flashcard_again'; exercise_types: DangBai[] | null } | null  // null = retry cả bộ
 }
 
 // ── Hằng số nghiệp vụ — GOM ĐÚNG 1 CHỖ (systemPatterns.md §6) ──────────────
@@ -266,9 +266,16 @@ export function xuLyTraLoi(dv: {
     } else {
       // Chưa đạt ngưỡng: KHÔNG dời lịch (từ vẫn due, "lịch tự lành" §1.2),
       // chỉ dồn các bài CHƯA đạt vào hàng đợi ôn lại trong ngày (DEC-06).
-      vao_retry_queue = {
-        reason: 'below_threshold',
-        exercise_types: DANG_BAI_THEO_STAGE[stage_before].filter((x) => !daDat.includes(x)),
+      // Đạt HẾT bộ bài mà vẫn thiếu điểm (do gợi ý): nếu giữ daDat đầy thì không còn bài tính điểm
+      // nào cho lượt sau → từ KẸT vĩnh viễn (cycle chỉ reset khi lên stage). Mở lại bộ bài, giữ
+      // cycle_points cộng dồn, retry CẢ BỘ (exercise_types null — ngữ nghĩa có sẵn ở schema §2).
+      // Phát hiện khi kiểm thật M4a 2026-09-16 (test R2d).
+      const chuaDat = DANG_BAI_THEO_STAGE[stage_before].filter((x) => !daDat.includes(x))
+      if (chuaDat.length === 0) {
+        daDat = []
+        vao_retry_queue = { reason: 'below_threshold', exercise_types: null }
+      } else {
+        vao_retry_queue = { reason: 'below_threshold', exercise_types: chuaDat }
       }
     }
   }

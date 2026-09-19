@@ -156,7 +156,7 @@ describe('Chưa đạt ngưỡng (§4.2)', () => {
       { dung: false, la_bai_cuoi_cua_tu: true },
     )
     expect(kq.vao_retry_queue?.reason).toBe('below_threshold')
-    expect(kq.vao_retry_queue?.exercise_types.sort())
+    expect(kq.vao_retry_queue?.exercise_types?.sort())
       .toEqual(['audio_recognition', 'fast_decision', 'selection'])
   })
 
@@ -165,6 +165,20 @@ describe('Chưa đạt ngưỡng (§4.2)', () => {
     expect(dung.trang_thai_moi.cycle_completed_exercises).toEqual(['selection'])
     const sai = traLoi(tu(), 'selection', { dung: false })
     expect(sai.trang_thai_moi.cycle_completed_exercises).toEqual([])
+  })
+
+  it('R2d — đạt HẾT bộ bài nhưng thiếu điểm (do gợi ý) → mở lại bộ bài + retry CẢ BỘ, giữ cycle_points', () => {
+    // Phát hiện khi kiểm thật M4a 2026-09-16: 苹果 làm đủ 4 bài, 2 bài dùng gợi ý → 2 điểm < 3.
+    // Nếu giữ nguyên daDat đầy → không còn bài tính điểm nào → từ kẹt vĩnh viễn (cycle chỉ reset khi lên stage).
+    const kq = traLoi(
+      tu({ cycle_points: 2, cycle_completed_exercises: ['matching', 'selection', 'audio_recognition'] }),
+      'fast_decision',
+      { dung: true, dung_goi_y: true, la_bai_cuoi_cua_tu: true },
+    )
+    expect(kq.trang_thai_moi.cycle_points).toBe(2)
+    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual([])
+    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: null })
+    expect(kq.trang_thai_moi.next_review_date).toBe(tu().next_review_date)
   })
 
   it('R2c — dùng gợi ý được 0 điểm nhưng VẪN tính là đã đạt (không retry)', () => {

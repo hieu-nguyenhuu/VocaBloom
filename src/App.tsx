@@ -1,58 +1,73 @@
 import { Link, Route, Routes } from 'react-router'
 import TokenSheet from './dev/TokenSheet.tsx'
+import DangNhap from './features/auth/DangNhap.tsx'
+import RequireAuth from './features/auth/RequireAuth.tsx'
+import DashboardPage from './features/dashboard/DashboardPage.tsx'
+import ImportPage from './features/import/ImportPage.tsx'
+import TrangThongBao from './features/notifications/TrangThongBao.tsx'
+import ChonChuDePage from './features/player/ChonChuDePage.tsx'
+import HoiThoaiKetThucPage from './features/player/HoiThoaiKetThucPage.tsx'
+import PlayerPage from './features/player/PlayerPage.tsx'
+import TongKetPage from './features/player/TongKetPage.tsx'
+import CaiDatPage from './features/settings/CaiDatPage.tsx'
+import AppShell from './features/shell/AppShell.tsx'
+import TuVungPage from './features/vocab/TuVungPage.tsx'
+import KhungTrang from './features/shell/KhungTrang.tsx'
 
 /**
- * M0 chỉ dựng khung route rỗng. Layout thật (sidebar PC / thanh tab Mobile,
- * xem systemPatterns.md §5) dựng từ M1 trở đi — M0 KHÔNG vẽ icon nào để tránh
- * chạm gate "6 icon giai đoạn cây chưa chốt" (MB-03).
+ * Cây route:
+ *   /dang-nhap            — ngoài auth
+ *   RequireAuth (MB-10)   — RLS chặn toàn bộ DB khi chưa đăng nhập
+ *     /on-tap (+ ?che_do=retry|topic), /on-tap/tong-ket, /on-tap/hoi-thoai — toàn màn hình, ngoài shell
+ *     AppShell            — sidebar PC / thanh tab Mobile (systemPatterns.md §5)
+ *       / (M6b) · /on-tap/chu-de (M7) · /tu-vung(/:topicId) (M8) · /import (M2b) · /cai-dat (M6a)
+ *       · /thong-bao (ẩn) · /dev/tokens · 404 — KHÔNG còn màn stub nào
+ *
+ * Icon nav trích từ mockup (components/icons.tsx); bộ icon giai đoạn cây đã chốt (MB-19).
  */
-const MAN_HINH = [
-  { path: '/', ten: 'Dashboard', moc: 'M6' },
-  { path: '/on-tap', ten: 'Ôn tập', moc: 'M4' },
-  { path: '/tu-vung', ten: 'Từ vựng', moc: 'M6' },
-  { path: '/import', ten: 'Import', moc: 'M2' },
-  { path: '/cai-dat', ten: 'Cài đặt', moc: 'M6' },
-] as const
 
 function Stub({ ten, moc }: { ten: string; moc: string }) {
   return (
-    <main className="min-h-[100dvh] bg-surface-page px-6 py-10">
-      <div className="mx-auto flex max-w-[720px] flex-col gap-4">
+    <KhungTrang>
+      <div className="flex flex-col gap-4">
         <h1 className="font-display text-28 font-bold text-content-primary">{ten}</h1>
         <p className="text-15 text-content-muted">
-          Màn này sẽ được dựng ở mốc <span className="text-accent-text">{moc}</span>. M0 mới chỉ
-          dựng nền móng: hệ token, font và kết nối Supabase.
+          Màn này sẽ được dựng ở mốc <span className="text-accent-text">{moc}</span>. Hiện mới có
+          nền móng: hệ token, đăng nhập và app shell.
         </p>
-        <nav className="flex flex-wrap gap-2 pt-2">
-          {MAN_HINH.map((m) => (
-            <Link
-              key={m.path}
-              to={m.path}
-              className="rounded-10 border border-border-card bg-surface-card px-3 py-2 text-13 text-content-nav hover:border-accent hover:text-accent"
-            >
-              {m.ten}
-            </Link>
-          ))}
-          <Link
-            to="/dev/tokens"
-            className="rounded-10 bg-accent px-3 py-2 text-13 font-medium text-white"
-          >
-            Bảng token
-          </Link>
-        </nav>
+        <Link
+          to="/dev/tokens"
+          className="self-start rounded-10 bg-accent px-3 py-2 text-13 font-medium text-white"
+        >
+          Bảng token
+        </Link>
       </div>
-    </main>
+    </KhungTrang>
   )
 }
 
 export default function App() {
   return (
     <Routes>
-      {MAN_HINH.map((m) => (
-        <Route key={m.path} path={m.path} element={<Stub ten={m.ten} moc={m.moc} />} />
-      ))}
-      <Route path="/dev/tokens" element={<TokenSheet />} />
-      <Route path="*" element={<Stub ten="Không tìm thấy trang" moc="—" />} />
+      <Route path="/dang-nhap" element={<DangNhap />} />
+      <Route element={<RequireAuth />}>
+        {/* Player toàn màn hình — NGOÀI AppShell (mockup 02–12 không có nav) */}
+        <Route path="/on-tap" element={<PlayerPage />} />
+        <Route path="/on-tap/tong-ket" element={<TongKetPage />} />
+        <Route path="/on-tap/hoi-thoai" element={<HoiThoaiKetThucPage />} />
+        <Route element={<AppShell />}>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/on-tap/chu-de" element={<ChonChuDePage />} />
+          <Route path="/tu-vung" element={<TuVungPage />} />
+          <Route path="/tu-vung/:topicId" element={<TuVungPage />} />
+          <Route path="/import" element={<ImportPage />} />
+          <Route path="/cai-dat" element={<CaiDatPage />} />
+          {/* Route ẩn (không có trong MENU) — Dashboard Mobile mở qua nút chuông ở header */}
+          <Route path="/thong-bao" element={<TrangThongBao />} />
+          <Route path="/dev/tokens" element={<TokenSheet />} />
+          <Route path="*" element={<Stub ten="Không tìm thấy trang" moc="—" />} />
+        </Route>
+      </Route>
     </Routes>
   )
 }

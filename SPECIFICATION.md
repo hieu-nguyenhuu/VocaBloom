@@ -17,7 +17,7 @@
 | Frontend | React + Tailwind CSS |
 | Backend/DB | Supabase (Postgres + Storage + pg_cron) |
 | AI chấm điểm & giải thích | OpenRouter (model + API key do người dùng tự cấu hình) |
-| TTS | Google Cloud TTS (giọng Neural2, `cmn-CN-*`) |
+| TTS | Google Cloud TTS (`cmn-CN-Wavenet-*` cho tiếng Trung, `en-US-Neural2-*` cho tiếng Anh) |
 | Fallback audio | Web Speech API |
 
 ### 1.2 Nguyên tắc thiết kế cốt lõi (áp dụng xuyên suốt)
@@ -181,8 +181,10 @@ create table settings (
 insert into settings (key, value) values
   ('openrouter_api_key', 'null'),
   ('openrouter_model', 'null'),
+  ('google_tts_api_key', 'null'),
   ('new_words_per_day', '5'),
-  ('tts_voice', '"cmn-CN-Neural2-A"'),
+  ('tts_voice', '"cmn-CN-Wavenet-A"'),
+  ('tts_voice_en', '"en-US-Neural2-C"'),
   ('low_queue_alert_enabled', 'true');
 ```
 
@@ -518,10 +520,19 @@ Prompt tùy biến theo `exercise.type`, output luôn theo schema trên.
 
 ## 9. TTS (DEC-15)
 
-- **Provider:** Google Cloud TTS, giọng `cmn-CN-Neural2-*`.
+- **Provider:** Google Cloud TTS.
+  ⚠️ **Sửa 2026-09-19 (M6c):** bản trước ghi `cmn-CN-Neural2-*` là **SAI** — kiểm thật thì Google trả
+  `Voice 'cmn-CN-Neural2-C' does not exist`. Tiếng Trung chỉ có `cmn-CN-Standard-*`,
+  `cmn-CN-Wavenet-*`, `cmn-CN-Chirp3-HD-*`. Chốt dùng **`cmn-CN-Wavenet-A..D`** cho `zh` và
+  **`en-US-Neural2-C/F/D/J`** cho `en` (2 ô chọn giọng riêng ở Settings).
 - **Chiến lược cache:** gọi TTS đúng **1 lần/từ**, ngay sau khi Import xong (batch toàn bộ từ chưa có `audio_url`) → lưu file mp3 vào Supabase Storage → ghi `vocab.audio_url`. Runtime chỉ phát file tĩnh.
 - **Fallback:** Web Speech API khi `audio_url` chưa sẵn sàng.
-- **Chọn giọng:** cấu hình ở Settings (§11), nghe thử trước khi chọn.
+- **Chọn giọng:** cấu hình ở Settings (§11), nghe thử trước khi chọn (nút loa cạnh mỗi ô giọng).
+- **Đặt tên file:** `{lang}/{voice}/{hash(word‖lang‖voice)}.mp3` trong bucket `audio` (công khai đọc,
+  ghi chỉ cho `authenticated`). Nhờ vậy 2 dòng `vocab` cùng chữ (cùng từ ở 2 topic) **dùng chung 1 file
+  và chỉ tốn 1 lời gọi API**; đổi giọng thì ra file khác nên không phát nhầm giọng cũ.
+- **Chạy lại:** ngoài luồng tự chạy sau Import, Settings có nút **"Tạo audio còn thiếu (N từ)"** cho
+  những từ đã nhập trước khi có pipeline. Đổi giọng KHÔNG tự gen lại audio cũ (tránh đốt quota).
 
 ---
 
@@ -612,7 +623,9 @@ Ngoài checklist thủ công ở §10.5, có **1 file JSON Schema hình thức**
 | `openrouter_api_key` | API key OpenRouter (dùng chung cho §7 và §8) | — (bắt buộc nhập) |
 | `openrouter_model` | Model chấm điểm/giải thích | — (chọn từ danh sách) |
 | `new_words_per_day` | Số từ mới kích hoạt/ngày (DEC-16) | 5 |
-| `tts_voice` | Giọng Google Cloud TTS | `cmn-CN-Neural2-A` |
+| `google_tts_api_key` | API key Google Cloud TTS (thêm ở M6c) | — (bắt buộc nhập) |
+| `tts_voice` | Giọng TTS tiếng Trung | `cmn-CN-Wavenet-A` |
+| `tts_voice_en` | Giọng TTS tiếng Anh (thêm ở M6c) | `en-US-Neural2-C` |
 | `low_queue_alert_enabled` | Bật/tắt cảnh báo hàng đợi cạn | true |
 
 *Không có màn "lịch sử quyết định" — giữ Settings gọn nhẹ.*
