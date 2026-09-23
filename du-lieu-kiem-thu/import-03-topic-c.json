@@ -1,0 +1,568 @@
+{
+  "topic": {
+    "name": "Topic C",
+    "description": "Quần áo, thời tiết và hoạt động ngoài trời."
+  },
+  "vocab": [
+    {
+      "temp_id": "v1",
+      "word": "饮料",
+      "pinyin": "yǐnliào",
+      "meaning_vi": "đồ uống, nước giải khát",
+      "collocation": "买饮料",
+      "collocation_pinyin": "mǎi yǐnliào",
+      "collocation_meaning_vi": "mua đồ uống",
+      "example_sentence": "爬山的时候要多带点儿饮料。",
+      "example_meaning_vi": "Lúc leo núi nên mang theo nhiều đồ uống một chút.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v2",
+      "word": "衬衫",
+      "pinyin": "chènshān",
+      "meaning_vi": "áo sơ mi",
+      "collocation": "一件衬衫",
+      "collocation_pinyin": "yí jiàn chènshān",
+      "collocation_meaning_vi": "một cái áo sơ mi",
+      "example_sentence": "这件白衬衫很适合你。",
+      "example_meaning_vi": "Cái áo sơ mi trắng này rất hợp với bạn.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v3",
+      "word": "裤子",
+      "pinyin": "kùzi",
+      "meaning_vi": "quần",
+      "collocation": "一条裤子",
+      "collocation_pinyin": "yì tiáo kùzi",
+      "collocation_meaning_vi": "một cái quần",
+      "example_sentence": "这条裤子有点儿短。",
+      "example_meaning_vi": "Cái quần này hơi ngắn.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v4",
+      "word": "爬山",
+      "pinyin": "páshān",
+      "meaning_vi": "leo núi",
+      "collocation": "去爬山",
+      "collocation_pinyin": "qù páshān",
+      "collocation_meaning_vi": "đi leo núi",
+      "example_sentence": "晴天的时候我们常常去爬山。",
+      "example_meaning_vi": "Những hôm trời nắng chúng tôi thường đi leo núi.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v5",
+      "word": "小心",
+      "pinyin": "xiǎoxīn",
+      "meaning_vi": "cẩn thận, coi chừng",
+      "collocation": "小心一点儿",
+      "collocation_pinyin": "xiǎoxīn yìdiǎnr",
+      "collocation_meaning_vi": "cẩn thận một chút",
+      "example_sentence": "路上很滑，你要小心。",
+      "example_meaning_vi": "Đường rất trơn, bạn phải cẩn thận.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v6",
+      "word": "晴天",
+      "pinyin": "qíngtiān",
+      "meaning_vi": "ngày nắng, trời quang",
+      "collocation": "是晴天",
+      "collocation_pinyin": "shì qíngtiān",
+      "collocation_meaning_vi": "là ngày nắng đẹp",
+      "example_sentence": "明天是晴天，我们去爬山吧。",
+      "example_meaning_vi": "Mai trời nắng, chúng ta đi leo núi nhé.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v7",
+      "word": "阴天",
+      "pinyin": "yīntiān",
+      "meaning_vi": "ngày âm u, trời nhiều mây",
+      "collocation": "阴天的时候",
+      "collocation_pinyin": "yīntiān de shíhou",
+      "collocation_meaning_vi": "những lúc trời âm u",
+      "example_sentence": "今天是阴天，可能会下雨。",
+      "example_meaning_vi": "Hôm nay trời âm u, có thể sẽ mưa.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v8",
+      "word": "条",
+      "pinyin": "tiáo",
+      "meaning_vi": "chiếc, con (lượng từ cho vật dài)",
+      "collocation": "一条路",
+      "collocation_pinyin": "yì tiáo lù",
+      "collocation_meaning_vi": "một con đường",
+      "example_sentence": "我买了两条裤子。",
+      "example_meaning_vi": "Tôi đã mua hai cái quần.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v9",
+      "word": "记得",
+      "pinyin": "jìde",
+      "meaning_vi": "nhớ, còn nhớ",
+      "collocation": "记得带",
+      "collocation_pinyin": "jìde dài",
+      "collocation_meaning_vi": "nhớ mang theo",
+      "example_sentence": "你记得带伞吗？",
+      "example_meaning_vi": "Bạn có nhớ mang ô không?",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v10",
+      "word": "舒服",
+      "pinyin": "shūfu",
+      "meaning_vi": "dễ chịu, thoải mái",
+      "collocation": "不舒服",
+      "collocation_pinyin": "bù shūfu",
+      "collocation_meaning_vi": "không khoẻ, khó chịu",
+      "example_sentence": "这件衬衫穿着很舒服。",
+      "example_meaning_vi": "Cái áo sơ mi này mặc rất thoải mái.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v11",
+      "word": "新鲜",
+      "pinyin": "xīnxiān",
+      "meaning_vi": "tươi, tươi mới",
+      "collocation": "新鲜的水果",
+      "collocation_pinyin": "xīnxiān de shuǐguǒ",
+      "collocation_meaning_vi": "hoa quả tươi",
+      "example_sentence": "山上的空气很新鲜。",
+      "example_meaning_vi": "Không khí trên núi rất trong lành.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v12",
+      "word": "甜",
+      "pinyin": "tián",
+      "meaning_vi": "ngọt",
+      "collocation": "很甜",
+      "collocation_pinyin": "hěn tián",
+      "collocation_meaning_vi": "rất ngọt",
+      "example_sentence": "这种饮料太甜了。",
+      "example_meaning_vi": "Loại nước này ngọt quá.",
+      "lang": "zh"
+    }
+  ],
+  "exercises": [
+    { "vocab_temp_id": "v1", "type": "selection", "payload": { "distractors": ["đồ ăn vặt", "hoa quả", "thuốc"] } },
+    { "vocab_temp_id": "v1", "type": "audio_recognition", "payload": { "distractors": ["cơm hộp", "bánh ngọt", "rau"] } },
+    { "vocab_temp_id": "v1", "type": "fast_decision", "payload": { "wrong_meaning": "đồ ăn vặt" } },
+    { "vocab_temp_id": "v1", "type": "select_on_describe", "payload": {
+      "description": "Thứ để uống, thường đóng chai hoặc lon, mua ở siêu thị khi đi chơi xa.",
+      "distractors": [
+        { "word": "水果", "pinyin": "shuǐguǒ" },
+        { "word": "蛋糕", "pinyin": "dàngāo" },
+        { "word": "衣服", "pinyin": "yīfu" }
+      ] } },
+    { "vocab_temp_id": "v1", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我买了两瓶饮料。", "pinyin": "Wǒ mǎi le liǎng píng yǐnliào." },
+      "wrong_sentences": [
+        { "text": "我买了两个饮料。", "pinyin": "Wǒ mǎi le liǎng ge yǐnliào." },
+        { "text": "我两瓶饮料买了。", "pinyin": "Wǒ liǎng píng yǐnliào mǎi le." },
+        { "text": "我买饮料了两瓶。", "pinyin": "Wǒ mǎi yǐnliào le liǎng píng." }
+      ] } },
+    { "vocab_temp_id": "v1", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "爬山的时候", "pinyin": "páshān de shíhou" },
+      { "text": "要", "pinyin": "yào" },
+      { "text": "多带", "pinyin": "duō dài" },
+      { "text": "点儿", "pinyin": "diǎnr" },
+      { "text": "饮料", "pinyin": "yǐnliào" }
+    ] } },
+    { "vocab_temp_id": "v1", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Trời nóng thế này, tôi muốn uống một chai nước lạnh." } },
+    { "vocab_temp_id": "v1", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn và bạn bè chuẩn bị đồ trước khi đi leo núi, bạn được giao đi siêu thị.",
+      "given_sentence_zh": "我去超市，",
+      "given_sentence_pinyin": "Wǒ qù chāoshì," } },
+
+    { "vocab_temp_id": "v2", "type": "grammar", "payload": {
+      "content_target": "一件 + 衬衫",
+      "pinyin": "yí jiàn + chènshān",
+      "content_vi": "Áo (衬衫、衣服、大衣) dùng lượng từ 「件」, KHÔNG dùng 「个」cũng không dùng 「条」. Nhớ cặp: 一件衬衫 nhưng 一条裤子." } },
+    { "vocab_temp_id": "v2", "type": "selection", "payload": { "distractors": ["quần", "váy", "giày"] } },
+    { "vocab_temp_id": "v2", "type": "audio_recognition", "payload": { "distractors": ["áo khoác", "mũ", "tất"] } },
+    { "vocab_temp_id": "v2", "type": "fast_decision", "payload": { "wrong_meaning": "quần" } },
+    { "vocab_temp_id": "v2", "type": "select_on_describe", "payload": {
+      "description": "Áo có cổ và hàng cúc phía trước, thường mặc khi đi làm ở văn phòng.",
+      "distractors": [
+        { "word": "裤子", "pinyin": "kùzi" },
+        { "word": "裙子", "pinyin": "qúnzi" },
+        { "word": "鞋", "pinyin": "xié" }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "这件白衬衫很适合你。", "pinyin": "Zhè jiàn bái chènshān hěn shìhé nǐ." },
+      "wrong_sentences": [
+        { "text": "这条白衬衫很适合你。", "pinyin": "Zhè tiáo bái chènshān hěn shìhé nǐ." },
+        { "text": "这个白衬衫很适合你。", "pinyin": "Zhège bái chènshān hěn shìhé nǐ." },
+        { "text": "这件白衬衫适合很你。", "pinyin": "Zhè jiàn bái chènshān shìhé hěn nǐ." }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "这件", "pinyin": "zhè jiàn" },
+      { "text": "白衬衫", "pinyin": "bái chènshān" },
+      { "text": "很", "pinyin": "hěn" },
+      { "text": "适合", "pinyin": "shìhé" },
+      { "text": "你", "pinyin": "nǐ" }
+    ] } },
+    { "vocab_temp_id": "v2", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Tôi muốn mua một cái áo sơ mi trắng." } },
+    { "vocab_temp_id": "v2", "type": "complete_situation", "payload": {
+      "situation_vi": "Trong cửa hàng quần áo, nhân viên hỏi bạn muốn tìm gì.",
+      "given_sentence_zh": "您好，我想",
+      "given_sentence_pinyin": "Nín hǎo, wǒ xiǎng" } },
+
+    { "vocab_temp_id": "v3", "type": "selection", "payload": { "distractors": ["áo sơ mi", "váy", "áo len"] } },
+    { "vocab_temp_id": "v3", "type": "audio_recognition", "payload": { "distractors": ["giày", "tất", "khăn"] } },
+    { "vocab_temp_id": "v3", "type": "fast_decision", "payload": { "wrong_meaning": "áo sơ mi" } },
+    { "vocab_temp_id": "v3", "type": "select_on_describe", "payload": {
+      "description": "Đồ mặc ở nửa dưới cơ thể, có hai ống, đếm bằng lượng từ 条.",
+      "distractors": [
+        { "word": "衬衫", "pinyin": "chènshān" },
+        { "word": "裙子", "pinyin": "qúnzi" },
+        { "word": "帽子", "pinyin": "màozi" }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "这条裤子有点儿短。", "pinyin": "Zhè tiáo kùzi yǒudiǎnr duǎn." },
+      "wrong_sentences": [
+        { "text": "这件裤子有点儿短。", "pinyin": "Zhè jiàn kùzi yǒudiǎnr duǎn." },
+        { "text": "这条裤子短有点儿。", "pinyin": "Zhè tiáo kùzi duǎn yǒudiǎnr." },
+        { "text": "这条裤子是有点儿短。", "pinyin": "Zhè tiáo kùzi shì yǒudiǎnr duǎn." }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "这条", "pinyin": "zhè tiáo" },
+      { "text": "裤子", "pinyin": "kùzi" },
+      { "text": "有点儿", "pinyin": "yǒudiǎnr" },
+      { "text": "短", "pinyin": "duǎn" }
+    ] } },
+    { "vocab_temp_id": "v3", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Cái quần này mặc rất thoải mái." } },
+    { "vocab_temp_id": "v3", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn thử quần trong cửa hàng nhưng thấy không vừa, nhân viên hỏi thế nào.",
+      "given_sentence_zh": "不好意思，这条",
+      "given_sentence_pinyin": "Bù hǎoyìsi, zhè tiáo" } },
+
+    { "vocab_temp_id": "v4", "type": "grammar", "payload": {
+      "content_target": "爬 + 时量/次数 + 山",
+      "pinyin": "pá + shíliàng/cìshù + shān",
+      "content_vi": "「爬山」là ly hợp từ (动 + 宾). Bổ ngữ phải CHEN VÀO GIỮA: 爬了两个小时山 / 爬过三次山, không nói 爬山了两个小时. Cũng không thêm tân ngữ phía sau như 爬山泰山." } },
+    { "vocab_temp_id": "v4", "type": "selection", "payload": { "distractors": ["bơi lội", "chạy bộ", "đi dạo"] } },
+    { "vocab_temp_id": "v4", "type": "audio_recognition", "payload": { "distractors": ["đạp xe", "câu cá", "cắm trại"] } },
+    { "vocab_temp_id": "v4", "type": "fast_decision", "payload": { "wrong_meaning": "chạy bộ" } },
+    { "vocab_temp_id": "v4", "type": "select_on_describe", "payload": {
+      "description": "Hoạt động đi lên chỗ cao ngoài trời, tốn sức, xong thì chân rất mỏi nhưng không khí trong lành.",
+      "distractors": [
+        { "word": "游泳", "pinyin": "yóuyǒng" },
+        { "word": "跑步", "pinyin": "pǎobù" },
+        { "word": "散步", "pinyin": "sànbù" }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "昨天我们爬了三个小时山。", "pinyin": "Zuótiān wǒmen pá le sān ge xiǎoshí shān." },
+      "wrong_sentences": [
+        { "text": "昨天我们爬山了三个小时。", "pinyin": "Zuótiān wǒmen páshān le sān ge xiǎoshí." },
+        { "text": "昨天我们爬山三个小时了。", "pinyin": "Zuótiān wǒmen páshān sān ge xiǎoshí le." },
+        { "text": "昨天我们爬山泰山。", "pinyin": "Zuótiān wǒmen páshān Tàishān." }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "晴天的时候", "pinyin": "qíngtiān de shíhou" },
+      { "text": "我们", "pinyin": "wǒmen" },
+      { "text": "常常", "pinyin": "chángcháng" },
+      { "text": "去", "pinyin": "qù" },
+      { "text": "爬山", "pinyin": "páshān" }
+    ] } },
+    { "vocab_temp_id": "v4", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Cuối tuần này trời nắng, chúng ta đi leo núi đi." } },
+    { "vocab_temp_id": "v4", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn rủ đồng nghiệp cuối tuần đi chơi ngoài trời, họ hỏi đi đâu.",
+      "given_sentence_zh": "天气这么好，我们",
+      "given_sentence_pinyin": "Tiānqì zhème hǎo, wǒmen" } },
+
+    { "vocab_temp_id": "v5", "type": "selection", "payload": { "distractors": ["nhanh lên", "yên tâm", "chú ý nghe"] } },
+    { "vocab_temp_id": "v5", "type": "audio_recognition", "payload": { "distractors": ["đừng lo", "nghỉ ngơi", "cố lên"] } },
+    { "vocab_temp_id": "v5", "type": "fast_decision", "payload": { "wrong_meaning": "yên tâm" } },
+    { "vocab_temp_id": "v5", "type": "select_on_describe", "payload": {
+      "description": "Nhắc người khác chú ý để tránh gặp nguy hiểm, hay nói khi đường trơn hoặc xe đông.",
+      "distractors": [
+        { "word": "放心", "pinyin": "fàngxīn" },
+        { "word": "着急", "pinyin": "zháojí" },
+        { "word": "休息", "pinyin": "xiūxi" }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "路上很滑，你要小心。", "pinyin": "Lùshang hěn huá, nǐ yào xiǎoxīn." },
+      "wrong_sentences": [
+        { "text": "路上很滑，你小心要。", "pinyin": "Lùshang hěn huá, nǐ xiǎoxīn yào." },
+        { "text": "路上很滑，你是小心。", "pinyin": "Lùshang hěn huá, nǐ shì xiǎoxīn." },
+        { "text": "路上很滑，小心你一点儿很。", "pinyin": "Lùshang hěn huá, xiǎoxīn nǐ yìdiǎnr hěn." }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "路上", "pinyin": "lùshang" },
+      { "text": "很滑", "pinyin": "hěn huá" },
+      { "text": "你", "pinyin": "nǐ" },
+      { "text": "要", "pinyin": "yào" },
+      { "text": "小心", "pinyin": "xiǎoxīn" }
+    ] } },
+    { "vocab_temp_id": "v5", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Trời mưa, bạn lái xe cẩn thận nhé." } },
+    { "vocab_temp_id": "v5", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn tiễn bạn mình ra về lúc trời đang mưa to.",
+      "given_sentence_zh": "外边雨很大，",
+      "given_sentence_pinyin": "Wàibian yǔ hěn dà," } },
+
+    { "vocab_temp_id": "v6", "type": "selection", "payload": { "distractors": ["ngày mưa", "ngày âm u", "ngày có tuyết"] } },
+    { "vocab_temp_id": "v6", "type": "audio_recognition", "payload": { "distractors": ["ngày gió to", "buổi sáng sớm", "mùa hè"] } },
+    { "vocab_temp_id": "v6", "type": "fast_decision", "payload": { "wrong_meaning": "ngày mưa" } },
+    { "vocab_temp_id": "v6", "type": "select_on_describe", "payload": {
+      "description": "Kiểu thời tiết trời trong, nhiều nắng, hầu như không có mây, rất hợp để ra ngoài chơi.",
+      "distractors": [
+        { "word": "阴天", "pinyin": "yīntiān" },
+        { "word": "下雨", "pinyin": "xià yǔ" },
+        { "word": "冬天", "pinyin": "dōngtiān" }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "明天是晴天，我们去爬山吧。", "pinyin": "Míngtiān shì qíngtiān, wǒmen qù páshān ba." },
+      "wrong_sentences": [
+        { "text": "明天很晴天，我们去爬山吧。", "pinyin": "Míngtiān hěn qíngtiān, wǒmen qù páshān ba." },
+        { "text": "明天晴天是，我们去爬山吧。", "pinyin": "Míngtiān qíngtiān shì, wǒmen qù páshān ba." },
+        { "text": "明天是晴天的，我们爬山去吧。", "pinyin": "Míngtiān shì qíngtiān de, wǒmen páshān qù ba." }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "明天", "pinyin": "míngtiān" },
+      { "text": "是", "pinyin": "shì" },
+      { "text": "晴天", "pinyin": "qíngtiān" },
+      { "text": "我们", "pinyin": "wǒmen" },
+      { "text": "去爬山吧", "pinyin": "qù páshān ba" }
+    ] } },
+    { "vocab_temp_id": "v6", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Hôm nay là ngày nắng đẹp, thích hợp đi chơi." } },
+    { "vocab_temp_id": "v6", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn xem dự báo thời tiết rồi nhắn tin rủ bạn bè đi chơi ngày mai.",
+      "given_sentence_zh": "我看了天气预报，",
+      "given_sentence_pinyin": "Wǒ kàn le tiānqì yùbào," } },
+
+    { "vocab_temp_id": "v7", "type": "selection", "payload": { "distractors": ["ngày nắng", "ngày tuyết", "ngày gió"] } },
+    { "vocab_temp_id": "v7", "type": "audio_recognition", "payload": { "distractors": ["buổi tối", "mùa xuân", "ngày nóng"] } },
+    { "vocab_temp_id": "v7", "type": "fast_decision", "payload": { "wrong_meaning": "ngày nắng" } },
+    { "vocab_temp_id": "v7", "type": "select_on_describe", "payload": {
+      "description": "Kiểu thời tiết trời bị mây che kín, không thấy mặt trời, thường sắp mưa.",
+      "distractors": [
+        { "word": "晴天", "pinyin": "qíngtiān" },
+        { "word": "春天", "pinyin": "chūntiān" },
+        { "word": "刮风", "pinyin": "guā fēng" }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "今天是阴天，可能会下雨。", "pinyin": "Jīntiān shì yīntiān, kěnéng huì xià yǔ." },
+      "wrong_sentences": [
+        { "text": "今天很阴天，可能会下雨。", "pinyin": "Jīntiān hěn yīntiān, kěnéng huì xià yǔ." },
+        { "text": "今天是阴天，会可能下雨。", "pinyin": "Jīntiān shì yīntiān, huì kěnéng xià yǔ." },
+        { "text": "今天阴天是，可能下雨会。", "pinyin": "Jīntiān yīntiān shì, kěnéng xià yǔ huì." }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "今天", "pinyin": "jīntiān" },
+      { "text": "是", "pinyin": "shì" },
+      { "text": "阴天", "pinyin": "yīntiān" },
+      { "text": "可能", "pinyin": "kěnéng" },
+      { "text": "会下雨", "pinyin": "huì xià yǔ" }
+    ] } },
+    { "vocab_temp_id": "v7", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Mấy hôm nay trời toàn âm u, tôi thấy hơi khó chịu." } },
+    { "vocab_temp_id": "v7", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn định đi leo núi nhưng sáng dậy thấy trời không đẹp.",
+      "given_sentence_zh": "今天不太合适，因为",
+      "given_sentence_pinyin": "Jīntiān bú tài héshì, yīnwèi" } },
+
+    { "vocab_temp_id": "v8", "type": "grammar", "payload": {
+      "content_target": "数字 + 条 + 名词",
+      "pinyin": "shùzì + tiáo + míngcí",
+      "content_vi": "「条」là lượng từ cho vật DÀI và mềm: 一条裤子、一条路、一条河、一条鱼. Người học hay dùng 个 cho tất cả — 一个裤子 là sai." } },
+    { "vocab_temp_id": "v8", "type": "selection", "payload": { "distractors": ["cái (vật dẹt)", "con (động vật lớn)", "chiếc (áo)"] } },
+    { "vocab_temp_id": "v8", "type": "audio_recognition", "payload": { "distractors": ["quyển", "cốc", "đôi"] } },
+    { "vocab_temp_id": "v8", "type": "fast_decision", "payload": { "wrong_meaning": "chiếc (dùng cho áo)" } },
+    { "vocab_temp_id": "v8", "type": "select_on_describe", "payload": {
+      "description": "Lượng từ dùng cho những vật có hình dài: quần, đường, sông, cá.",
+      "distractors": [
+        { "word": "件", "pinyin": "jiàn" },
+        { "word": "本", "pinyin": "běn" },
+        { "word": "双", "pinyin": "shuāng" }
+      ] } },
+    { "vocab_temp_id": "v8", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我买了两条裤子。", "pinyin": "Wǒ mǎi le liǎng tiáo kùzi." },
+      "wrong_sentences": [
+        { "text": "我买了两个裤子。", "pinyin": "Wǒ mǎi le liǎng ge kùzi." },
+        { "text": "我买了两条衬衫。", "pinyin": "Wǒ mǎi le liǎng tiáo chènshān." },
+        { "text": "我买两条了裤子。", "pinyin": "Wǒ mǎi liǎng tiáo le kùzi." }
+      ] } },
+    { "vocab_temp_id": "v8", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "买了", "pinyin": "mǎi le" },
+      { "text": "两条", "pinyin": "liǎng tiáo" },
+      { "text": "裤子", "pinyin": "kùzi" }
+    ] } },
+    { "vocab_temp_id": "v8", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Trước cửa nhà tôi có một con đường nhỏ." } },
+    { "vocab_temp_id": "v8", "type": "complete_situation", "payload": {
+      "situation_vi": "Nhân viên cửa hàng hỏi bạn muốn mua mấy cái quần.",
+      "given_sentence_zh": "麻烦您，我要",
+      "given_sentence_pinyin": "Máfan nín, wǒ yào" } },
+
+    { "vocab_temp_id": "v9", "type": "selection", "payload": { "distractors": ["quên", "hiểu", "đồng ý"] } },
+    { "vocab_temp_id": "v9", "type": "audio_recognition", "payload": { "distractors": ["nghĩ ra", "tin tưởng", "chú ý"] } },
+    { "vocab_temp_id": "v9", "type": "fast_decision", "payload": { "wrong_meaning": "quên" } },
+    { "vocab_temp_id": "v9", "type": "select_on_describe", "payload": {
+      "description": "Vẫn giữ được trong đầu chuyện đã xảy ra hoặc việc cần làm, trái nghĩa với quên.",
+      "distractors": [
+        { "word": "忘", "pinyin": "wàng" },
+        { "word": "懂", "pinyin": "dǒng" },
+        { "word": "同意", "pinyin": "tóngyì" }
+      ] } },
+    { "vocab_temp_id": "v9", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "你记得带伞吗？", "pinyin": "Nǐ jìde dài sǎn ma?" },
+      "wrong_sentences": [
+        { "text": "你带伞记得吗？", "pinyin": "Nǐ dài sǎn jìde ma?" },
+        { "text": "你很记得带伞吗？", "pinyin": "Nǐ hěn jìde dài sǎn ma?" },
+        { "text": "你记得了带伞吗？", "pinyin": "Nǐ jìde le dài sǎn ma?" }
+      ] } },
+    { "vocab_temp_id": "v9", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "你", "pinyin": "nǐ" },
+      { "text": "记得", "pinyin": "jìde" },
+      { "text": "带", "pinyin": "dài" },
+      { "text": "伞", "pinyin": "sǎn" },
+      { "text": "吗", "pinyin": "ma" }
+    ] } },
+    { "vocab_temp_id": "v9", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Nhớ mang theo nước uống nhé, trên núi khó mua lắm." } },
+    { "vocab_temp_id": "v9", "type": "complete_situation", "payload": {
+      "situation_vi": "Sắp ra khỏi nhà đi leo núi, bạn nhắc bạn cùng đi vài thứ cần mang.",
+      "given_sentence_zh": "出发以前，你",
+      "given_sentence_pinyin": "Chūfā yǐqián, nǐ" } },
+
+    { "vocab_temp_id": "v10", "type": "grammar", "payload": {
+      "content_target": "不舒服 = khó chịu / không khoẻ",
+      "pinyin": "bù shūfu",
+      "content_vi": "「舒服」nói về cảm giác dễ chịu, nhưng 「不舒服」thường có nghĩa là TRONG NGƯỜI KHÔNG KHOẺ, không chỉ là 'không thoải mái'. Nói 我今天不舒服 = hôm nay tôi thấy mệt/ốm." } },
+    { "vocab_temp_id": "v10", "type": "selection", "payload": { "distractors": ["đắt", "sạch sẽ", "mới"] } },
+    { "vocab_temp_id": "v10", "type": "audio_recognition", "payload": { "distractors": ["ấm áp", "rộng rãi", "yên tĩnh"] } },
+    { "vocab_temp_id": "v10", "type": "fast_decision", "payload": { "wrong_meaning": "sạch sẽ" } },
+    { "vocab_temp_id": "v10", "type": "select_on_describe", "payload": {
+      "description": "Cảm giác dễ chịu về thân thể hoặc tinh thần; thêm 不 vào trước thì thành ý trong người không khoẻ.",
+      "distractors": [
+        { "word": "干净", "pinyin": "gānjìng" },
+        { "word": "安静", "pinyin": "ānjìng" },
+        { "word": "便宜", "pinyin": "piányi" }
+      ] } },
+    { "vocab_temp_id": "v10", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "这件衬衫穿着很舒服。", "pinyin": "Zhè jiàn chènshān chuān zhe hěn shūfu." },
+      "wrong_sentences": [
+        { "text": "这件衬衫穿着舒服很。", "pinyin": "Zhè jiàn chènshān chuān zhe shūfu hěn." },
+        { "text": "这件衬衫很舒服穿着。", "pinyin": "Zhè jiàn chènshān hěn shūfu chuān zhe." },
+        { "text": "这件衬衫是很舒服穿。", "pinyin": "Zhè jiàn chènshān shì hěn shūfu chuān." }
+      ] } },
+    { "vocab_temp_id": "v10", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "这件", "pinyin": "zhè jiàn" },
+      { "text": "衬衫", "pinyin": "chènshān" },
+      { "text": "穿着", "pinyin": "chuān zhe" },
+      { "text": "很", "pinyin": "hěn" },
+      { "text": "舒服", "pinyin": "shūfu" }
+    ] } },
+    { "vocab_temp_id": "v10", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Hôm nay tôi thấy trong người không khoẻ, muốn nghỉ ở nhà." } },
+    { "vocab_temp_id": "v10", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn bè rủ đi leo núi nhưng bạn đang thấy mệt trong người.",
+      "given_sentence_zh": "今天我不去了，",
+      "given_sentence_pinyin": "Jīntiān wǒ bú qù le," } },
+
+    { "vocab_temp_id": "v11", "type": "selection", "payload": { "distractors": ["đắt tiền", "sạch sẽ", "nổi tiếng"] } },
+    { "vocab_temp_id": "v11", "type": "audio_recognition", "payload": { "distractors": ["ngon", "nóng", "đẹp"] } },
+    { "vocab_temp_id": "v11", "type": "fast_decision", "payload": { "wrong_meaning": "ngon" } },
+    { "vocab_temp_id": "v11", "type": "select_on_describe", "payload": {
+      "description": "Nói về đồ ăn vừa hái vừa làm còn tốt; nói về không khí thì là trong lành, dễ thở.",
+      "distractors": [
+        { "word": "好吃", "pinyin": "hǎochī" },
+        { "word": "干净", "pinyin": "gānjìng" },
+        { "word": "有名", "pinyin": "yǒumíng" }
+      ] } },
+    { "vocab_temp_id": "v11", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "山上的空气很新鲜。", "pinyin": "Shān shàng de kōngqì hěn xīnxiān." },
+      "wrong_sentences": [
+        { "text": "山上的空气是新鲜。", "pinyin": "Shān shàng de kōngqì shì xīnxiān." },
+        { "text": "山上的空气新鲜很。", "pinyin": "Shān shàng de kōngqì xīnxiān hěn." },
+        { "text": "山上空气的很新鲜。", "pinyin": "Shān shàng kōngqì de hěn xīnxiān." }
+      ] } },
+    { "vocab_temp_id": "v11", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "山上的", "pinyin": "shān shàng de" },
+      { "text": "空气", "pinyin": "kōngqì" },
+      { "text": "很", "pinyin": "hěn" },
+      { "text": "新鲜", "pinyin": "xīnxiān" }
+    ] } },
+    { "vocab_temp_id": "v11", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Hoa quả ở chợ này rất tươi." } },
+    { "vocab_temp_id": "v11", "type": "complete_situation", "payload": {
+      "situation_vi": "Lên tới đỉnh núi, bạn cùng đi hỏi cảm nhận của bạn.",
+      "given_sentence_zh": "太好了，这里",
+      "given_sentence_pinyin": "Tài hǎo le, zhèlǐ" } },
+
+    { "vocab_temp_id": "v12", "type": "selection", "payload": { "distractors": ["mặn", "chua", "đắng"] } },
+    { "vocab_temp_id": "v12", "type": "audio_recognition", "payload": { "distractors": ["cay", "nhạt", "thơm"] } },
+    { "vocab_temp_id": "v12", "type": "fast_decision", "payload": { "wrong_meaning": "chua" } },
+    { "vocab_temp_id": "v12", "type": "select_on_describe", "payload": {
+      "description": "Vị của đường và mật ong; nước ngọt hay bánh kẹo đều có vị này.",
+      "distractors": [
+        { "word": "咸", "pinyin": "xián" },
+        { "word": "酸", "pinyin": "suān" },
+        { "word": "辣", "pinyin": "là" }
+      ] } },
+    { "vocab_temp_id": "v12", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "这种饮料太甜了。", "pinyin": "Zhè zhǒng yǐnliào tài tián le." },
+      "wrong_sentences": [
+        { "text": "这种饮料甜太了。", "pinyin": "Zhè zhǒng yǐnliào tián tài le." },
+        { "text": "这种饮料是太甜。", "pinyin": "Zhè zhǒng yǐnliào shì tài tián." },
+        { "text": "这种饮料太甜很了。", "pinyin": "Zhè zhǒng yǐnliào tài tián hěn le." }
+      ] } },
+    { "vocab_temp_id": "v12", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "这种", "pinyin": "zhè zhǒng" },
+      { "text": "饮料", "pinyin": "yǐnliào" },
+      { "text": "太", "pinyin": "tài" },
+      { "text": "甜", "pinyin": "tián" },
+      { "text": "了", "pinyin": "le" }
+    ] } },
+    { "vocab_temp_id": "v12", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Tôi không thích đồ uống quá ngọt." } },
+    { "vocab_temp_id": "v12", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn uống thử loại nước bạn mình mới mua và được hỏi thấy thế nào.",
+      "given_sentence_zh": "还可以，不过",
+      "given_sentence_pinyin": "Hái kěyǐ, búguò" } },
+
+    { "vocab_temp_id": "v2", "type": "select_dialog", "payload": {
+      "dialog_a": "明天面试，我穿这件白___好吗？",
+      "dialog_a_pinyin": "Míngtiān miànshì, wǒ chuān zhè jiàn bái ___ hǎo ma?",
+      "dialog_b": "好看，再配那条黑___就更好了。",
+      "dialog_b_pinyin": "Hǎokàn, zài pèi nà tiáo hēi ___ jiù gèng hǎo le.",
+      "blank_a_answer": "衬衫",
+      "blank_b_vocab_id": "v3",
+      "distractors": [
+        { "word": "医院", "pinyin": "yīyuàn" },
+        { "word": "作业", "pinyin": "zuòyè" }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "fill_dialog", "payload": {
+      "dialog_a": "天气预报说明天是___。",
+      "dialog_a_pinyin": "Tiānqì yùbào shuō míngtiān shì ___.",
+      "dialog_b": "太好了，那我们去___吧！",
+      "dialog_b_pinyin": "Tài hǎo le, nà wǒmen qù ___ ba!",
+      "blank_a_answer": "晴天",
+      "blank_b_vocab_id": "v4" } }
+  ],
+  "grammar": [
+    {
+      "content_target": "V + 着 + V",
+      "pinyin": "V + zhe + V",
+      "content_vi": "Động từ thứ nhất mang 着 chỉ trạng thái/cách thức đang diễn ra, động từ thứ hai mới là hành động chính: 穿着很舒服 (mặc vào thì thấy thoải mái), 笑着说 (vừa cười vừa nói). Đừng đảo thứ tự hai động từ.",
+      "vi_du": "这件衬衫穿着很舒服。",
+      "vi_du_pinyin": "Zhè jiàn chènshān chuān zhe hěn shūfu.",
+      "vi_du_vi": "Cái áo sơ mi này mặc vào rất thoải mái."
+    }
+  ],
+  "dialogue": {
+    "lines": [
+      { "speaker": "A", "text_zh": "天气预报说明天是晴天。", "pinyin": "Tiānqì yùbào shuō míngtiān shì qíngtiān.", "text_vi": "Dự báo thời tiết nói mai trời nắng đẹp.", "highlight_vocab_temp_ids": ["v6"] },
+      { "speaker": "B", "text_zh": "太好了！今天是阴天，我哪儿也不想去。", "pinyin": "Tài hǎo le! Jīntiān shì yīntiān, wǒ nǎr yě bù xiǎng qù.", "text_vi": "Tuyệt quá! Hôm nay trời âm u, tớ chẳng muốn đi đâu cả.", "highlight_vocab_temp_ids": ["v7"] },
+      { "speaker": "A", "text_zh": "那明天我们去爬山吧，山上的空气很新鲜。", "pinyin": "Nà míngtiān wǒmen qù páshān ba, shān shàng de kōngqì hěn xīnxiān.", "text_vi": "Vậy mai mình đi leo núi nhé, không khí trên núi rất trong lành.", "highlight_vocab_temp_ids": ["v4", "v11"] },
+      { "speaker": "B", "text_zh": "好，我穿那条旧裤子，走路比较方便。", "pinyin": "Hǎo, wǒ chuān nà tiáo jiù kùzi, zǒulù bǐjiào fāngbiàn.", "text_vi": "Được, tớ mặc cái quần cũ kia, đi lại tiện hơn.", "highlight_vocab_temp_ids": ["v3", "v8"] },
+      { "speaker": "A", "text_zh": "别穿衬衫，穿着不太舒服。", "pinyin": "Bié chuān chènshān, chuān zhe bú tài shūfu.", "text_vi": "Đừng mặc sơ mi, mặc vào không thoải mái lắm.", "highlight_vocab_temp_ids": ["v2", "v10"] },
+      { "speaker": "B", "text_zh": "知道了。你记得带饮料，山上不好买。", "pinyin": "Zhīdào le. Nǐ jìde dài yǐnliào, shān shàng bù hǎo mǎi.", "text_vi": "Biết rồi. Cậu nhớ mang đồ uống, trên núi khó mua lắm.", "highlight_vocab_temp_ids": ["v9", "v1"] },
+      { "speaker": "A", "text_zh": "好，不过别买太甜的。", "pinyin": "Hǎo, búguò bié mǎi tài tián de.", "text_vi": "Ừ, nhưng đừng mua loại ngọt quá.", "highlight_vocab_temp_ids": ["v12"] },
+      { "speaker": "B", "text_zh": "没问题。路上有点儿滑，你要小心。", "pinyin": "Méi wèntí. Lùshang yǒudiǎnr huá, nǐ yào xiǎoxīn.", "text_vi": "Không vấn đề. Đường hơi trơn, cậu phải cẩn thận đấy.", "highlight_vocab_temp_ids": ["v5"] },
+      { "speaker": "A", "text_zh": "放心吧，明天早上七点见！", "pinyin": "Fàngxīn ba, míngtiān zǎoshang qī diǎn jiàn!", "text_vi": "Yên tâm đi, bảy giờ sáng mai gặp nhé!", "highlight_vocab_temp_ids": [] }
+    ]
+  }
+}

@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { docThayDoi, kiemTraFormTu, nhanTu, type DongTu, type FieldSua } from '../../lib/tuVung.ts'
 
 /**
- * Form sửa từ (mockup 14 PC modal 480px / 15 Mobile bottom sheet) — `<dialog>` native, 0 package.
+ * Form sửa từ (mockup 14 PC modal 480px) — `<dialog>` native, 0 package.
+ * M9/Q5: LUÔN căn giữa cả PC lẫn Mobile (bỏ kiểu bottom-sheet của mockup 15 — người dùng yêu cầu,
+ * vì sheet bị đẩy sát mép trên và cắt mất phần đầu trên màn 390px).
  * ĐỦ 8 field cơ bản (`UI_DESIGN` §8.4); mockup chỉ vẽ 5 ô nên 2 field sẽ không bao giờ sửa được.
  * KHÔNG sửa payload bài tập ở đây — muốn đổi bài tập phải import file mới.
  */
@@ -42,10 +44,9 @@ export default function FormSuaTu({ tu, onDong, onLuu }: Props) {
       ref={ref}
       onClose={onDong}
       onClick={(e) => e.target === ref.current && ref.current?.close()}
-      className="w-full max-w-[480px] rounded-t-24 bg-surface-raised p-0 backdrop:bg-[rgb(36_27_58_/_0.35)] md:rounded-20"
+      className="m-auto flex max-h-[85dvh] w-[min(480px,calc(100vw-32px))] flex-col rounded-20 bg-surface-raised p-0 backdrop:bg-[rgb(36_27_58_/_0.35)]"
     >
-      <div className="flex max-h-[78dvh] flex-col gap-3 p-5 md:max-h-[85dvh] md:p-7">
-        <div className="mx-auto mb-1 h-1 w-9 rounded-pill bg-border-subtle md:hidden" />
+      <div className="flex min-h-0 flex-col gap-3 p-5 md:p-7">
         <h2 className="font-display text-18 font-bold text-content-primary md:text-19">Sửa từ vựng</h2>
 
         <div className="flex flex-col gap-2.5 overflow-y-auto">

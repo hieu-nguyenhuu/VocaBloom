@@ -6,9 +6,9 @@ import {
   demDenHan,
   gioVN,
   gomKhuVuon,
+  gopNhatKy,
   loiChao,
   luiNgay,
-  ngayCoOn,
   ngayDayDu,
   TEN_NGUOI_DUNG,
   tinhStreak,
@@ -70,7 +70,7 @@ function ONgay({ o }: { o: ODai }) {
       ? 'border-2 border-award-icon bg-surface-card'
       : 'border border-award-icon/40 bg-surface-card'
   return (
-    <div className="flex flex-col items-center gap-1.5">
+    <div className="flex flex-col items-center gap-1">
       <div className={`flex h-[26px] w-[26px] items-center justify-center rounded-pill ${vien}`}>
         {o.daOn ? (
           <Icon ten="tick" size={13} strokeWidth={2.4} className="text-white" />
@@ -78,8 +78,13 @@ function ONgay({ o }: { o: ODai }) {
           <Icon ten="an-mung" size={12} fill="currentColor" stroke="none" className="text-award-icon" />
         ) : null}
       </div>
+      {/* M9/Q1: có SỐ NGÀY thì mới đọc ra "7 ngày gần nhất", nhãn thứ không thôi dễ tưởng tuần cố định */}
       <span className={`text-10 text-award-text ${o.laHomNay ? 'font-bold' : 'font-semibold'}`}>
-        {o.thu}
+        {o.ngayThang}
+      </span>
+      <span className="text-10 text-award-text/70">{o.laHomNay ? 'Hôm nay' : o.thu}</span>
+      <span className="min-h-[13px] text-10 font-semibold text-award-text">
+        {o.phut > 0 ? `${o.phut}′` : ''}
       </span>
     </div>
   )
@@ -96,7 +101,7 @@ export default function DashboardPage() {
   async function nap() {
     const now = new Date()
     const homNay = homNayVN(now)
-    const [dueRes, vuonRes, ganDayRes, logRes, tbRes] = await Promise.all([
+    const [dueRes, vuonRes, ganDayRes, logRes, nhatKyRes, tbRes] = await Promise.all([
       supabase
         .from('word_state')
         .select('next_review_date')
@@ -109,19 +114,27 @@ export default function DashboardPage() {
         .not('last_reviewed_at', 'is', null)
         .order('last_reviewed_at', { ascending: false })
         .limit(8),
+      // M14: QUÁ KHỨ đọc từ `nhat_ky_ngay` (không có FK ⇒ xoá từ vựng không làm mất),
+      // còn `review_log` chỉ dùng cho HÔM NAY để phiên đang học dở vẫn lên streak ngay.
       supabase
         .from('review_log')
-        .select('reviewed_at')
-        .gte('reviewed_at', `${luiNgay(homNay, 30)}T00:00:00+07:00`),
+        .select('reviewed_at, thoi_gian_ms')
+        .gte('reviewed_at', `${homNay}T00:00:00+07:00`),
+      supabase
+        .from('nhat_ky_ngay')
+        .select('ngay, thoi_gian_ms')
+        .gte('ngay', luiNgay(homNay, 30)),
       supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false),
     ])
-    const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? tbRes.error
+    const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? nhatKyRes.error ?? tbRes.error
     if (e) return setLoi(e.message)
 
     // supabase-js suy kiểu quan hệ vocab(word) thành mảng; thực tế là 1 object (FK n-1)
     const gd = (ganDayRes.data ?? []) as unknown as (TuGanDay & { vocab: { word: string } | null })[]
     const { dungHan, quaHan, tong } = demDenHan(dueRes.data ?? [], homNay)
-    const ngay = ngayCoOn((logRes.data ?? []) as { reviewed_at: string }[])
+    const logs = (logRes.data ?? []) as { reviewed_at: string; thoi_gian_ms: number | null }[]
+    const nhatKy = (nhatKyRes.data ?? []) as { ngay: string; thoi_gian_ms: number | null }[]
+    const { ngayCoHoc: ngay, phutMoiNgay: phut } = gopNhatKy(nhatKy, logs, homNay)
     setLoi(null)
     setDl({
       homNay,
@@ -131,7 +144,7 @@ export default function DashboardPage() {
       tong,
       coTu: (vuonRes.data ?? []).length > 0,
       streak: tinhStreak(ngay, homNay),
-      dai: dai7Ngay(ngay, homNay),
+      dai: dai7Ngay(ngay, homNay, phut),
       vuon: gomKhuVuon((vuonRes.data ?? []) as { stage: string }[]) as { stage: StageCay; so: number }[],
       ganDay: gd.map((t) => ({ ...t, word: t.vocab?.word ?? '?' })),
       chuaDoc: tbRes.count ?? 0,

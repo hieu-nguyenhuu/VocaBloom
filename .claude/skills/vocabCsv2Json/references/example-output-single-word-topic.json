@@ -194,5 +194,23 @@
         "highlight_vocab_temp_ids": []
       }
     ]
-  }
+  },
+  "grammar": [
+    {
+      "content_target": "今天 + 天气 + adj",
+      "pinyin": "jīntiān + tiānqì + adj",
+      "content_vi": "Câu tả thời tiết KHÔNG dùng 是: nói 今天天气很好, không nói 今天天气是好.",
+      "vi_du": "今天天气很好。",
+      "vi_du_pinyin": "Jīntiān tiānqì hěn hǎo.",
+      "vi_du_vi": "Hôm nay thời tiết rất đẹp."
+    },
+    {
+      "content_target": "要…了",
+      "pinyin": "yào … le",
+      "content_vi": "Sắp sửa xảy ra: 要下雨了 = sắp mưa rồi.",
+      "vi_du": "要下雨了，带伞吧。",
+      "vi_du_pinyin": "Yào xià yǔ le, dài sǎn ba.",
+      "vi_du_vi": "Sắp mưa rồi, mang ô đi nhé."
+    }
+  ]
 }

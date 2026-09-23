@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Icon, IconCay } from '../../components/icons.tsx'
 import {
@@ -16,6 +16,10 @@ import { supabase } from '../../lib/supabase.ts'
  * Số liệu là CỘNG DỒN CẢ NGÀY — query review_log, KHÔNG dùng state client (§4.6). Xem bao nhiêu lần
  * trong ngày cũng đúng. Icon stage tô màu TƯỢNG TRƯNG theo stage (ring-N), không theo total_points.
  * Tự quyết (DESIGN §4): thêm nút "Ôn lại N từ chưa đạt" khi hàng đợi retry hôm nay có hàng.
+ *
+ * M14: đây cũng là nơi CHỐT NHẬT KÝ NGÀY — mọi đường kết thúc lượt (hết bài, bấm X, xong hội
+ * thoại chủ đề) đều dẫn về màn này. RPC `chot_nhat_ky_ngay` ghi số phút vào bảng `nhat_ky_ngay`
+ * (không có khoá ngoại) để xoá từ vựng về sau không làm mất streak.
  */
 const MAU_STAGE = {
   new: 'text-ring-0', stage1: 'text-ring-1', stage2: 'text-ring-2', stage3: 'text-ring-3', intensive: 'text-ring-4', mastered: 'text-ring-5',
@@ -26,6 +30,19 @@ type DuLieu = { tk: TongKet; tu: Record<string, string>; conCho: number; soRetry
 export default function TongKetPage() {
   const [dl, setDl] = useState<DuLieu | null>(null)
   const [loi, setLoi] = useState<string | null>(null)
+  // Ref guard: StrictMode gọi effect 2 lần (bài học MB-20/1). RPC vốn idempotent (tính lại cả
+  // ngày rồi upsert) nên gọi đôi không sai số liệu, nhưng không có lý do gì để gọi thừa.
+  const daChot = useRef(false)
+
+  // M14 — chốt nhật ký ngày. CỐ Ý tách khỏi effect nạp dữ liệu và KHÔNG chặn màn khi lỗi:
+  // người vừa học xong không đáng bị chặn bởi một thao tác thống kê chạy nền.
+  useEffect(() => {
+    if (daChot.current) return
+    daChot.current = true
+    void supabase.rpc('chot_nhat_ky_ngay').then(({ error }) => {
+      if (error) console.warn('Không chốt được nhật ký ngày:', error.message)
+    })
+  }, [])
 
   useEffect(() => {
     const homNay = homNayVN(new Date())

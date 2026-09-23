@@ -64,17 +64,92 @@ export function tinhStreak(ngayCoLog: ReadonlySet<string>, homNay: string): numb
   return n
 }
 
-export type ODai = { ngay: string; thu: string; daOn: boolean; laHomNay: boolean }
+export type ODai = {
+  ngay: string
+  thu: string
+  /** "18/9" — M9/Q1: có số ngày thì mới thấy rõ đây là 7 ngày GẦN NHẤT, không phải tuần cố định. */
+  ngayThang: string
+  daOn: boolean
+  laHomNay: boolean
+  /** Số phút học trong ngày (0 nếu không học hoặc dòng log cũ chưa đo). */
+  phut: number
+}
+
+/**
+ * Cộng thời gian học theo ngày GIỜ VN. Dòng `review_log` cũ có `thoi_gian_ms = null` (trước M9)
+ * ⇒ BỎ QUA, không bịa số cho quá khứ. Làm tròn LÊN để phiên ngắn không hiện "0 phút".
+ */
+export function gomPhutMoiNgay(
+  rows: readonly { reviewed_at: string; thoi_gian_ms: number | null }[],
+): Map<string, number> {
+  const ms = new Map<string, number>()
+  for (const r of rows) {
+    if (typeof r.thoi_gian_ms !== 'number' || r.thoi_gian_ms <= 0) continue
+    const ngay = homNayVN(new Date(r.reviewed_at))
+    ms.set(ngay, (ms.get(ngay) ?? 0) + r.thoi_gian_ms)
+  }
+  return new Map([...ms].map(([ngay, tong]) => [ngay, Math.ceil(tong / 60_000)]))
+}
+
+export type DongNhatKy = { ngay: string; thoi_gian_ms: number | null }
+
+/**
+ * M14 — gộp NHẬT KÝ NGÀY (bảng `nhat_ky_ngay`) với `review_log` của RIÊNG HÔM NAY.
+ *
+ * Vì sao phải có hàm này thay vì đọc thẳng `review_log` như trước:
+ *   · `review_log.vocab_id` có `on delete cascade` ⇒ xoá từ là mất lịch sử học. Nhật ký không có
+ *     khoá ngoại nào nên sống sót ⇒ QUÁ KHỨ phải đọc từ nhật ký.
+ *   · Nhưng nhật ký chỉ được chốt khi kết thúc lượt, nên phiên ĐANG học dở chưa có trong đó
+ *     ⇒ HÔM NAY hợp thêm từ `review_log` để streak nhảy lên ngay.
+ *
+ * Hôm nay có ở cả 2 nguồn thì lấy giá trị LỚN HƠN, KHÔNG cộng dồn: nhật ký đã bao gồm các lượt
+ * trước trong ngày, cộng thêm là đếm trùng.
+ *
+ * Ngày có học nhưng mọi dòng `thoi_gian_ms = null` (dữ liệu trước M9) vẫn vào `ngayCoHoc` —
+ * streak đếm theo SỰ TỒN TẠI của ngày, không theo số phút > 0.
+ */
+export function gopNhatKy(
+  nhatKy: readonly DongNhatKy[],
+  logHomNay: readonly { reviewed_at: string; thoi_gian_ms: number | null }[],
+  homNay: string,
+): { ngayCoHoc: Set<string>; phutMoiNgay: Map<string, number> } {
+  const ngayCoHoc = new Set<string>()
+  const phutMoiNgay = new Map<string, number>()
+
+  for (const d of nhatKy) {
+    ngayCoHoc.add(d.ngay)
+    const phut = Math.ceil((d.thoi_gian_ms ?? 0) / 60_000)
+    if (phut > 0) phutMoiNgay.set(d.ngay, phut)
+  }
+
+  // Chỉ lấy dòng CỦA HÔM NAY: quá khứ đã có nhật ký, và review_log quá khứ có thể đã bị xoá.
+  const cuaHomNay = logHomNay.filter((r) => homNayVN(new Date(r.reviewed_at)) === homNay)
+  if (cuaHomNay.length > 0) {
+    ngayCoHoc.add(homNay)
+    const phut = gomPhutMoiNgay(cuaHomNay).get(homNay) ?? 0
+    const daCo = phutMoiNgay.get(homNay) ?? 0
+    if (Math.max(phut, daCo) > 0) phutMoiNgay.set(homNay, Math.max(phut, daCo))
+  }
+
+  return { ngayCoHoc, phutMoiNgay }
+}
 
 /** 7 ngày gần nhất, phần tử cuối = hôm nay (chốt M6b/Q3 — hiện ở CẢ PC lẫn Mobile). */
-export function dai7Ngay(ngayCoLog: ReadonlySet<string>, homNay: string): ODai[] {
+export function dai7Ngay(
+  ngayCoLog: ReadonlySet<string>,
+  homNay: string,
+  phutMoiNgay: ReadonlyMap<string, number> = new Map(),
+): ODai[] {
   return Array.from({ length: 7 }, (_, i) => {
     const ngay = luiNgay(homNay, 6 - i)
+    const [, m, d] = tach(ngay)
     return {
       ngay,
       thu: THU_NGAN[thuCua(ngay)]!,
+      ngayThang: `${d}/${m}`,
       daOn: ngayCoLog.has(ngay),
       laHomNay: ngay === homNay,
+      phut: phutMoiNgay.get(ngay) ?? 0,
     }
   })
 }

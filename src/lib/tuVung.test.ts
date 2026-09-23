@@ -5,7 +5,9 @@ import {
   canXoaAudio,
   docThayDoi,
   kiemTraFormTu,
+  locTheoStage,
   locTu,
+  NHAN_STAGE,
   nhanTu,
   type DongTu,
 } from './tuVung.ts'
@@ -118,5 +120,33 @@ describe('kỷ luật module', () => {
     const src = readFileSync(new URL('./tuVung.ts', import.meta.url), 'utf8')
     expect(src).not.toMatch(/from '(react|node:|@supabase)/)
     expect(src).not.toMatch(/\.\/supabase\.ts/)
+  })
+})
+
+describe('NHAN_STAGE & locTheoStage (M10 — màn Tất cả từ vựng)', () => {
+  const ds = [
+    { id: '1', stage: 'new' as const },
+    { id: '2', stage: 'stage2' as const },
+    { id: '3', stage: 'mastered' as const },
+    { id: '4', stage: 'stage2' as const },
+  ]
+
+  it('đủ nhãn cho 6 stage', () => {
+    expect(Object.keys(NHAN_STAGE)).toEqual(['new', 'stage1', 'stage2', 'stage3', 'intensive', 'mastered'])
+  })
+
+  it('"tat-ca" → giữ nguyên danh sách', () => {
+    expect(locTheoStage(ds, 'tat-ca')).toHaveLength(4)
+  })
+
+  it('lọc đúng theo stage', () => {
+    expect(locTheoStage(ds, 'stage2').map((x) => x.id)).toEqual(['2', '4'])
+    expect(locTheoStage(ds, 'stage1')).toEqual([])
+  })
+
+  it('từ chưa có word_state (stage undefined) không lọt vào bộ lọc stage', () => {
+    const khongStage: { id: string; stage?: 'new' }[] = [{ id: '9' }]
+    expect(locTheoStage(khongStage, 'new')).toEqual([])
+    expect(locTheoStage(khongStage, 'tat-ca')).toHaveLength(1)
   })
 })

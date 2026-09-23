@@ -5,6 +5,23 @@
  * muốn đổi bài tập thì import file mới.
  */
 
+import type { Stage } from './srs.ts'
+
+/** Nhãn tiếng Việt cho 6 stage — ẩn dụ cây (productContext §3.5). */
+export const NHAN_STAGE: Record<Stage, string> = {
+  new: 'Hạt giống',
+  stage1: 'Mầm',
+  stage2: 'Chồi',
+  stage3: 'Lá',
+  intensive: 'Hoa',
+  mastered: 'Quả',
+}
+
+/** Lọc danh sách từ theo stage; `'tat-ca'` giữ nguyên. Từ chưa có `word_state` không khớp stage nào. */
+export function locTheoStage<T extends { stage?: Stage }>(ds: readonly T[], stage: Stage | 'tat-ca'): T[] {
+  return stage === 'tat-ca' ? [...ds] : ds.filter((t) => t.stage === stage)
+}
+
 export type DongTu = {
   id: string
   word: string
@@ -17,6 +34,8 @@ export type DongTu = {
   example_sentence: string | null
   example_meaning_vi: string | null
   audio_url: string | null
+  /** Ghép từ `word_state` khi hiển thị danh sách (M10) — không phải cột của bảng `vocab`. */
+  stage?: Stage
 }
 
 export const FIELD_SUA = [

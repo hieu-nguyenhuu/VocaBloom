@@ -85,7 +85,9 @@ export default function ChonChuDePage() {
               key={c.id}
               type="button"
               disabled={c.so_tu === 0}
-              onClick={() => navigate(`/on-tap?che_do=topic&topic=${c.id}`)}
+              // M12b: vào màn ngữ pháp chủ đề TRƯỚC; chủ đề không có mục nào thì màn đó
+              // tự chuyển tiếp thẳng vào Player, luồng cũ không đổi.
+              onClick={() => navigate(`/on-tap/ngu-phap?topic=${c.id}&giai_doan=dau`)}
               className="rounded-16 border border-border-card bg-surface-card p-4 text-left disabled:opacity-60"
             >
               <div className="flex items-baseline justify-between gap-3">

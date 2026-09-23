@@ -11,10 +11,12 @@ import {
   dongCanhBao,
   giamTrangThai,
   timTuTrung,
+  tongKetMe,
+  type MucFile,
   type TrangThaiImport,
 } from './importUi.ts'
 
-const MAU = readFileSync('import_csv_vocab/references/example-output.json', 'utf8')
+const MAU = readFileSync('.claude/skills/vocabCsv2Json/references/example-output.json', 'utf8')
 
 describe('docFileImport', () => {
   it('file mẫu thật → hợp lệ, có tóm tắt, giữ du_lieu để gửi RPC', () => {
@@ -95,55 +97,109 @@ describe('dichLoiImport', () => {
   })
 })
 
-describe('giamTrangThai — reducer 5 trạng thái (DESIGN.md §2.1)', () => {
+describe('giamTrangThai — reducer NHIỀU FILE (M12/Q4, DESIGN.md §5.3)', () => {
   const BAT_DAU: TrangThaiImport = { buoc: 'chon_file' }
-  const FILE = { ten_file: 'a.json', kich_thuoc: 1000 }
-  const chonOk = () => giamTrangThai(BAT_DAU, { loai: 'chon', ...FILE, ket_qua: docFileImport(MAU) })
-  const RPC = { topic_id: 'x', so_tu: 1, so_bai_tap: 2, so_dong_hoi_thoai: 3 }
+  const RPC = { topic_id: 'x', so_tu: 1, so_bai_tap: 2, so_dong_hoi_thoai: 3, so_ngu_phap: 2 }
 
-  it('chon file hợp lệ → preview, mang tóm tắt + cảnh báo validator dạng chuỗi + du_lieu', () => {
-    const s = chonOk()
+  /** File hợp lệ đọc từ file mẫu THẬT; file hỏng dùng JSON sai cú pháp. */
+  function chon(...ten: string[]) {
+    return giamTrangThai(BAT_DAU, {
+      loai: 'chon',
+      ds: ten.map((t) => ({
+        ten_file: t,
+        kich_thuoc: 1000,
+        ket_qua: docFileImport(t.startsWith('hong') ? 'nope' : MAU),
+      })),
+    })
+  }
+  function ds(s: TrangThaiImport): MucFile[] {
+    if (s.buoc === 'chon_file') throw new Error(`đang ở ${s.buoc}, không có danh sách file`)
+    return s.ds
+  }
+
+  it('R1 — chọn 1 file hợp lệ → preview, mang tóm tắt + du_lieu (N=1 là trường hợp riêng)', () => {
+    const s = chon('a.json')
     expect(s.buoc).toBe('preview')
-    if (s.buoc !== 'preview') return
-    expect(s.ten_file).toBe('a.json')
-    expect(s.tom_tat.so_tu).toBeGreaterThan(0)
-    expect(s.du_lieu).toEqual(JSON.parse(MAU))
+    const m = ds(s)[0]!
+    expect(m.ten_file).toBe('a.json')
+    expect(m.tt).toBe('san_sang')
+    if (m.tt !== 'san_sang') return
+    expect(m.tom_tat.so_tu).toBeGreaterThan(0)
+    expect(m.du_lieu).toEqual(JSON.parse(MAU))
   })
-  it('chon file lỗi → loi_file, giữ danh sách lỗi', () => {
-    const s = giamTrangThai(BAT_DAU, { loai: 'chon', ...FILE, ket_qua: docFileImport('nope') })
-    expect(s.buoc).toBe('loi_file')
-    if (s.buoc === 'loi_file') expect(s.loi[0]?.duong_dan).toBe('(JSON)')
+
+  it('R2 — chọn 3 file trong đó 1 hỏng → 2 san_sang + 1 loi, KHÔNG chặn cả mẻ', () => {
+    const s = chon('a.json', 'hong.json', 'b.json')
+    expect(s.buoc).toBe('preview')
+    expect(ds(s).map((m) => m.tt)).toEqual(['san_sang', 'loi', 'san_sang'])
+    const hong = ds(s)[1]!
+    if (hong.tt === 'loi') expect(hong.loi[0]?.duong_dan).toBe('(JSON)')
   })
-  it('them_canh_bao ở preview → nối thêm dòng', () => {
-    const s = giamTrangThai(chonOk(), { loai: 'them_canh_bao', dong: ['x', 'y'] })
-    if (s.buoc === 'preview') expect(s.canh_bao.slice(-2)).toEqual(['x', 'y'])
-    else throw new Error('phải còn ở preview')
+
+  it('R3 — them_canh_bao chỉ đụng ĐÚNG file được nêu tên', () => {
+    const s = giamTrangThai(chon('a.json', 'b.json'), {
+      loai: 'them_canh_bao', ten_file: 'b.json', dong: ['x', 'y'],
+    })
+    const [a, b] = ds(s) as [MucFile, MucFile]
+    if (a.tt !== 'san_sang' || b.tt !== 'san_sang') throw new Error('cả 2 phải còn san_sang')
+    expect(b.canh_bao.slice(-2)).toEqual(['x', 'y'])
+    expect(a.canh_bao).not.toContain('x')
   })
-  it('huy / chon_file_khac → chon_file', () => {
-    expect(giamTrangThai(chonOk(), { loai: 'huy' })).toEqual({ buoc: 'chon_file' })
-    const loi = giamTrangThai(BAT_DAU, { loai: 'chon', ...FILE, ket_qua: docFileImport('nope') })
-    expect(giamTrangThai(loi, { loai: 'chon_file_khac' })).toEqual({ buoc: 'chon_file' })
+
+  it('R4 — bo_file xoá đúng 1 dòng; bỏ hết → quay về chon_file', () => {
+    const s = giamTrangThai(chon('a.json', 'b.json'), { loai: 'bo_file', ten_file: 'a.json' })
+    expect(ds(s).map((m) => m.ten_file)).toEqual(['b.json'])
+    expect(giamTrangThai(s, { loai: 'bo_file', ten_file: 'b.json' })).toEqual({ buoc: 'chon_file' })
   })
-  it('xac_nhan → dang_import → import_ok → ket_qua_ok mang số liệu RPC', () => {
-    const dang = giamTrangThai(chonOk(), { loai: 'xac_nhan' })
-    expect(dang.buoc).toBe('dang_import')
-    const ok = giamTrangThai(dang, { loai: 'import_ok', ket_qua: RPC })
-    expect(ok).toEqual({ buoc: 'ket_qua_ok', ten_topic: docFileImport(MAU).tom_tat.ten_topic, ket_qua: RPC })
+
+  it('R5 — xac_nhan chỉ chuyển file san_sang; file lỗi giữ nguyên để bị bỏ qua (Q4)', () => {
+    const s = giamTrangThai(chon('a.json', 'hong.json'), { loai: 'xac_nhan' })
+    expect(s.buoc).toBe('dang_import')
+    expect(ds(s).map((m) => m.tt)).toEqual(['dang_import', 'loi'])
   })
-  it('import_loi → ket_qua_loi giữ du_lieu; thu_lai → dang_import lại với cùng du_lieu', () => {
-    const dang = giamTrangThai(chonOk(), { loai: 'xac_nhan' })
-    const loi = giamTrangThai(dang, { loai: 'import_loi', loi: 'boom' })
-    expect(loi.buoc).toBe('ket_qua_loi')
-    if (loi.buoc !== 'ket_qua_loi') return
-    expect(loi.loi).toBe('boom')
-    const lai = giamTrangThai(loi, { loai: 'thu_lai' })
+
+  it('R6 — file_loi giữa mẻ KHÔNG ảnh hưởng file khác; xong_het → ket_qua', () => {
+    const dang = giamTrangThai(chon('a.json', 'b.json'), { loai: 'xac_nhan' })
+    const sauLoi = giamTrangThai(dang, { loai: 'file_loi', ten_file: 'a.json', loi: 'boom' })
+    const sauOk = giamTrangThai(sauLoi, { loai: 'file_ok', ten_file: 'b.json', ket_qua: RPC })
+    expect(ds(sauOk).map((m) => m.tt)).toEqual(['that_bai', 'xong'])
+    const het = giamTrangThai(sauOk, { loai: 'xong_het' })
+    expect(het.buoc).toBe('ket_qua')
+    expect(tongKetMe(ds(het))).toEqual({
+      so_file_ok: 1, so_file_loi: 1, so_tu: 1, so_bai_tap: 2, so_dong_hoi_thoai: 3, so_ngu_phap: 2,
+    })
+  })
+
+  it('R7 — thu_lai chỉ đưa file that_bai quay lại, file xong giữ nguyên', () => {
+    const dang = giamTrangThai(chon('a.json', 'b.json'), { loai: 'xac_nhan' })
+    const s1 = giamTrangThai(dang, { loai: 'file_loi', ten_file: 'a.json', loi: 'boom' })
+    const s2 = giamTrangThai(s1, { loai: 'file_ok', ten_file: 'b.json', ket_qua: RPC })
+    const lai = giamTrangThai(giamTrangThai(s2, { loai: 'xong_het' }), { loai: 'thu_lai' })
     expect(lai.buoc).toBe('dang_import')
-    if (lai.buoc === 'dang_import') expect(lai.du_lieu).toEqual(loi.du_lieu)
+    expect(ds(lai).map((m) => m.tt)).toEqual(['dang_import', 'xong'])
+    const a = ds(lai)[0]!
+    if (a.tt === 'dang_import') expect(a.du_lieu).toEqual(JSON.parse(MAU))
   })
-  it('hành động sai bước → trả nguyên state (không đổi tham chiếu)', () => {
+
+  it('R8 — tongKetMe cộng dồn số liệu RPC của nhiều file, bỏ qua so_ngu_phap thiếu', () => {
+    const dang = giamTrangThai(chon('a.json', 'b.json'), { loai: 'xac_nhan' })
+    const s1 = giamTrangThai(dang, { loai: 'file_ok', ten_file: 'a.json', ket_qua: RPC })
+    const { so_ngu_phap: _bo, ...rpcCu } = RPC // RPC bản cũ chưa trả so_ngu_phap
+    const s2 = giamTrangThai(s1, { loai: 'file_ok', ten_file: 'b.json', ket_qua: rpcCu })
+    expect(tongKetMe(ds(s2))).toMatchObject({ so_file_ok: 2, so_tu: 2, so_ngu_phap: 2 })
+  })
+
+  it('R9 — chon_file_khac → chon_file; hành động sai bước trả NGUYÊN tham chiếu', () => {
+    expect(giamTrangThai(chon('a.json'), { loai: 'chon_file_khac' })).toEqual({ buoc: 'chon_file' })
     expect(giamTrangThai(BAT_DAU, { loai: 'xac_nhan' })).toBe(BAT_DAU)
-    const pv = chonOk()
-    expect(giamTrangThai(pv, { loai: 'import_ok', ket_qua: RPC })).toBe(pv)
+    const pv = chon('a.json')
+    expect(giamTrangThai(pv, { loai: 'file_ok', ten_file: 'a.json', ket_qua: RPC })).toBe(pv)
+    expect(giamTrangThai(pv, { loai: 'bo_file', ten_file: 'khong-co.json' })).toBe(pv)
+  })
+
+  it('R10 — xac_nhan khi mọi file đều lỗi → không đổi state', () => {
+    const chiLoi = chon('hong.json')
+    expect(giamTrangThai(chiLoi, { loai: 'xac_nhan' })).toBe(chiLoi)
   })
 })
 

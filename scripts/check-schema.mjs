@@ -12,12 +12,22 @@ import { chaySql, SUPABASE_URL, ANON_KEY, dangNhap } from './db-lib.mjs'
 const BANG = [
   'topics', 'vocab', 'vocab_topics', 'word_state', 'daily_retry_queue',
   'exercises', 'review_log', 'topic_dialogues', 'notifications', 'settings',
+  'topic_grammar',   // M12 — bảng thứ 11 (ngữ pháp CỦA CHỦ ĐỀ)
+  'nhat_ky_ngay',    // M14 — bảng thứ 12 (nhật ký học theo ngày, KHÔNG có FK tới vocab)
+]
+
+// Key settings BẮT BUỘC có mặt — liệt kê TƯỜNG MINH, không đếm (bài học MB-13).
+// Bản cũ assert `count(*) === 5` nên đỏ âm thầm từ khi M6a/M6c/M11 thêm key mới.
+const KEY_SETTINGS = [
+  'openrouter_api_key', 'openrouter_model', 'google_tts_api_key',
+  'new_words_per_day', 'max_tu_moi_luot',
+  'tts_voice', 'tts_voice_en', 'low_queue_alert_enabled',
 ]
 
 const INDEX = [
   'idx_word_state_due', 'idx_word_state_queue', 'idx_retry_queue_date',
   'idx_exercises_vocab_type', 'idx_exercises_blank_b', 'idx_review_log_daily',
-  'idx_review_log_reviewed_at', 'idx_topic_dialogue_topic',
+  'idx_review_log_reviewed_at', 'idx_topic_dialogue_topic', 'idx_topic_grammar_topic',
 ]
 
 let hong = 0
@@ -43,7 +53,8 @@ const { rows } = await chaySql(`
         and c.relname = any(array[${BANG.map((t) => `'${t}'`)}]))::int as so_bang_bat_rls,
     (select count(*) from pg_policies
       where schemaname = 'public' and policyname = 'authenticated_full_access')::int as so_policy,
-    (select count(*) from settings)::int as so_settings,
+    (select count(*) from unnest(array[${KEY_SETTINGS.map((k) => `'${k}'`)}]) k
+      where exists (select 1 from settings s where s.key = k))::int as so_settings,
     (select count(*) from cron.job where jobname = 'daily-srs-maintenance' and active)::int as so_cron,
     (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.proname = 'run_daily_maintenance')::int as co_ham,
@@ -61,12 +72,13 @@ bao(r.nhan_word_stage === 6, 'Enum word_stage đủ 6 nhãn', `thấy ${r.nhan_w
 bao(r.nhan_exercise_type === 17, 'Enum exercise_type đủ 17 nhãn', `thấy ${r.nhan_exercise_type}`)
 bao(r.so_bang_bat_rls === BANG.length, `RLS bật trên cả ${BANG.length} bảng`, `thấy ${r.so_bang_bat_rls}`)
 bao(r.so_policy === BANG.length, `Đủ ${BANG.length} policy authenticated_full_access`, `thấy ${r.so_policy}`)
-bao(r.so_settings === 5, 'Seed settings đủ 5 key', `thấy ${r.so_settings}`)
+bao(r.so_settings === KEY_SETTINGS.length,
+    `Seed settings đủ ${KEY_SETTINGS.length} key bắt buộc`, `thấy ${r.so_settings}`)
 bao(r.co_ham === 1, 'Hàm run_daily_maintenance() tồn tại')
 bao(r.so_cron === 1, 'Cron job daily-srs-maintenance đang active')
 bao(r.anon_goi_duoc_ham === false, 'anon KHÔNG gọi được hàm qua RPC (đã revoke)')
 bao(r.anon_doc_duoc_bang === false, 'anon KHÔNG có quyền SELECT trên bất kỳ bảng nào')
-bao(r.auth_doc_duoc_bang === true, 'authenticated CÓ quyền SELECT trên cả 10 bảng')
+bao(r.auth_doc_duoc_bang === true, `authenticated CÓ quyền SELECT trên cả ${BANG.length} bảng`)
 
 // ── 2 phép thử RLS bằng HTTP thật ────────────────────────────────────────
 const anon = await fetch(`${SUPABASE_URL}/rest/v1/topics?select=id&limit=1`, {
@@ -96,7 +108,8 @@ if (!token) {
   })
   const duLieuAuth = await auth.json().catch(() => null)
   bao(
-    auth.status === 200 && Array.isArray(duLieuAuth) && duLieuAuth.length === 5,
+    // Chỉ kiểm QUYỀN ĐỌC, không chốt số dòng: settings còn được thêm key ở các milestone sau.
+    auth.status === 200 && Array.isArray(duLieuAuth) && duLieuAuth.length >= KEY_SETTINGS.length,
     'Tài khoản đã đăng nhập ĐỌC ĐƯỢC dữ liệu',
     `HTTP ${auth.status}, ${Array.isArray(duLieuAuth) ? duLieuAuth.length : '?'} dòng settings`,
   )

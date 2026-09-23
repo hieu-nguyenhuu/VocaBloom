@@ -15,8 +15,9 @@ const O_XONG = `${O} border-[1.5px] border-success bg-success-bg font-semibold t
 const O_SAI = `${O} border-[1.5px] border-danger bg-danger-bg font-semibold text-danger-text`
 
 export default function Matching({ dsTu, onXong }: Props) {
-  const trai = useMemo(() => xaoTron(dsTu, Math.random), [dsTu])
-  const phai = useMemo(() => xaoTron(dsTu, Math.random), [dsTu])
+  // Xáo 1 lần khi mount (cùng lỗi với TracNghiem: `dsTu` là mảng mới mỗi render của Player)
+  const [trai] = useState(() => xaoTron(dsTu, Math.random))
+  const [phai] = useState(() => xaoTron(dsTu, Math.random))
   const dapAn = useMemo(() => Object.fromEntries(dsTu.map((v) => [v.id, v.meaning_vi])), [dsTu])
 
   const [chonTrai, setChonTrai] = useState<string | null>(null)

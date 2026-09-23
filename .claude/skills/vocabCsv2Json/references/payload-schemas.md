@@ -62,7 +62,14 @@ Mỗi mục dưới đây = 1 object cần thêm vào mảng `exercises`, dạng
 { "vocab_temp_id": "v1", "type": "<type>", "payload": { ... } }
 ```
 
-### 3.1 `grammar`
+### 3.1 `grammar` — ngữ pháp CỦA TỪ (dạng **CÓ ĐIỀU KIỆN**, không phải từ nào cũng có)
+
+> ⚠️ **M12 — đọc kỹ:** đây là ngữ pháp gắn với **1 từ cụ thể**, KHÁC HẲN *ngữ pháp CỦA CHỦ ĐỀ*
+> (mảng `grammar` ở gốc file, xem mục 4b).
+>
+> **Chỉ tạo record này khi từ đó thực sự có điểm DỄ DÙNG SAI** — xem bảng tiêu chí ở `SKILL.md`
+> Bước 3.3. Từ thông thường (`猫`, `水`, `书`…) **KHÔNG được** có `grammar`: gắn tràn lan làm
+> người học phải bấm qua một thẻ vô nghĩa ở mọi từ, và đó chính là lỗi đã phải sửa ở M12.
 
 | Field trong `payload` | Kiểu | Ghi chú |
 |---|---|---|
@@ -134,7 +141,7 @@ Chỉ tạo khi tìm được **2 từ vựng trong cùng topic ghép tự nhiê
 
 | Field | Kiểu | Ghi chú |
 |---|---|---|
-| `dialog_a` | string | Câu A, chỗ trống viết là `___` (3 dấu gạch dưới liền nhau). |
+| `dialog_a` | string | Câu A, chỗ trống viết là `___` (3 dấu gạch dưới liền nhau). ⚠️ **ĐÚNG 1 chỗ trống mỗi câu** — xem cảnh báo ngay dưới bảng. |
 | `dialog_a_pinyin` | string | Phiên âm cả câu A (giữ nguyên `___` ở đúng vị trí). |
 | `dialog_b` | string | Câu B, cũng có `___`. |
 | `dialog_b_pinyin` | string | Phiên âm cả câu B. |
@@ -143,6 +150,12 @@ Chỉ tạo khi tìm được **2 từ vựng trong cùng topic ghép tự nhiê
 | `distractors` | array[object] | Đúng **2 phần tử**, mỗi phần tử `{ "word": "...", "pinyin": "..." }`, là từ KHÔNG liên quan chủ đề (để không gây nhầm lẫn với 2 đáp án đúng). |
 
 Record này được tạo với `vocab_temp_id` = từ A (từ "chính").
+
+> 🔴 **QUY ƯỚC CHỖ TRỐNG — đã trả giá 1 lần, đừng lặp lại:** chỗ trống của từ A nằm ở **câu A**,
+> chỗ trống của từ B nằm ở **câu B**, **mỗi câu ĐÚNG 1 dấu `___`**. Dồn 2 chỗ trống vào cùng 1 câu
+> sẽ làm **vỡ layout màn hội thoại** của Player (bug thật ở M9, xem MB-29/Q5 — chính bộ dữ liệu do
+> AI soạn đã vi phạm). `blank_a_answer` là đáp án cho chỗ trống ở câu A; đáp án cho câu B lấy từ
+> `vocab.word` của từ được `blank_b_vocab_id` trỏ tới, KHÔNG có field riêng.
 
 ### 3.11 `fill_dialog` — giống `select_dialog` nhưng KHÔNG có đáp án chọn (nhập tay)
 
@@ -166,6 +179,7 @@ Field giống hệt `select_dialog` NHƯNG **bỏ hẳn field `distractors`**:
   "topic": { "name": "...", "description": "..." },
   "vocab": [ /* mảng object theo mục 0 */ ],
   "exercises": [ /* mảng object theo mục 3 */ ],
+  "grammar": [ /* NGỮ PHÁP CỦA CHỦ ĐỀ — mảng object theo mục 4b. TUỲ CHỌN */ ],
   "dialogue": {
     "lines": [
       {
@@ -180,9 +194,33 @@ Field giống hệt `select_dialog` NHƯNG **bỏ hẳn field `distractors`**:
 }
 ```
 
-- `dialogue` (cả object) về mặt schema thật của app là **tùy chọn** (có thể vắng mặt hoặc `null`) — nhưng quy trình skill này LUÔN sinh đủ `dialogue` cho mọi topic (xem Bước 3.4 ở `SKILL.md`), không tự ý bỏ qua.
+- `dialogue` (cả object) về mặt schema thật của app là **tùy chọn** (có thể vắng mặt hoặc `null`) — nhưng quy trình skill này LUÔN sinh đủ `dialogue` cho mọi topic (xem Bước 3.5 ở `SKILL.md`), không tự ý bỏ qua.
 - `dialogue.lines`: 7–10 câu, xen kẽ A/B, dùng CÀNG NHIỀU từ vựng trong topic CÀNG TỐT (không bắt buộc mọi câu đều có `highlight_vocab_temp_ids` — câu đệm không chứa từ vựng thì để mảng rỗng `[]`).
 - Trường `pinyin` trong `dialogue.lines` áp dụng cho cả câu, khác với field `pinyin` trong `arrange_words.tokens` (theo từng từ).
+
+---
+
+## 4b. `grammar` — NGỮ PHÁP CỦA CHỦ ĐỀ (M12, tuỳ chọn)
+
+Mảng ở **gốc file**, ngang hàng `dialogue`. Đây là các mẫu ngữ pháp của cả chủ đề (thường lấy từ
+1–2 dòng cuối mỗi khối trong CSV, cột `Nghia` ghi `ngữ pháp`), **không gắn với từ nào**, không tính
+điểm, không vào SRS. App lưu vào bảng riêng `topic_grammar` và hiện ở đầu/cuối lượt ôn theo chủ đề.
+
+| Field | Kiểu | Bắt buộc | Ghi chú |
+|---|---|---|---|
+| `content_target` | string | ✅ | Mẫu ngữ pháp bằng ngôn ngữ đích, VD `"V + 着 + V"`, `"一…也/都 + 不/没"`. |
+| `pinyin` | string \| null | ✅ (key luôn có mặt) | Phiên âm mẫu ngữ pháp. `null` khi topic `lang="en"`. |
+| `content_vi` | string | ✅ | Giải thích cách dùng bằng tiếng Việt, nêu rõ lỗi hay gặp. |
+| `vi_du` | string \| null | — | 1 câu ví dụ dùng mẫu này. |
+| `vi_du_pinyin` | string \| null | — | Phiên âm câu ví dụ — nên có khi `lang="zh"` và có `vi_du`. |
+| `vi_du_vi` | string \| null | — | Nghĩa tiếng Việt của câu ví dụ. |
+
+- **Chủ đề không có điểm ngữ pháp riêng thì BỎ HẲN khoá `grammar`** — không để mảng rỗng, không bịa.
+- Tối đa 5 mục/chủ đề (schema chặn), thực tế thường 1–2.
+- **KHÔNG** biến dòng ngữ pháp của CSV thành một từ trong mảng `vocab`: nó không có nghĩa từ vựng,
+  không có audio, không ôn theo SRS được.
+
+---
 
 > ⚠️ **Lưu ý khi topic có `lang="en"`:** tên field `text_zh` (trong `dialogue.lines`) và `given_sentence_zh` (trong `complete_situation`, mục 3.9) VẪN GIỮ NGUYÊN tên gọi này dù nội dung là tiếng Anh — đây là tên field cố định của schema, KHÔNG đổi thành `text_en` hay tương tự. Chỉ cần điền câu tiếng Anh vào đúng field đó; để `pinyin`/`given_sentence_pinyin` tương ứng là chuỗi rỗng `""` hoặc `null`.
 
@@ -198,4 +236,7 @@ Field giống hệt `select_dialog` NHƯNG **bỏ hẳn field `distractors`**:
 - [ ] Không có field nào ngoài danh sách đã liệt kê ở mục 0 và mục 3 (không tự thêm field thừa như `id`, `difficulty`, `answer`...).
 - [ ] Mọi field phiên âm (`pinyin`, `collocation_pinyin` ở mục 0; `pinyin` trong `grammar`; `given_sentence_pinyin` trong `complete_situation`) đều có KEY xuất hiện trong object dù `lang="en"` (giá trị `null`, KHÔNG bỏ hẳn key).
 - [ ] `distractors` đúng số lượng bắt buộc: `selection`/`audio_recognition`=3, `select_on_describe`=3, `select_sentence`.wrong_sentences=3, `select_dialog`.distractors=2.
-- [ ] Mỗi từ vựng có đủ 9 dạng bài bắt buộc (không tính `select_dialog`/`fill_dialog` — 2 dạng này tùy chọn theo cặp): `grammar, selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation`.
+- [ ] Mỗi từ vựng có đủ **8 dạng bài bắt buộc** (không tính `select_dialog`/`fill_dialog` — tùy chọn theo cặp): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation`.
+- [ ] **`grammar` (ngữ pháp CỦA TỪ) KHÔNG nằm trong 8 dạng bắt buộc** — chỉ gắn cho từ có điểm dễ dùng sai (M12). Rà lại: nếu ≥ 50% số từ trong file có `grammar` thì gần như chắc chắn đang gắn tràn lan.
+- [ ] Dòng CSV đánh dấu `ngữ pháp` đã vào mảng `grammar` ở gốc file (mục 4b), **không** lọt vào `vocab`.
+- [ ] Mảng `grammar` (nếu có): mỗi mục đủ `content_target`/`pinyin`(key)/`content_vi`; chủ đề không có ngữ pháp thì bỏ hẳn khoá.

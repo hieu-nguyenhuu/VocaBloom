@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from '../../../components/icons.tsx'
 import { xaoTron, type VocabDb } from '../../../lib/player.ts'
+import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
 import { phatAm } from '../../../lib/tts.ts'
 
 /**
@@ -36,7 +37,11 @@ const O_DUNG = `${O} border-[1.5px] border-success bg-success-bg font-semibold t
 export default function TracNghiem({
   vocab, cheDo, luaChonGoc, dapAn, pinyinCua, moTa, hienPhienAm, soGoiY, onTraLoi,
 }: Props) {
-  const luaChon = useMemo(() => xaoTron(luaChonGoc, Math.random), [luaChonGoc])
+  // Xáo trộn ĐÚNG 1 LẦN khi màn xuất hiện (component được mount lại mỗi màn qua key=chi_so).
+  // Bản cũ dùng useMemo theo `luaChonGoc` — mà Player tạo mảng đó MỚI ở mỗi render, nên mỗi lần
+  // Player dispatch (bat_dau_luu/luu_ok) là 4 đáp án bị xáo lại: ô xanh đã chọn nhảy sang vị trí
+  // ngẫu nhiên ngay trước khi sang màn mới (người dùng báo 20/09, đo được bằng MutationObserver).
+  const [luaChon] = useState(() => xaoTron(luaChonGoc, Math.random))
   const [daChon, setDaChon] = useState<string | null>(null)
   const laCau = cheDo === 'select_sentence'
   const laChuHan = cheDo === 'select_on_describe' || laCau
@@ -50,12 +55,34 @@ export default function TracNghiem({
     if (cheDo === 'audio_recognition') phatAm(vocab.word, vocab.lang, vocab.audio_url)
   }, [cheDo, vocab.id, vocab.word, vocab.lang, vocab.audio_url])
 
+  // ⚠️ KHÔNG để `onTraLoi` trong deps: nó là arrow function tạo MỚI mỗi lần Player render, mà Player
+  // dispatch liên tục khi lưu (bat_dau_luu → luu_ok) ⇒ effect chạy lại ⇒ đặt thêm setTimeout ⇒ gọi
+  // onTraLoi lần nữa ⇒ màn sau bị chấm hộ, dây chuyền (người dùng báo 20/09). Giữ callback trong ref
+  // để luôn gọi bản mới nhất, và `daGui` đảm bảo 1 màn chỉ gửi đúng 1 lần (cùng bài học MB-20).
+  const onTraLoiRef = useRef(onTraLoi)
   useEffect(() => {
-    if (daChon === null) return
+    onTraLoiRef.current = onTraLoi
+  }, [onTraLoi])
+
+  // M11/Q3: phím 1–4 chọn đáp án thứ n (bỏ qua đáp án đang bị gợi ý ẩn)
+  useDungPhim((e) => {
+    if (daChon !== null) return
+    const i = soThuTuPhim(e, luaChon.length)
+    if (i === null) return
+    const x = luaChon[i]
+    if (!x || anDi.has(x)) return
+    e.preventDefault()
+    setDaChon(x)
+  })
+
+  const daGui = useRef(false)
+  useEffect(() => {
+    if (daChon === null || daGui.current) return
+    daGui.current = true
     const dung = daChon === dapAn
-    const t = setTimeout(() => onTraLoi(dung, soGoiY > 0), dung ? 600 : 1000)
+    const t = setTimeout(() => onTraLoiRef.current(dung, soGoiY > 0), dung ? 600 : 1000)
     return () => clearTimeout(t)
-  }, [daChon, dapAn, soGoiY, onTraLoi])
+  }, [daChon, dapAn, soGoiY])
 
   function lop(x: string) {
     if (daChon === null) return `${O_TRUNG_TINH} hover:border-accent`

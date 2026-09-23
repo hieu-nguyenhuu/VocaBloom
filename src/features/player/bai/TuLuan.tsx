@@ -72,9 +72,15 @@ export default function TuLuan({ vocab, cheDo, payload, hienPhienAm, onNop }: Pr
       <textarea
         value={cau}
         onChange={(e) => setCau(e.target.value)}
+        // M11/Q2: Enter = gửi bài; Shift+Enter = xuống dòng. Bỏ qua khi đang chọn chữ IME.
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return
+          e.preventDefault()
+          if (cau.trim()) onNop(cau)
+        }}
         lang={vocab.lang}
         autoFocus
-        placeholder="Nhập câu của bạn…"
+        placeholder="Nhập câu của bạn… (Enter để gửi, Shift+Enter xuống dòng)"
         aria-label="Câu trả lời"
         className="min-h-[60px] rounded-14 border border-border-input bg-surface-sunken p-[18px] font-han text-17 text-content-nav focus:border-accent focus:outline-none"
       />

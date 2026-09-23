@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { anKhoa, chinhSoTuMoi, docCaiDat, type CaiDat } from '../../lib/settings.ts'
+import { anKhoa, chinhGioiHanLuot, chinhSoTuMoi, docCaiDat, type CaiDat } from '../../lib/settings.ts'
 import { supabase } from '../../lib/supabase.ts'
 import { demTuThieuAudio, genAudioChoTu, nghegiongThu, type KetQuaGen } from '../../lib/tts.ts'
 import { GIONG_EN, GIONG_ZH, NHAN_GIONG, type MaNgonNgu } from '../../lib/ttsCore.ts'
@@ -244,6 +244,18 @@ export default function CaiDatPage() {
                 </button>
                 <span className="min-w-6 text-center font-bold text-content-primary">{cd.new_words_per_day}</span>
                 <button type="button" aria-label="Tăng" onClick={() => void ghi('new_words_per_day', chinhSoTuMoi(cd.new_words_per_day, 1))} className={NUT_NHO}>
+                  +
+                </button>
+              </div>
+            </div>
+            <div className={HANG}>
+              <span className={NHAN}>Số từ tối đa mỗi lượt ôn</span>
+              <div className="flex items-center gap-3">
+                <button type="button" aria-label="Giảm số từ mỗi lượt" onClick={() => void ghi('max_tu_moi_luot', chinhGioiHanLuot(cd.max_tu_moi_luot, -1))} className={NUT_NHO}>
+                  −
+                </button>
+                <span className="min-w-6 text-center font-bold text-content-primary">{cd.max_tu_moi_luot}</span>
+                <button type="button" aria-label="Tăng số từ mỗi lượt" onClick={() => void ghi('max_tu_moi_luot', chinhGioiHanLuot(cd.max_tu_moi_luot, 1))} className={NUT_NHO}>
                   +
                 </button>
               </div>

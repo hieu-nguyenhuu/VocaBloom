@@ -28,3 +28,8 @@ export function thoiGianTuongDoi(iso: string, bayGio: Date): string {
 export function demChuaDoc(ds: TinDb[]): number {
   return ds.filter((t) => !t.is_read).length
 }
+
+/** Số tin ĐÃ đọc — dùng cho nút "Xoá đã đọc (N)" (M9). */
+export function demDaDoc(rows: readonly { is_read: boolean }[]): number {
+  return rows.filter((r) => r.is_read).length
+}

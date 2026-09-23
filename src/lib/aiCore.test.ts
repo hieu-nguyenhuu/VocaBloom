@@ -11,6 +11,7 @@ import {
   docKetQuaCham,
   dungTuVerdict,
   promptCham,
+  promptGiaiThich,
 } from './aiCore.ts'
 
 describe('docJsonAI', () => {
@@ -135,5 +136,23 @@ describe('X-ai — giữ tính thuần', () => {
   it('aiCore.ts không import react / supabase / node:', () => {
     const src = readFileSync('src/lib/aiCore.ts', 'utf8')
     expect(src).not.toMatch(/from ['"](react|@supabase|node:)/)
+  })
+})
+
+describe('promptGiaiThich — bám đáp án (M11/#3)', () => {
+  const p = promptGiaiThich('select_sentence')
+
+  it('nói rõ trường nào là đáp án đúng', () => {
+    expect(p).toContain('dap_an')
+    expect(p.toLowerCase()).toContain('đáp án đúng'.toLowerCase())
+  })
+
+  it('cấm AI tự chọn đáp án khác', () => {
+    expect(p).toMatch(/không tự chọn đáp án khác/i)
+  })
+
+  it('vẫn yêu cầu JSON thuần và giới hạn 3 câu', () => {
+    expect(p).toContain('CHỈ trả JSON thuần')
+    expect(p).toContain('tối đa 3 câu')
   })
 })

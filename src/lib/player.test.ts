@@ -23,6 +23,10 @@ import {
   type TrangThaiPlayer,
   gomSessionTopic,
   stageBaiTap,
+  gioiHanNhap,
+  tachChoTrong,
+  catTheoGioiHan,
+  oGoiY,
 } from './player.ts'
 import { boBaiCua, gomSession, type DangBai, type Stage, type TrangThaiTu } from './srs.ts'
 
@@ -498,5 +502,89 @@ describe('xepBai — boQuaDaDat (ôn chủ đề là luyện tập, không phả
   it('boQuaDaDat: vẫn dựng đủ màn để luyện lại', () => {
     const { man } = xepBai({ tu: daXong, baiTap, boQuaDaDat: true })
     expect(man.filter((m) => m.loai === 'translate' || m.loai === 'listen_fill')).toHaveLength(2)
+  })
+})
+
+// ── M10: tách chỗ trống trong câu hội thoại ─────────────────────────────────
+describe('tachChoTrong', () => {
+  it('quy ước chuẩn: đúng 1 dấu ___ giữa câu', () => {
+    expect(tachChoTrong('你今天吃___了吗？')).toEqual({ truoc: '你今天吃', sau: '了吗？' })
+  })
+
+  it('dấu ở đầu hoặc cuối câu vẫn đúng', () => {
+    expect(tachChoTrong('___很好吃。')).toEqual({ truoc: '', sau: '很好吃。' })
+    expect(tachChoTrong('我想买___')).toEqual({ truoc: '我想买', sau: '' })
+  })
+
+  it('câu KHÔNG có chỗ trống → sau = null (không chèn ô, chỉ là ngữ cảnh)', () => {
+    expect(tachChoTrong('周末你和谁去看电影？')).toEqual({ truoc: '周末你和谁去看电影？', sau: null })
+  })
+
+  it('câu có 2 dấu (dữ liệu lệch quy ước) → chèn ở dấu ĐẦU, phần sau giữ NGUYÊN VĂN', () => {
+    // Bản cũ dùng split() rồi lấy 2 phần đầu ⇒ nuốt mất đuôi câu, ô trống nhảy lung tung
+    expect(tachChoTrong('我和我的___去，他也叫我们的___一起去。')).toEqual({
+      truoc: '我和我的',
+      sau: '去，他也叫我们的___一起去。',
+    })
+  })
+})
+
+describe('gioiHanNhap (IME tiếng Trung)', () => {
+  it('đang gõ IME → KHÔNG cắt, giữ nguyên chữ đã có', () => {
+    expect(gioiHanNhap('一杯kafei', 4, true)).toBe('一杯kafei')
+  })
+
+  it('gõ xong → cắt về đúng độ dài đáp án', () => {
+    expect(gioiHanNhap('一杯咖啡馆', 4, false)).toBe('一杯咖啡')
+  })
+
+  it('đếm theo KÝ TỰ hiển thị, không phải mã UTF-16', () => {
+    // emoji 4 byte: .length = 2 nhưng chỉ là 1 ký tự
+    expect(gioiHanNhap('👍👍👍', 2, false)).toBe('👍👍')
+  })
+
+  it('chuỗi ngắn hơn giới hạn → giữ nguyên', () => {
+    expect(gioiHanNhap('一杯', 4, false)).toBe('一杯')
+  })
+})
+
+// ── M11 ─────────────────────────────────────────────────────────────────────
+describe('oGoiY (gợi ý lần lượt các ô CHƯA điền)', () => {
+  it('chưa điền ô nào: bấm lần 1 lộ ô A, lần 2 lộ thêm ô B', () => {
+    expect(oGoiY(1, '', '', true)).toEqual(['a'])
+    expect(oGoiY(2, '', '', true)).toEqual(['a', 'b'])
+  })
+
+  it('ô A đã điền → gợi ý nhảy thẳng sang ô B (lỗi cũ: mãi chỉ lộ ô A)', () => {
+    expect(oGoiY(1, '朋友', '', true)).toEqual(['b'])
+  })
+
+  it('cả 2 ô đã điền → không lộ gì', () => {
+    expect(oGoiY(2, '朋友', '老师', true)).toEqual([])
+  })
+
+  it('bài chỉ có 1 ô (không có từ B) → chỉ lộ ô A', () => {
+    expect(oGoiY(3, '', '', false)).toEqual(['a'])
+  })
+
+  it('chưa bấm gợi ý → không lộ gì', () => {
+    expect(oGoiY(0, '', '', true)).toEqual([])
+  })
+})
+
+describe('catTheoGioiHan (giới hạn số từ mỗi lượt)', () => {
+  const phien = ['a', 'b', 'c', 'd', 'e']
+
+  it('còn chỗ → cắt vừa đủ phần còn lại', () => {
+    expect(catTheoGioiHan(phien, 8, 10)).toEqual(['a', 'b'])
+  })
+
+  it('chưa ôn từ nào → lấy trọn session nếu giới hạn đủ rộng', () => {
+    expect(catTheoGioiHan(phien, 0, 10)).toEqual(phien)
+  })
+
+  it('đã đạt giới hạn → rỗng (dừng lượt, sang Tổng kết)', () => {
+    expect(catTheoGioiHan(phien, 10, 10)).toEqual([])
+    expect(catTheoGioiHan(phien, 12, 10)).toEqual([])
   })
 })

@@ -6,6 +6,7 @@ import DashboardPage from './features/dashboard/DashboardPage.tsx'
 import ImportPage from './features/import/ImportPage.tsx'
 import TrangThongBao from './features/notifications/TrangThongBao.tsx'
 import ChonChuDePage from './features/player/ChonChuDePage.tsx'
+import NguPhapTopicPage from './features/player/NguPhapTopicPage.tsx'
 import HoiThoaiKetThucPage from './features/player/HoiThoaiKetThucPage.tsx'
 import PlayerPage from './features/player/PlayerPage.tsx'
 import TongKetPage from './features/player/TongKetPage.tsx'
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/on-tap" element={<PlayerPage />} />
         <Route path="/on-tap/tong-ket" element={<TongKetPage />} />
         <Route path="/on-tap/hoi-thoai" element={<HoiThoaiKetThucPage />} />
+        <Route path="/on-tap/ngu-phap" element={<NguPhapTopicPage />} />
         <Route element={<AppShell />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/on-tap/chu-de" element={<ChonChuDePage />} />

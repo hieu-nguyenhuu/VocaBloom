@@ -1,0 +1,489 @@
+{
+  "topic": {
+    "name": "Topic A",
+    "description": "Học tập, giải trí và kế hoạch cuối tuần."
+  },
+  "vocab": [
+    {
+      "temp_id": "v1",
+      "word": "作业",
+      "pinyin": "zuòyè",
+      "meaning_vi": "bài tập về nhà",
+      "collocation": "写作业",
+      "collocation_pinyin": "xiě zuòyè",
+      "collocation_meaning_vi": "làm bài tập",
+      "example_sentence": "我每天晚上都写作业。",
+      "example_meaning_vi": "Mỗi tối tôi đều làm bài tập.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v2",
+      "word": "游戏",
+      "pinyin": "yóuxì",
+      "meaning_vi": "trò chơi, game",
+      "collocation": "玩游戏",
+      "collocation_pinyin": "wán yóuxì",
+      "collocation_meaning_vi": "chơi game",
+      "example_sentence": "弟弟很喜欢玩电脑游戏。",
+      "example_meaning_vi": "Em trai rất thích chơi game máy tính.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v3",
+      "word": "复习",
+      "pinyin": "fùxí",
+      "meaning_vi": "ôn tập",
+      "collocation": "复习功课",
+      "collocation_pinyin": "fùxí gōngkè",
+      "collocation_meaning_vi": "ôn bài",
+      "example_sentence": "考试以前要好好复习。",
+      "example_meaning_vi": "Trước kỳ thi phải ôn tập cho kỹ.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v4",
+      "word": "着急",
+      "pinyin": "zháojí",
+      "meaning_vi": "sốt ruột, nóng lòng",
+      "collocation": "别着急",
+      "collocation_pinyin": "bié zháojí",
+      "collocation_meaning_vi": "đừng sốt ruột",
+      "example_sentence": "时间还早，你别着急。",
+      "example_meaning_vi": "Thời gian còn sớm, bạn đừng sốt ruột.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v5",
+      "word": "打算",
+      "pinyin": "dǎsuàn",
+      "meaning_vi": "dự định, định",
+      "collocation": "打算去",
+      "collocation_pinyin": "dǎsuàn qù",
+      "collocation_meaning_vi": "định đi",
+      "example_sentence": "我打算明年去中国旅游。",
+      "example_meaning_vi": "Tôi định sang năm đi Trung Quốc du lịch.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v6",
+      "word": "搬",
+      "pinyin": "bān",
+      "meaning_vi": "khiêng, chuyển (đồ / nhà)",
+      "collocation": "搬家",
+      "collocation_pinyin": "bānjiā",
+      "collocation_meaning_vi": "chuyển nhà",
+      "example_sentence": "下个月我们要搬到新房子。",
+      "example_meaning_vi": "Tháng sau chúng tôi sẽ chuyển sang nhà mới.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v7",
+      "word": "周末",
+      "pinyin": "zhōumò",
+      "meaning_vi": "cuối tuần",
+      "collocation": "这个周末",
+      "collocation_pinyin": "zhège zhōumò",
+      "collocation_meaning_vi": "cuối tuần này",
+      "example_sentence": "周末我常常跟朋友去爬山。",
+      "example_meaning_vi": "Cuối tuần tôi thường đi leo núi với bạn.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v8",
+      "word": "一直",
+      "pinyin": "yìzhí",
+      "meaning_vi": "luôn, mãi, liên tục",
+      "collocation": "一直等",
+      "collocation_pinyin": "yìzhí děng",
+      "collocation_meaning_vi": "cứ chờ mãi",
+      "example_sentence": "我一直在等你的电话。",
+      "example_meaning_vi": "Tôi vẫn luôn chờ điện thoại của bạn.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v9",
+      "word": "旅游",
+      "pinyin": "lǚyóu",
+      "meaning_vi": "du lịch",
+      "collocation": "去旅游",
+      "collocation_pinyin": "qù lǚyóu",
+      "collocation_meaning_vi": "đi du lịch",
+      "example_sentence": "明年我想去日本旅游。",
+      "example_meaning_vi": "Sang năm tôi muốn đi Nhật Bản du lịch.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v10",
+      "word": "上网",
+      "pinyin": "shàngwǎng",
+      "meaning_vi": "lên mạng",
+      "collocation": "上网查资料",
+      "collocation_pinyin": "shàngwǎng chá zīliào",
+      "collocation_meaning_vi": "lên mạng tra tài liệu",
+      "example_sentence": "我每天上网看新闻。",
+      "example_meaning_vi": "Mỗi ngày tôi đều lên mạng xem tin tức.",
+      "lang": "zh"
+    }
+  ],
+  "exercises": [
+    { "vocab_temp_id": "v1", "type": "selection", "payload": { "distractors": ["bài kiểm tra", "sách giáo khoa", "thời khoá biểu"] } },
+    { "vocab_temp_id": "v1", "type": "audio_recognition", "payload": { "distractors": ["bài hát", "bài báo", "lớp học"] } },
+    { "vocab_temp_id": "v1", "type": "fast_decision", "payload": { "wrong_meaning": "bài kiểm tra" } },
+    { "vocab_temp_id": "v1", "type": "select_on_describe", "payload": {
+      "description": "Thứ thầy cô giao cho học sinh làm ở nhà sau giờ học, hôm sau phải nộp lại.",
+      "distractors": [
+        { "word": "考试", "pinyin": "kǎoshì" },
+        { "word": "课本", "pinyin": "kèběn" },
+        { "word": "教室", "pinyin": "jiàoshì" }
+      ] } },
+    { "vocab_temp_id": "v1", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "今天的作业太多了。", "pinyin": "Jīntiān de zuòyè tài duō le." },
+      "wrong_sentences": [
+        { "text": "今天作业的太多了。", "pinyin": "Jīntiān zuòyè de tài duō le." },
+        { "text": "我写作业在图书馆。", "pinyin": "Wǒ xiě zuòyè zài túshūguǎn." },
+        { "text": "我每天写作业两个小时。", "pinyin": "Wǒ měi tiān xiě zuòyè liǎng ge xiǎoshí." }
+      ] } },
+    { "vocab_temp_id": "v1", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "每天", "pinyin": "měi tiān" },
+      { "text": "晚上", "pinyin": "wǎnshang" },
+      { "text": "都", "pinyin": "dōu" },
+      { "text": "写", "pinyin": "xiě" },
+      { "text": "作业", "pinyin": "zuòyè" }
+    ] } },
+    { "vocab_temp_id": "v1", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Bài tập hôm nay nhiều quá, tôi phải làm đến mười giờ." } },
+    { "vocab_temp_id": "v1", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn cùng lớp rủ bạn đi xem phim tối nay, nhưng bạn vẫn còn bài tập chưa làm xong.",
+      "given_sentence_zh": "对不起，今天晚上我不能去，",
+      "given_sentence_pinyin": "Duìbuqǐ, jīntiān wǎnshang wǒ bù néng qù," } },
+
+    { "vocab_temp_id": "v2", "type": "selection", "payload": { "distractors": ["phim ảnh", "âm nhạc", "thể thao"] } },
+    { "vocab_temp_id": "v2", "type": "audio_recognition", "payload": { "distractors": ["câu chuyện", "cuộc thi", "bài hát"] } },
+    { "vocab_temp_id": "v2", "type": "fast_decision", "payload": { "wrong_meaning": "phim ảnh" } },
+    { "vocab_temp_id": "v2", "type": "select_on_describe", "payload": {
+      "description": "Hoạt động giải trí có luật chơi, thắng thua rõ ràng, nay thường chơi trên máy tính hoặc điện thoại.",
+      "distractors": [
+        { "word": "电影", "pinyin": "diànyǐng" },
+        { "word": "音乐", "pinyin": "yīnyuè" },
+        { "word": "运动", "pinyin": "yùndòng" }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "他每天都玩一个小时游戏。", "pinyin": "Tā měi tiān dōu wán yí ge xiǎoshí yóuxì." },
+      "wrong_sentences": [
+        { "text": "他每天都玩游戏一个小时。", "pinyin": "Tā měi tiān dōu wán yóuxì yí ge xiǎoshí." },
+        { "text": "他很喜欢游戏玩。", "pinyin": "Tā hěn xǐhuan yóuxì wán." },
+        { "text": "他昨天玩了游戏三次。", "pinyin": "Tā zuótiān wán le yóuxì sān cì." }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "弟弟", "pinyin": "dìdi" },
+      { "text": "很", "pinyin": "hěn" },
+      { "text": "喜欢", "pinyin": "xǐhuan" },
+      { "text": "玩", "pinyin": "wán" },
+      { "text": "电脑游戏", "pinyin": "diànnǎo yóuxì" }
+    ] } },
+    { "vocab_temp_id": "v2", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Làm xong bài tập rồi tôi mới chơi game." } },
+    { "vocab_temp_id": "v2", "type": "complete_situation", "payload": {
+      "situation_vi": "Mẹ hỏi vì sao tối qua bạn đi ngủ muộn như vậy.",
+      "given_sentence_zh": "昨天晚上我",
+      "given_sentence_pinyin": "Zuótiān wǎnshang wǒ" } },
+
+    { "vocab_temp_id": "v3", "type": "selection", "payload": { "distractors": ["học bài mới", "làm bài kiểm tra", "nghỉ ngơi"] } },
+    { "vocab_temp_id": "v3", "type": "audio_recognition", "payload": { "distractors": ["luyện viết", "học thuộc lòng", "chuẩn bị bài mới"] } },
+    { "vocab_temp_id": "v3", "type": "fast_decision", "payload": { "wrong_meaning": "học bài mới" } },
+    { "vocab_temp_id": "v3", "type": "select_on_describe", "payload": {
+      "description": "Học lại những nội dung đã học trước đó cho nhớ kỹ hơn, nhất là vào trước kỳ thi.",
+      "distractors": [
+        { "word": "预习", "pinyin": "yùxí" },
+        { "word": "练习", "pinyin": "liànxí" },
+        { "word": "考试", "pinyin": "kǎoshì" }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我正在复习汉语。", "pinyin": "Wǒ zhèngzài fùxí Hànyǔ." },
+      "wrong_sentences": [
+        { "text": "我复习在汉语。", "pinyin": "Wǒ fùxí zài Hànyǔ." },
+        { "text": "我复习汉语了两个小时。", "pinyin": "Wǒ fùxí Hànyǔ le liǎng ge xiǎoshí." },
+        { "text": "我明天要复习了。", "pinyin": "Wǒ míngtiān yào fùxí le." }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "考试", "pinyin": "kǎoshì" },
+      { "text": "以前", "pinyin": "yǐqián" },
+      { "text": "要", "pinyin": "yào" },
+      { "text": "好好", "pinyin": "hǎohāo" },
+      { "text": "复习", "pinyin": "fùxí" }
+    ] } },
+    { "vocab_temp_id": "v3", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Cuối tuần này tôi phải ôn tập tiếng Trung." } },
+    { "vocab_temp_id": "v3", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn thân rủ bạn đi chơi cuối tuần, nhưng tuần sau bạn có kỳ thi quan trọng.",
+      "given_sentence_zh": "这个周末我不出去了，",
+      "given_sentence_pinyin": "Zhège zhōumò wǒ bù chūqù le," } },
+
+    { "vocab_temp_id": "v4", "type": "selection", "payload": { "distractors": ["tức giận", "mệt mỏi", "vui vẻ"] } },
+    { "vocab_temp_id": "v4", "type": "audio_recognition", "payload": { "distractors": ["buồn bã", "bận rộn", "ngạc nhiên"] } },
+    { "vocab_temp_id": "v4", "type": "fast_decision", "payload": { "wrong_meaning": "tức giận" } },
+    { "vocab_temp_id": "v4", "type": "select_on_describe", "payload": {
+      "description": "Trong lòng nóng như lửa đốt vì sợ muộn hoặc sợ có chuyện không hay, chỉ muốn việc xảy ra thật nhanh.",
+      "distractors": [
+        { "word": "生气", "pinyin": "shēngqì" },
+        { "word": "担心", "pinyin": "dānxīn" },
+        { "word": "高兴", "pinyin": "gāoxìng" }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "你别着急，慢慢说。", "pinyin": "Nǐ bié zháojí, mànmàn shuō." },
+      "wrong_sentences": [
+        { "text": "你不要着急了很。", "pinyin": "Nǐ bú yào zháojí le hěn." },
+        { "text": "我很着急这件事。", "pinyin": "Wǒ hěn zháojí zhè jiàn shì." },
+        { "text": "他着急地很。", "pinyin": "Tā zháojí de hěn." }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "时间", "pinyin": "shíjiān" },
+      { "text": "还", "pinyin": "hái" },
+      { "text": "早", "pinyin": "zǎo" },
+      { "text": "你", "pinyin": "nǐ" },
+      { "text": "别", "pinyin": "bié" },
+      { "text": "着急", "pinyin": "zháojí" }
+    ] } },
+    { "vocab_temp_id": "v4", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Xe buýt sắp đến rồi, bạn đừng sốt ruột." } },
+    { "vocab_temp_id": "v4", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn của bạn sợ lỡ chuyến tàu nên cứ đi đi lại lại, rất cuống.",
+      "given_sentence_zh": "还有二十分钟呢，",
+      "given_sentence_pinyin": "Hái yǒu èrshí fēnzhōng ne," } },
+
+    { "vocab_temp_id": "v5", "type": "grammar", "payload": {
+      "content_target": "打算 + 动词（短语）",
+      "pinyin": "dǎsuàn + dòngcí (duǎnyǔ)",
+      "content_vi": "「打算」phải đi kèm ĐỘNG TỪ chỉ việc sắp làm, không đi thẳng với danh từ. Nói 我打算去旅游 (định đi du lịch), KHÔNG nói 我打算一个旅游." } },
+    { "vocab_temp_id": "v5", "type": "selection", "payload": { "distractors": ["quyết định", "hy vọng", "đồng ý"] } },
+    { "vocab_temp_id": "v5", "type": "audio_recognition", "payload": { "distractors": ["mong muốn", "chuẩn bị", "nhớ lại"] } },
+    { "vocab_temp_id": "v5", "type": "fast_decision", "payload": { "wrong_meaning": "quyết định" } },
+    { "vocab_temp_id": "v5", "type": "select_on_describe", "payload": {
+      "description": "Nghĩ trước trong đầu về việc sắp làm, nhưng chưa phải là quyết định chắc chắn.",
+      "distractors": [
+        { "word": "决定", "pinyin": "juédìng" },
+        { "word": "希望", "pinyin": "xīwàng" },
+        { "word": "同意", "pinyin": "tóngyì" }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我打算这个周末去爬山。", "pinyin": "Wǒ dǎsuàn zhège zhōumò qù páshān." },
+      "wrong_sentences": [
+        { "text": "我打算一个旅游。", "pinyin": "Wǒ dǎsuàn yí ge lǚyóu." },
+        { "text": "我打算了去北京。", "pinyin": "Wǒ dǎsuàn le qù Běijīng." },
+        { "text": "我明天打算吗去？", "pinyin": "Wǒ míngtiān dǎsuàn ma qù?" }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "打算", "pinyin": "dǎsuàn" },
+      { "text": "明年", "pinyin": "míngnián" },
+      { "text": "去", "pinyin": "qù" },
+      { "text": "中国", "pinyin": "Zhōngguó" },
+      { "text": "旅游", "pinyin": "lǚyóu" }
+    ] } },
+    { "vocab_temp_id": "v5", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Tôi định cuối tuần này chuyển nhà." } },
+    { "vocab_temp_id": "v5", "type": "complete_situation", "payload": {
+      "situation_vi": "Đồng nghiệp hỏi kỳ nghỉ hè năm nay bạn có kế hoạch gì.",
+      "given_sentence_zh": "今年暑假我",
+      "given_sentence_pinyin": "Jīnnián shǔjià wǒ" } },
+
+    { "vocab_temp_id": "v6", "type": "selection", "payload": { "distractors": ["mua", "sửa chữa", "quét dọn"] } },
+    { "vocab_temp_id": "v6", "type": "audio_recognition", "payload": { "distractors": ["đẩy", "nhấc lên", "kéo"] } },
+    { "vocab_temp_id": "v6", "type": "fast_decision", "payload": { "wrong_meaning": "sửa chữa" } },
+    { "vocab_temp_id": "v6", "type": "select_on_describe", "payload": {
+      "description": "Dùng sức đưa đồ vật nặng từ chỗ này sang chỗ khác; đi với 家 thì thành đổi chỗ ở.",
+      "distractors": [
+        { "word": "拿", "pinyin": "ná" },
+        { "word": "推", "pinyin": "tuī" },
+        { "word": "放", "pinyin": "fàng" }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "他们下个星期搬家。", "pinyin": "Tāmen xià ge xīngqī bānjiā." },
+      "wrong_sentences": [
+        { "text": "他们搬家下个星期。", "pinyin": "Tāmen bānjiā xià ge xīngqī." },
+        { "text": "我搬了新房子。", "pinyin": "Wǒ bān le xīn fángzi." },
+        { "text": "请你搬一下这个桌子给。", "pinyin": "Qǐng nǐ bān yíxià zhège zhuōzi gěi." }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "下个月", "pinyin": "xià ge yuè" },
+      { "text": "我们", "pinyin": "wǒmen" },
+      { "text": "要", "pinyin": "yào" },
+      { "text": "搬到", "pinyin": "bān dào" },
+      { "text": "新房子", "pinyin": "xīn fángzi" }
+    ] } },
+    { "vocab_temp_id": "v6", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Giúp tôi khiêng cái bàn này một chút." } },
+    { "vocab_temp_id": "v6", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn vừa dọn đến khu nhà mới, hàng xóm hỏi bạn chuyển đến từ bao giờ.",
+      "given_sentence_zh": "我是上个星期",
+      "given_sentence_pinyin": "Wǒ shì shàng ge xīngqī" } },
+
+    { "vocab_temp_id": "v7", "type": "selection", "payload": { "distractors": ["ngày lễ", "kỳ nghỉ hè", "đầu tuần"] } },
+    { "vocab_temp_id": "v7", "type": "audio_recognition", "payload": { "distractors": ["buổi tối", "ngày mai", "tháng sau"] } },
+    { "vocab_temp_id": "v7", "type": "fast_decision", "payload": { "wrong_meaning": "ngày lễ" } },
+    { "vocab_temp_id": "v7", "type": "select_on_describe", "payload": {
+      "description": "Hai ngày cuối cùng của một tuần, lúc phần lớn mọi người được nghỉ làm nghỉ học.",
+      "distractors": [
+        { "word": "假期", "pinyin": "jiàqī" },
+        { "word": "星期一", "pinyin": "xīngqīyī" },
+        { "word": "生日", "pinyin": "shēngrì" }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "这个周末我打算在家休息。", "pinyin": "Zhège zhōumò wǒ dǎsuàn zài jiā xiūxi." },
+      "wrong_sentences": [
+        { "text": "我打算在家休息这个周末。", "pinyin": "Wǒ dǎsuàn zài jiā xiūxi zhège zhōumò." },
+        { "text": "周末的我很忙。", "pinyin": "Zhōumò de wǒ hěn máng." },
+        { "text": "我在周末去爬山了昨天。", "pinyin": "Wǒ zài zhōumò qù páshān le zuótiān." }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "周末", "pinyin": "zhōumò" },
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "常常", "pinyin": "chángcháng" },
+      { "text": "跟朋友", "pinyin": "gēn péngyou" },
+      { "text": "去", "pinyin": "qù" },
+      { "text": "爬山", "pinyin": "páshān" }
+    ] } },
+    { "vocab_temp_id": "v7", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Cuối tuần này bạn định làm gì?" } },
+    { "vocab_temp_id": "v7", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn học người Trung Quốc hỏi kế hoạch cuối tuần của bạn.",
+      "given_sentence_zh": "周末如果不下雨，我",
+      "given_sentence_pinyin": "Zhōumò rúguǒ bú xià yǔ, wǒ" } },
+
+    { "vocab_temp_id": "v8", "type": "grammar", "payload": {
+      "content_target": "主语 + 一直 + 动词",
+      "pinyin": "zhǔyǔ + yìzhí + dòngcí",
+      "content_vi": "「一直」là trạng ngữ, luôn đứng SAU chủ ngữ và TRƯỚC động từ. Tiếng Việt quen đặt 'mãi/luôn' ở cuối câu nên người học hay viết 他没告诉我一直 — sai. Phải nói 他一直没告诉我." } },
+    { "vocab_temp_id": "v8", "type": "selection", "payload": { "distractors": ["thỉnh thoảng", "đã từng", "sắp sửa"] } },
+    { "vocab_temp_id": "v8", "type": "audio_recognition", "payload": { "distractors": ["thường xuyên", "đột nhiên", "vừa mới"] } },
+    { "vocab_temp_id": "v8", "type": "fast_decision", "payload": { "wrong_meaning": "thỉnh thoảng" } },
+    { "vocab_temp_id": "v8", "type": "select_on_describe", "payload": {
+      "description": "Từ chỉ việc gì đó kéo dài không ngừng từ lúc bắt đầu cho tới tận bây giờ.",
+      "distractors": [
+        { "word": "常常", "pinyin": "chángcháng" },
+        { "word": "突然", "pinyin": "tūrán" },
+        { "word": "已经", "pinyin": "yǐjīng" }
+      ] } },
+    { "vocab_temp_id": "v8", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "他一直没告诉我这件事。", "pinyin": "Tā yìzhí méi gàosu wǒ zhè jiàn shì." },
+      "wrong_sentences": [
+        { "text": "他没告诉我这件事一直。", "pinyin": "Tā méi gàosu wǒ zhè jiàn shì yìzhí." },
+        { "text": "一直他在等你。", "pinyin": "Yìzhí tā zài děng nǐ." },
+        { "text": "我一直了等你两个小时。", "pinyin": "Wǒ yìzhí le děng nǐ liǎng ge xiǎoshí." }
+      ] } },
+    { "vocab_temp_id": "v8", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "一直", "pinyin": "yìzhí" },
+      { "text": "在", "pinyin": "zài" },
+      { "text": "等", "pinyin": "děng" },
+      { "text": "你的电话", "pinyin": "nǐ de diànhuà" }
+    ] } },
+    { "vocab_temp_id": "v8", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Tôi vẫn luôn muốn đi Trung Quốc du lịch." } },
+    { "vocab_temp_id": "v8", "type": "complete_situation", "payload": {
+      "situation_vi": "Gặp lại bạn cũ sau nhiều năm, họ hỏi bạn có còn học tiếng Trung nữa không.",
+      "given_sentence_zh": "这几年我",
+      "given_sentence_pinyin": "Zhè jǐ nián wǒ" } },
+
+    { "vocab_temp_id": "v9", "type": "selection", "payload": { "distractors": ["công tác", "chuyển nhà", "về quê"] } },
+    { "vocab_temp_id": "v9", "type": "audio_recognition", "payload": { "distractors": ["đi bộ", "leo núi", "tham quan bảo tàng"] } },
+    { "vocab_temp_id": "v9", "type": "fast_decision", "payload": { "wrong_meaning": "công tác" } },
+    { "vocab_temp_id": "v9", "type": "select_on_describe", "payload": {
+      "description": "Đi tới nơi khác để chơi, ngắm cảnh và nghỉ ngơi, thường vào dịp nghỉ dài.",
+      "distractors": [
+        { "word": "出差", "pinyin": "chūchāi" },
+        { "word": "搬家", "pinyin": "bānjiā" },
+        { "word": "上班", "pinyin": "shàngbān" }
+      ] } },
+    { "vocab_temp_id": "v9", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我打算去中国旅游。", "pinyin": "Wǒ dǎsuàn qù Zhōngguó lǚyóu." },
+      "wrong_sentences": [
+        { "text": "我打算旅游中国。", "pinyin": "Wǒ dǎsuàn lǚyóu Zhōngguó." },
+        { "text": "我去旅游了中国。", "pinyin": "Wǒ qù lǚyóu le Zhōngguó." },
+        { "text": "我很想旅游去。", "pinyin": "Wǒ hěn xiǎng lǚyóu qù." }
+      ] } },
+    { "vocab_temp_id": "v9", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "明年", "pinyin": "míngnián" },
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "想", "pinyin": "xiǎng" },
+      { "text": "去", "pinyin": "qù" },
+      { "text": "日本", "pinyin": "Rìběn" },
+      { "text": "旅游", "pinyin": "lǚyóu" }
+    ] } },
+    { "vocab_temp_id": "v9", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Cuối tuần này chúng tôi định đi du lịch." } },
+    { "vocab_temp_id": "v9", "type": "complete_situation", "payload": {
+      "situation_vi": "Đồng nghiệp khoe vừa đi du lịch về và hỏi bạn thích đi đâu nhất.",
+      "given_sentence_zh": "如果有时间，我最想",
+      "given_sentence_pinyin": "Rúguǒ yǒu shíjiān, wǒ zuì xiǎng" } },
+
+    { "vocab_temp_id": "v10", "type": "grammar", "payload": {
+      "content_target": "上 + 时量 + 网",
+      "pinyin": "shàng + shíliàng + wǎng",
+      "content_vi": "「上网」là ly hợp từ (动 + 宾), bổ ngữ thời lượng phải CHEN VÀO GIỮA: 上了两个小时网, không nói 上网了两个小时. Cũng không thêm tân ngữ phía sau như 上网电脑." } },
+    { "vocab_temp_id": "v10", "type": "selection", "payload": { "distractors": ["xem tivi", "gọi điện thoại", "đọc báo giấy"] } },
+    { "vocab_temp_id": "v10", "type": "audio_recognition", "payload": { "distractors": ["nhắn tin", "nghe nhạc", "chụp ảnh"] } },
+    { "vocab_temp_id": "v10", "type": "fast_decision", "payload": { "wrong_meaning": "xem tivi" } },
+    { "vocab_temp_id": "v10", "type": "select_on_describe", "payload": {
+      "description": "Dùng máy tính hoặc điện thoại kết nối Internet để tìm thông tin, xem tin tức, trò chuyện.",
+      "distractors": [
+        { "word": "看电视", "pinyin": "kàn diànshì" },
+        { "word": "打电话", "pinyin": "dǎ diànhuà" },
+        { "word": "写信", "pinyin": "xiě xìn" }
+      ] } },
+    { "vocab_temp_id": "v10", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我昨天上了两个小时网。", "pinyin": "Wǒ zuótiān shàng le liǎng ge xiǎoshí wǎng." },
+      "wrong_sentences": [
+        { "text": "我昨天上网了两个小时。", "pinyin": "Wǒ zuótiān shàngwǎng le liǎng ge xiǎoshí." },
+        { "text": "我上网电脑。", "pinyin": "Wǒ shàngwǎng diànnǎo." },
+        { "text": "我每天上网三次网。", "pinyin": "Wǒ měi tiān shàngwǎng sān cì wǎng." }
+      ] } },
+    { "vocab_temp_id": "v10", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "每天", "pinyin": "měi tiān" },
+      { "text": "上网", "pinyin": "shàngwǎng" },
+      { "text": "看", "pinyin": "kàn" },
+      { "text": "新闻", "pinyin": "xīnwén" }
+    ] } },
+    { "vocab_temp_id": "v10", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Tối nào em trai tôi cũng lên mạng chơi game." } },
+    { "vocab_temp_id": "v10", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn cùng phòng phàn nàn rằng buổi tối mạng nhà mình rất chậm.",
+      "given_sentence_zh": "可能是因为晚上大家都",
+      "given_sentence_pinyin": "Kěnéng shì yīnwèi wǎnshang dàjiā dōu" } },
+
+    { "vocab_temp_id": "v1", "type": "select_dialog", "payload": {
+      "dialog_a": "你的___写完了吗？",
+      "dialog_a_pinyin": "Nǐ de ___ xiě wán le ma?",
+      "dialog_b": "写完了，现在我想玩一会儿___。",
+      "dialog_b_pinyin": "Xiě wán le, xiànzài wǒ xiǎng wán yíhuìr ___.",
+      "blank_a_answer": "作业",
+      "blank_b_vocab_id": "v2",
+      "distractors": [
+        { "word": "苹果", "pinyin": "píngguǒ" },
+        { "word": "医院", "pinyin": "yīyuàn" }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "fill_dialog", "payload": {
+      "dialog_a": "这个___你有什么打算？",
+      "dialog_a_pinyin": "Zhège ___ nǐ yǒu shénme dǎsuàn?",
+      "dialog_b": "我打算跟家人去___。",
+      "dialog_b_pinyin": "Wǒ dǎsuàn gēn jiārén qù ___.",
+      "blank_a_answer": "周末",
+      "blank_b_vocab_id": "v9" } }
+  ],
+  "grammar": [
+    {
+      "content_target": "一 + 量词 + 名词 + 也/都 + 不/没 + 动词",
+      "pinyin": "yī + liàngcí + míngcí + yě/dōu + bù/méi + dòngcí",
+      "content_vi": "Mẫu nhấn mạnh phủ định tuyệt đối: 'một … cũng không …'. Sau cụm 一+lượng từ+danh từ BẮT BUỘC có 也 hoặc 都 rồi mới tới 不/没. Người học hay quên 也/都 nên viết 我一个人不认识 — câu đó không tự nhiên.",
+      "vi_du": "这个周末我一个游戏也没玩。",
+      "vi_du_pinyin": "Zhège zhōumò wǒ yí ge yóuxì yě méi wán.",
+      "vi_du_vi": "Cuối tuần này tôi một game cũng không chơi."
+    }
+  ],
+  "dialogue": {
+    "lines": [
+      { "speaker": "A", "text_zh": "这个周末你有什么打算？", "pinyin": "Zhège zhōumò nǐ yǒu shénme dǎsuàn?", "text_vi": "Cuối tuần này cậu định làm gì?", "highlight_vocab_temp_ids": ["v7", "v5"] },
+      { "speaker": "B", "text_zh": "我打算在家复习，下个星期有考试。", "pinyin": "Wǒ dǎsuàn zài jiā fùxí, xià ge xīngqī yǒu kǎoshì.", "text_vi": "Tớ định ở nhà ôn tập, tuần sau có kỳ thi.", "highlight_vocab_temp_ids": ["v5", "v3"] },
+      { "speaker": "A", "text_zh": "你的作业都写完了吗？", "pinyin": "Nǐ de zuòyè dōu xiě wán le ma?", "text_vi": "Bài tập của cậu làm xong hết chưa?", "highlight_vocab_temp_ids": ["v1"] },
+      { "speaker": "B", "text_zh": "还没有，我一直没有时间。", "pinyin": "Hái méiyǒu, wǒ yìzhí méiyǒu shíjiān.", "text_vi": "Chưa xong, tớ mãi không có thời gian.", "highlight_vocab_temp_ids": ["v8"] },
+      { "speaker": "A", "text_zh": "别着急，还有两天呢。", "pinyin": "Bié zháojí, hái yǒu liǎng tiān ne.", "text_vi": "Đừng sốt ruột, còn hai ngày mà.", "highlight_vocab_temp_ids": ["v4"] },
+      { "speaker": "B", "text_zh": "是啊，不过我弟弟天天玩游戏，家里很吵。", "pinyin": "Shì a, búguò wǒ dìdi tiāntiān wán yóuxì, jiā lǐ hěn chǎo.", "text_vi": "Ừ, nhưng em trai tớ ngày nào cũng chơi game, nhà ồn lắm.", "highlight_vocab_temp_ids": ["v2"] },
+      { "speaker": "A", "text_zh": "那你可以去图书馆，或者上网找资料也行。", "pinyin": "Nà nǐ kěyǐ qù túshūguǎn, huòzhě shàngwǎng zhǎo zīliào yě xíng.", "text_vi": "Vậy cậu có thể ra thư viện, hoặc lên mạng tìm tài liệu cũng được.", "highlight_vocab_temp_ids": ["v10"] },
+      { "speaker": "B", "text_zh": "好主意。对了，下个月我们要搬家。", "pinyin": "Hǎo zhǔyi. Duì le, xià ge yuè wǒmen yào bānjiā.", "text_vi": "Ý hay đấy. À mà tháng sau nhà tớ chuyển nhà.", "highlight_vocab_temp_ids": ["v6"] },
+      { "speaker": "A", "text_zh": "真的？那考试以后我们一起去旅游吧！", "pinyin": "Zhēn de? Nà kǎoshì yǐhòu wǒmen yìqǐ qù lǚyóu ba!", "text_vi": "Thật à? Vậy thi xong mình cùng đi du lịch nhé!", "highlight_vocab_temp_ids": ["v9"] },
+      { "speaker": "B", "text_zh": "好，一言为定！", "pinyin": "Hǎo, yì yán wéi dìng!", "text_vi": "Được, nhất ngôn cửu đỉnh!", "highlight_vocab_temp_ids": [] }
+    ]
+  }
+}

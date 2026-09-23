@@ -5,16 +5,17 @@
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { anKhoa, chinhSoTuMoi, docCaiDat, MAC_DINH } from './settings.ts'
+import { anKhoa, chinhSoTuMoi, docCaiDat, MAC_DINH, chinhGioiHanLuot } from './settings.ts'
 
 describe('docCaiDat', () => {
-  it('đủ 7 key → đọc đúng kiểu', () => {
+  it('đủ 8 key → đọc đúng kiểu', () => {
     expect(
       docCaiDat([
         { key: 'openrouter_api_key', value: 'sk-abc' },
         { key: 'openrouter_model', value: 'a/b' },
         { key: 'google_tts_api_key', value: 'AIza-xyz' },
         { key: 'new_words_per_day', value: 7 },
+        { key: 'max_tu_moi_luot', value: 12 },
         { key: 'tts_voice', value: 'cmn-CN-Wavenet-C' },
         { key: 'tts_voice_en', value: 'en-US-Neural2-D' },
         { key: 'low_queue_alert_enabled', value: false },
@@ -24,6 +25,7 @@ describe('docCaiDat', () => {
       openrouter_model: 'a/b',
       google_tts_api_key: 'AIza-xyz',
       new_words_per_day: 7,
+      max_tu_moi_luot: 12,
       tts_voice: 'cmn-CN-Wavenet-C',
       tts_voice_en: 'en-US-Neural2-D',
       low_queue_alert_enabled: false,
@@ -68,5 +70,19 @@ describe('chinhSoTuMoi', () => {
 describe('X-settings — giữ tính thuần', () => {
   it('settings.ts không import react / supabase / node:', () => {
     expect(readFileSync('src/lib/settings.ts', 'utf8')).not.toMatch(/from ['"](react|@supabase|node:)/)
+  })
+})
+
+describe('chinhGioiHanLuot (M11/Q1)', () => {
+  it('kẹp trong 2..20 (người dùng chốt 20/09)', () => {
+    expect(chinhGioiHanLuot(10, 1)).toBe(11)
+    expect(chinhGioiHanLuot(2, -1)).toBe(2)
+    expect(chinhGioiHanLuot(20, 1)).toBe(20)
+    expect(chinhGioiHanLuot(3, -1)).toBe(2)
+    expect(chinhGioiHanLuot(19, 1)).toBe(20)
+  })
+
+  it('mặc định là 10 từ mỗi lượt', () => {
+    expect(MAC_DINH.max_tu_moi_luot).toBe(10)
   })
 })

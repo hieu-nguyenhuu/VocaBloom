@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from '../../../components/icons.tsx'
-import { soKhopDapAn, type VocabDb } from '../../../lib/player.ts'
+import { gioiHanNhap, soKhopDapAn, type VocabDb } from '../../../lib/player.ts'
 import { phatAm } from '../../../lib/tts.ts'
 
 /**
@@ -11,6 +11,9 @@ import { phatAm } from '../../../lib/tts.ts'
  * hiển thị từng ký tự đã gõ. Tiếng Anh dùng 1 ô nhập dài (doctor = 6 ô rời trông rối).
  *
  * Gợi ý (DEC-19, progressive §6.1): mỗi lần bấm lộ thêm 1 ký tự, không bao giờ lộ ký tự cuối.
+ *
+ * M10: giới hạn độ dài VẪN giữ, nhưng chỉ áp sau khi IME chốt chữ — nếu cắt ngay lúc đang gõ pinyin
+ * thì chữ Hán đã nhập trước đó bị xoá mất (người dùng báo 19/09).
  */
 type Props = {
   vocab: VocabDb
@@ -27,6 +30,9 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
   const [giaTri, setGiaTri] = useState('')
   const [kq, setKq] = useState<boolean | null>(null)
   const oNhap = useRef<HTMLInputElement>(null)
+  /** IME tiếng Trung: trong lúc đang gõ pinyin, KHÔNG được cắt chuỗi (xem `gioiHanNhap`). */
+  const dangGoIme = useRef(false)
+  const soO = Math.max([...dapAn].length, [...giaTri].length, 1)
 
   // Gợi ý: lộ dần ký tự đầu (giữ lại ít nhất 1 ký tự cuối để người học tự nhớ)
   useEffect(() => {
@@ -77,8 +83,8 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
 
       {vocab.lang === 'zh' ? (
         <button type="button" onClick={() => oNhap.current?.focus()} className="relative flex justify-center gap-4">
-          {Array.from({ length: Math.max(dapAn.length, 1) }, (_, i) => {
-            const ch = giaTri[i]
+          {Array.from({ length: soO }, (_, i) => {
+            const ch = [...giaTri][i]
             return (
               <span
                 key={i}
@@ -96,8 +102,16 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
             ref={oNhap}
             lang={vocab.lang}
             value={giaTri}
-            onChange={(e) => setGiaTri(e.target.value.slice(0, dapAn.length))}
-            onKeyDown={(e) => e.key === 'Enter' && kiemTra()}
+            onCompositionStart={() => {
+              dangGoIme.current = true
+            }}
+            onCompositionEnd={(e) => {
+              dangGoIme.current = false
+              setGiaTri(gioiHanNhap(e.currentTarget.value, [...dapAn].length, false))
+            }}
+            onChange={(e) => setGiaTri(gioiHanNhap(e.target.value, [...dapAn].length, dangGoIme.current))}
+            // Enter khi đang chọn chữ trong bảng IME là để CHỐT CHỮ, không phải nộp bài
+            onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && kiemTra()}
             disabled={kq !== null}
             autoFocus
             aria-label="Nhập đáp án"
@@ -109,7 +123,7 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
           ref={oNhap}
           value={giaTri}
           onChange={(e) => setGiaTri(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && kiemTra()}
+          onKeyDown={(e) => e.key === 'Enter' && !e.nativeEvent.isComposing && kiemTra()}
           disabled={kq !== null}
           autoFocus
           aria-label="Nhập đáp án"

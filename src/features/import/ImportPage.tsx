@@ -7,10 +7,13 @@ import {
   docFileImport,
   dongCanhBao,
   GIOI_HAN_BYTES,
+  demTrangThai,
   giamTrangThai,
   timTuTrung,
+  tongKetMe,
   type KetQuaDoc,
   type KetQuaRpc,
+  type MucFile,
   type TrangThaiImport,
 } from '../../lib/importUi.ts'
 import { supabase } from '../../lib/supabase.ts'
@@ -22,7 +25,10 @@ import KhungTrang from '../shell/KhungTrang.tsx'
  * preview (cảnh báo trùng KHÔNG chặn, DEC-21) → rpc import_topic (1 transaction) → kết quả.
  * Toàn bộ chuyển trạng thái nằm ở reducer thuần `giamTrangThai`; component chỉ đọc file,
  * query trùng, gọi RPC rồi dispatch. Sau khi import xong, tự sinh audio TTS ở nền (M6c, §9).
- * 3 trạng thái không có mockup (lỗi file / đang import / kết quả) theo DESIGN.md §1 đã duyệt.
+ * 3 trạng thái không có mockup (lỗi file / đang import / kết quả) theo DESIGN.M2b.md §1 đã duyệt.
+ *
+ * M12: chọn được NHIỀU file 1 lúc (Q4) — mỗi file là 1 transaction riêng, file hỏng chỉ báo
+ * ở dòng của nó và KHÔNG kéo đổ các file còn lại. Preview đổi từ card đơn sang bảng 1 dòng/file.
  */
 
 const NUT = 'flex-1 rounded-12 py-[15px] text-15 font-semibold transition-opacity disabled:opacity-60'
@@ -38,7 +44,7 @@ function loiFileQuaLon(bytes: number): KetQuaDoc {
     hop_le: false,
     loi: [{ duong_dan: '(file)', thong_diep: `File ${dinhDangKB(bytes)} — lớn hơn giới hạn 5 MB.` }],
     canh_bao: [],
-    tom_tat: { ten_topic: '', so_tu: 0, so_bai_tap: 0, so_dong_hoi_thoai: 0 },
+    tom_tat: { ten_topic: '', so_tu: 0, so_bai_tap: 0, so_dong_hoi_thoai: 0, so_ngu_phap: 0 },
     du_lieu: null,
   }
 }
@@ -55,78 +61,102 @@ export default function ImportPage() {
   // Đếm lượt chọn file để bỏ kết quả query trùng của file đã bị Hủy
   const luot = useRef(0)
   // TTS nền sau import (M6c §9)
+  const [dangLam, setDangLam] = useState<{ i: number; tong: number; ten: string } | null>(null)
   const [tienDoTts, setTienDoTts] = useState<{ da: number; tong: number } | null>(null)
   const [ketQuaTts, setKetQuaTts] = useState<KetQuaGen | null>(null)
   const daChayTts = useRef(false)
 
   // Import xong → sinh audio cho từ mới ngay, chạy nền, KHÔNG chặn 2 nút điều hướng.
   // Ref guard: StrictMode gọi effect 2 lần, thiếu guard sẽ gọi Google TTS gấp đôi (bài học MB-20).
+  // M12: chạy MỘT lần cho cả mẻ (không phải mỗi file) để không gọi Google song song.
+  // Rút gọn điều kiện ra ngoài effect để deps là 1 boolean, không phải cả mảng `ds`.
+  const meCoFileXong = tt.buoc === 'ket_qua' && demTrangThai(tt.ds, 'xong') > 0
   useEffect(() => {
-    if (tt.buoc !== 'ket_qua_ok' || daChayTts.current) return
+    if (!meCoFileXong || daChayTts.current) return
     daChayTts.current = true
     void (async () => {
       const kq = await genAudioChoTu((da, tong) => setTienDoTts({ da, tong }))
       setTienDoTts(null)
       setKetQuaTts(kq)
     })()
-  }, [tt.buoc])
+  }, [meCoFileXong])
 
   async function chonFile(files: FileList | File[]) {
-    const ds = Array.from(files)
-    const file = ds[0]
-    if (!file) return
+    const dsFile = Array.from(files)
+    if (dsFile.length === 0) return
     const luotNay = ++luot.current
-    const thongTin = { ten_file: file.name, kich_thuoc: file.size }
 
-    if (file.size > GIOI_HAN_BYTES) {
-      dispatch({ loai: 'chon', ...thongTin, ket_qua: loiFileQuaLon(file.size) })
-      return
-    }
-    const ket_qua = docFileImport(await file.text())
-    if (luotNay !== luot.current) return
-    dispatch({ loai: 'chon', ...thongTin, ket_qua })
-    if (!ket_qua.hop_le) return
-
-    // Cảnh báo trùng (§10.3) — query sau khi đã hiện preview, không chặn thao tác
-    const dong: string[] = []
-    if (ds.length > 1) dong.push(`Bạn thả ${ds.length} file — chỉ lấy file đầu (${file.name}).`)
-    const tuFile = dsTuTrongFile(ket_qua.du_lieu)
-    const [vocab, topic] = await Promise.all([
-      tuFile.length > 0
-        ? supabase.from('vocab').select('word').in('word', tuFile)
-        : Promise.resolve({ data: [], error: null }),
-      supabase.from('topics').select('id').eq('name', ket_qua.tom_tat.ten_topic),
-    ])
-    if (luotNay !== luot.current) return
-    const khongKiemTraDuoc = Boolean(vocab.error || topic.error)
-    dong.push(
-      ...dongCanhBao({
-        tuTrung: timTuTrung(tuFile, (vocab.data ?? []).map((r) => r.word as string)),
-        topicTrung: topic.data?.length ?? 0,
-        canhBaoValidator: [], // reducer đã đưa canh_bao của validator vào state
-        khongKiemTraDuoc,
-        tenTopic: ket_qua.tom_tat.ten_topic,
-      }),
+    // Đọc + validate TẤT CẢ file rồi dispatch 1 lần — mỗi file có trạng thái riêng (M12/Q4).
+    const daDoc = await Promise.all(
+      dsFile.map(async (f) => ({
+        ten_file: f.name,
+        kich_thuoc: f.size,
+        ket_qua: f.size > GIOI_HAN_BYTES ? loiFileQuaLon(f.size) : docFileImport(await f.text()),
+      })),
     )
-    if (dong.length > 0) dispatch({ loai: 'them_canh_bao', dong })
+    if (luotNay !== luot.current) return
+    dispatch({ loai: 'chon', ds: daDoc })
+
+    // Cảnh báo trùng (§10.3) — query SAU khi đã hiện preview, không chặn thao tác.
+    // Chạy song song theo file; mỗi file dispatch cảnh báo của riêng nó.
+    await Promise.all(
+      daDoc
+        .filter((f) => f.ket_qua.hop_le)
+        .map(async ({ ten_file, ket_qua }) => {
+          const tuFile = dsTuTrongFile(ket_qua.du_lieu)
+          const [vocab, topic] = await Promise.all([
+            tuFile.length > 0
+              ? supabase.from('vocab').select('word').in('word', tuFile)
+              : Promise.resolve({ data: [], error: null }),
+            supabase.from('topics').select('id').eq('name', ket_qua.tom_tat.ten_topic),
+          ])
+          if (luotNay !== luot.current) return
+          const dong = dongCanhBao({
+            tuTrung: timTuTrung(tuFile, (vocab.data ?? []).map((r) => r.word as string)),
+            topicTrung: topic.data?.length ?? 0,
+            canhBaoValidator: [], // reducer đã đưa canh_bao của validator vào state
+            khongKiemTraDuoc: Boolean(vocab.error || topic.error),
+            tenTopic: ket_qua.tom_tat.ten_topic,
+          })
+          if (dong.length > 0) dispatch({ loai: 'them_canh_bao', ten_file, dong })
+        }),
+    )
   }
 
-  async function chayImport(du_lieu: unknown) {
-    const { data, error } = await supabase.rpc('import_topic', { du_lieu })
-    if (error) dispatch({ loai: 'import_loi', loi: dichLoiImport(error) })
-    else dispatch({ loai: 'import_ok', ket_qua: data as KetQuaRpc })
+  /**
+   * Import TUẦN TỰ từng file, mỗi file 1 transaction (RPC). Lỗi 1 file thì ghi nhận rồi
+   * ĐI TIẾP — cố ý không `return`, đó là điểm khác then chốt so với bản 1 file (M12/Q4).
+   */
+  async function chayMe(ds: MucFile[]) {
+    const canChay = ds.filter((m) => m.tt === 'dang_import')
+    for (let i = 0; i < canChay.length; i++) {
+      const m = canChay[i]!
+      if (m.tt !== 'dang_import') continue
+      setDangLam({ i: i + 1, tong: canChay.length, ten: m.ten_file })
+      const { data, error } = await supabase.rpc('import_topic', { du_lieu: m.du_lieu })
+      if (error) dispatch({ loai: 'file_loi', ten_file: m.ten_file, loi: dichLoiImport(error) })
+      else dispatch({ loai: 'file_ok', ten_file: m.ten_file, ket_qua: data as KetQuaRpc })
+    }
+    setDangLam(null)
+    dispatch({ loai: 'xong_het' })
   }
 
   function xacNhan() {
     if (tt.buoc !== 'preview') return
+    const ds = tt.ds.map((m): MucFile => (m.tt === 'san_sang' ? { ...m, tt: 'dang_import' } : m))
     dispatch({ loai: 'xac_nhan' })
-    void chayImport(tt.du_lieu)
+    void chayMe(ds)
   }
 
   function thuLai() {
-    if (tt.buoc !== 'ket_qua_loi') return
+    if (tt.buoc !== 'ket_qua') return
+    const ds = tt.ds.map((m): MucFile => {
+      if (m.tt !== 'that_bai') return m
+      const { loi: _bo, ...conLai } = m
+      return { ...conLai, tt: 'dang_import' }
+    })
     dispatch({ loai: 'thu_lai' })
-    void chayImport(tt.du_lieu)
+    void chayMe(ds)
   }
 
   function onDrop(e: DragEvent) {
@@ -136,7 +166,9 @@ export default function ImportPage() {
   }
 
   const oBuocChonFile = tt.buoc === 'chon_file'
-  const coFile = 'ten_file' in tt
+  const dsFile: MucFile[] = tt.buoc === 'chon_file' ? [] : tt.ds
+  const soHopLe = demTrangThai(dsFile, 'san_sang')
+  const tong = tongKetMe(dsFile)
 
   return (
     <KhungTrang rong={960}>
@@ -168,6 +200,7 @@ export default function ImportPage() {
         ref={inputRef}
         type="file"
         accept=".json,application/json"
+        multiple
         className="hidden"
         onChange={(e) => {
           if (e.target.files) void chonFile(e.target.files)
@@ -191,7 +224,9 @@ export default function ImportPage() {
           <Icon ten="import" size={48} strokeWidth="1.6" className="text-accent" />
           <div>
             <div className="text-17 font-semibold text-content-primary">Kéo thả file JSON vào đây</div>
-            <div className="mt-2 text-13 text-content-muted">1 file = 1 topic</div>
+            <div className="mt-2 text-13 text-content-muted">
+              Mỗi file = 1 chủ đề · chọn được nhiều file
+            </div>
           </div>
           <div className="text-13 text-content-subtle">hoặc</div>
           <button
@@ -203,162 +238,186 @@ export default function ImportPage() {
           </button>
         </div>
       ) : (
-        /* ── Màn 16 / 17: 2 cột PC, xếp dọc Mobile ────────────────────────── */
-        <div className="flex flex-col gap-4 md:grid md:grid-cols-[1fr_1.4fr] md:gap-8">
-          {coFile && (
-            <div className={`${KHUNG_DASHED} gap-3 border-border-dashed p-5 md:p-8`}>
-              <Icon ten="file" size={34} strokeWidth="1.6" className="text-accent" />
-              <div className="text-15 font-semibold text-content-primary">{tt.ten_file}</div>
-              <div className="text-13 text-content-muted">Đã tải lên · {dinhDangKB(tt.kich_thuoc)}</div>
+        /* ── Màn 16 / 17 mở rộng: bảng 1 dòng/file (M12) ───────────────────── */
+        <div className="flex flex-col gap-[18px]">
+          {/* Tổng quan mẻ */}
+          <div className={CARD}>
+            <div className="mb-1 text-18 font-bold text-content-primary">
+              {tt.buoc === 'ket_qua'
+                ? `Đã import ${tong.so_file_ok}/${dsFile.length} file`
+                : `${dsFile.length} file đã chọn`}
             </div>
-          )}
-
-          <div className={`flex flex-col gap-[18px] ${coFile ? '' : 'md:col-span-2'}`}>
-            {(tt.buoc === 'preview' || tt.buoc === 'dang_import' || tt.buoc === 'ket_qua_loi') && (
-              <div className={CARD}>
-                <div className="mb-3 text-18 font-bold text-content-primary">{tt.tom_tat.ten_topic}</div>
-                <div className="flex flex-col gap-[7px] text-14 text-content-nav">
-                  <div>{tt.tom_tat.so_tu} từ vựng mới</div>
-                  <div>{tt.tom_tat.so_bai_tap} bài tập được tạo sẵn</div>
-                  <div>{tt.tom_tat.so_dong_hoi_thoai} câu hội thoại</div>
-                </div>
-              </div>
-            )}
-
-            {(tt.buoc === 'preview' || tt.buoc === 'dang_import') && tt.canh_bao.length > 0 && (
-              <div className="flex items-start gap-[10px] rounded-14 border border-warn bg-warn-bg p-4 text-13 leading-normal text-warn-text">
-                <Icon ten="canh-bao" size={19} className="mt-[1px] shrink-0" />
-                <ul className="flex flex-col gap-1">
-                  {tt.canh_bao.map((d) => (
-                    <li key={d}>{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {tt.buoc === 'loi_file' && (
-              <div
-                role="alert"
-                className="rounded-14 border border-danger bg-danger-bg p-4 text-13 text-danger-text"
-              >
-                <div className="mb-2 font-semibold">File chưa hợp lệ · {tt.loi.length} lỗi</div>
-                <ul className="flex flex-col gap-1">
-                  {tt.loi.slice(0, TOI_DA_LOI_HIEN).map((l) => (
-                    <li key={`${l.duong_dan}${l.thong_diep}`}>
-                      <span className="font-mono">{l.duong_dan}</span> — {l.thong_diep}
-                    </li>
-                  ))}
-                  {tt.loi.length > TOI_DA_LOI_HIEN && (
-                    <li>…và {tt.loi.length - TOI_DA_LOI_HIEN} lỗi khác</li>
-                  )}
-                </ul>
-              </div>
-            )}
-
-            {tt.buoc === 'ket_qua_loi' && (
-              <div
-                role="alert"
-                className="rounded-14 border border-danger bg-danger-bg p-4 text-13 leading-normal text-danger-text"
-              >
-                <div className="mb-1 font-semibold">Import thất bại</div>
-                <div>{tt.loi}</div>
-                <div className="mt-1 opacity-80">Không có gì được ghi (đã rollback).</div>
-              </div>
-            )}
-
-            {tt.buoc === 'ket_qua_ok' && (
-              <div className={CARD}>
-                <div className="mb-3 text-18 font-bold text-content-primary">
-                  <span className="text-success">✓</span> Đã import {tt.ten_topic}
-                </div>
-                <div className="flex flex-col gap-[7px] text-14 text-content-nav">
-                  <div>{tt.ket_qua.so_tu} từ vựng mới</div>
-                  <div>{tt.ket_qua.so_bai_tap} bài tập được tạo sẵn</div>
-                  <div>{tt.ket_qua.so_dong_hoi_thoai} câu hội thoại</div>
-                </div>
-                <div className="mt-3 text-13 text-content-muted">
-                  Từ mới nằm ở hàng đợi, cron sẽ nhỏ giọt mỗi ngày.
-                </div>
-                {tienDoTts && (
-                  <div className="mt-2 text-13 text-content-muted">
-                    Đang tạo audio… {tienDoTts.da}/{tienDoTts.tong}
-                  </div>
-                )}
-                {ketQuaTts && (
-                  <div className="mt-2 text-13 text-content-muted">
-                    {ketQuaTts.tong === 0
-                      ? 'Mọi từ đều đã có audio.'
-                      : `Đã tạo audio cho ${ketQuaTts.xong}/${ketQuaTts.tong} từ.`}
-                    {ketQuaTts.loi.map((l) => (
-                      <div key={l} className="mt-1 text-danger-text">
-                        {l}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Hàng nút — theo bước */}
-            <div className="mt-auto flex gap-3">
-              {(tt.buoc === 'preview' || tt.buoc === 'dang_import') && (
+            <div className="text-14 text-content-nav">
+              {tt.buoc === 'ket_qua' ? (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ loai: 'huy' })}
-                    disabled={tt.buoc === 'dang_import'}
-                    className={NUT_PHU}
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    type="button"
-                    onClick={xacNhan}
-                    disabled={tt.buoc === 'dang_import'}
-                    className={NUT_CHINH}
-                  >
-                    {tt.buoc === 'dang_import' ? 'Đang import…' : 'Xác nhận Import'}
-                  </button>
+                  {tong.so_tu} từ vựng · {tong.so_bai_tap} bài tập · {tong.so_ngu_phap} mục ngữ pháp ·{' '}
+                  {tong.so_dong_hoi_thoai} câu hội thoại
+                </>
+              ) : (
+                <>
+                  {soHopLe} file hợp lệ
+                  {dsFile.length - soHopLe > 0 &&
+                    ` · ${dsFile.length - soHopLe} file chưa hợp lệ (sẽ bỏ qua)`}
                 </>
               )}
-              {tt.buoc === 'loi_file' && (
+            </div>
+            {dangLam && (
+              <div className="mt-2 text-13 text-content-muted">
+                Đang import {dangLam.i}/{dangLam.tong} — {dangLam.ten}
+              </div>
+            )}
+            {tienDoTts && (
+              <div className="mt-2 text-13 text-content-muted">
+                Đang tạo audio… {tienDoTts.da}/{tienDoTts.tong}
+              </div>
+            )}
+            {ketQuaTts && (
+              <div className="mt-2 text-13 text-content-muted">
+                {ketQuaTts.tong === 0
+                  ? 'Mọi từ đều đã có audio.'
+                  : `Đã tạo audio cho ${ketQuaTts.xong}/${ketQuaTts.tong} từ.`}
+                {ketQuaTts.loi.map((l) => (
+                  <div key={l} className="mt-1 text-danger-text">
+                    {l}
+                  </div>
+                ))}
+              </div>
+            )}
+            {tt.buoc === 'ket_qua' && tong.so_file_ok > 0 && (
+              <div className="mt-3 text-13 text-content-muted">
+                Từ mới nằm ở hàng đợi, cron sẽ nhỏ giọt mỗi ngày.
+              </div>
+            )}
+          </div>
+
+          {/* 1 dòng / file */}
+          <ul className="flex flex-col gap-[10px]">
+            {dsFile.map((m) => (
+              <li
+                key={m.ten_file}
+                className={`rounded-14 border p-4 ${
+                  m.tt === 'loi' || m.tt === 'that_bai'
+                    ? 'border-danger bg-danger-bg'
+                    : 'border-border-card bg-surface-card'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Icon ten="file" size={18} strokeWidth="1.6" className="shrink-0 text-accent" />
+                      <span className="truncate text-15 font-semibold text-content-primary">
+                        {m.tt === 'loi' ? m.ten_file : m.tom_tat.ten_topic || m.ten_file}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-13 text-content-muted">
+                      {m.ten_file} · {dinhDangKB(m.kich_thuoc)}
+                      {m.tt !== 'loi' && (
+                        <>
+                          {' · '}
+                          {m.tom_tat.so_tu} từ · {m.tom_tat.so_bai_tap} bài · {m.tom_tat.so_ngu_phap}{' '}
+                          ngữ pháp · {m.tom_tat.so_dong_hoi_thoai} câu
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="text-13 font-semibold">
+                      {m.tt === 'san_sang' && <span className="text-content-muted">Sẵn sàng</span>}
+                      {m.tt === 'dang_import' && (
+                        <span className="text-content-muted">Đang import…</span>
+                      )}
+                      {m.tt === 'xong' && <span className="text-success">✓ Xong</span>}
+                      {(m.tt === 'loi' || m.tt === 'that_bai') && (
+                        <span className="text-danger-text">✗ Lỗi</span>
+                      )}
+                    </span>
+                    {tt.buoc === 'preview' && (
+                      <button
+                        type="button"
+                        onClick={() => dispatch({ loai: 'bo_file', ten_file: m.ten_file })}
+                        className="rounded-8 bg-border-card px-2.5 py-1 text-13 font-semibold text-content-nav"
+                      >
+                        Bỏ
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {m.tt === 'loi' && (
+                  <ul role="alert" className="mt-2 flex flex-col gap-1 text-13 text-danger-text">
+                    {m.loi.slice(0, TOI_DA_LOI_HIEN).map((l) => (
+                      <li key={`${l.duong_dan}${l.thong_diep}`}>
+                        <span className="font-mono">{l.duong_dan}</span> — {l.thong_diep}
+                      </li>
+                    ))}
+                    {m.loi.length > TOI_DA_LOI_HIEN && (
+                      <li>…và {m.loi.length - TOI_DA_LOI_HIEN} lỗi khác</li>
+                    )}
+                  </ul>
+                )}
+
+                {m.tt === 'that_bai' && (
+                  <div role="alert" className="mt-2 text-13 leading-normal text-danger-text">
+                    {m.loi}
+                    <div className="opacity-80">Không có gì được ghi cho file này (đã rollback).</div>
+                  </div>
+                )}
+
+                {(m.tt === 'san_sang' || m.tt === 'dang_import') && m.canh_bao.length > 0 && (
+                  <div className="mt-2 flex items-start gap-[10px] rounded-10 border border-warn bg-warn-bg p-3 text-13 leading-normal text-warn-text">
+                    <Icon ten="canh-bao" size={17} className="mt-[1px] shrink-0" />
+                    <ul className="flex flex-col gap-1">
+                      {m.canh_bao.map((d) => (
+                        <li key={d}>{d}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {/* Hàng nút — theo bước */}
+          <div className="mt-auto flex gap-3">
+            {(tt.buoc === 'preview' || tt.buoc === 'dang_import') && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => dispatch({ loai: 'chon_file_khac' })}
+                  disabled={tt.buoc === 'dang_import'}
+                  className={NUT_PHU}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={xacNhan}
+                  disabled={tt.buoc === 'dang_import' || soHopLe === 0}
+                  className={NUT_CHINH}
+                >
+                  {tt.buoc === 'dang_import' ? 'Đang import…' : `Import ${soHopLe} file hợp lệ`}
+                </button>
+              </>
+            )}
+            {tt.buoc === 'ket_qua' && (
+              <>
                 <button
                   type="button"
                   onClick={() => dispatch({ loai: 'chon_file_khac' })}
                   className={NUT_PHU}
                 >
-                  Chọn file khác
+                  Import file khác
                 </button>
-              )}
-              {tt.buoc === 'ket_qua_loi' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ loai: 'chon_file_khac' })}
-                    className={NUT_PHU}
-                  >
-                    Chọn file khác
+                {demTrangThai(dsFile, 'that_bai') > 0 && (
+                  <button type="button" onClick={thuLai} className={NUT_PHU}>
+                    Thử lại file lỗi
                   </button>
-                  <button type="button" onClick={thuLai} className={NUT_CHINH}>
-                    Thử lại
-                  </button>
-                </>
-              )}
-              {tt.buoc === 'ket_qua_ok' && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ loai: 'chon_file_khac' })}
-                    className={NUT_PHU}
-                  >
-                    Import file khác
-                  </button>
-                  <Link to="/tu-vung" className={`${NUT_CHINH} text-center`}>
-                    Xem từ vựng
-                  </Link>
-                </>
-              )}
-            </div>
+                )}
+                <Link to="/tu-vung" className={`${NUT_CHINH} text-center`}>
+                  Xem từ vựng
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -4,7 +4,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { demChuaDoc, thoiGianTuongDoi } from './thongBao.ts'
+import { demChuaDoc, thoiGianTuongDoi, demDaDoc } from './thongBao.ts'
 
 const BAY_GIO = new Date('2026-09-18T10:00:00+07:00')
 const truoc = (ms: number) => new Date(BAY_GIO.getTime() - ms).toISOString()
@@ -45,5 +45,16 @@ describe('demChuaDoc', () => {
 describe('X-thongBao — giữ tính thuần', () => {
   it('thongBao.ts không import react / supabase / node:', () => {
     expect(readFileSync('src/lib/thongBao.ts', 'utf8')).not.toMatch(/from ['"](react|@supabase|node:)/)
+  })
+})
+
+describe('demDaDoc (M9 — nút xoá thông báo đã đọc)', () => {
+  it('đếm đúng số tin đã đọc', () => {
+    expect(demDaDoc([{ is_read: true }, { is_read: false }, { is_read: true }])).toBe(2)
+  })
+
+  it('không có tin đã đọc → 0 (nút sẽ bị ẩn)', () => {
+    expect(demDaDoc([{ is_read: false }])).toBe(0)
+    expect(demDaDoc([])).toBe(0)
   })
 })

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * Hộp xác nhận cho thao tác PHÁ HUỶ (xoá từ / xoá chủ đề). `<dialog>` native, 0 package.
+ * Hộp xác nhận cho thao tác PHÁ HUỶ (xoá từ / xoá chủ đề / xoá thông báo đã đọc). `<dialog>` native.
+ * M9/Q5: LUÔN căn giữa màn hình (`m-auto`) — người dùng yêu cầu, cố ý lệch mockup 15 (bottom sheet).
  * Luôn nêu hậu quả bằng SỐ CỤ THỂ — xoá là không hoàn tác được (cascade dọn cả lịch sử ôn).
  */
 type Props = {
@@ -25,7 +26,7 @@ export default function HopXacNhan({ tieuDe, noiDung, nhanXacNhan = 'Xoá', dang
       ref={ref}
       onClose={onDong}
       onClick={(e) => e.target === ref.current && ref.current?.close()}
-      className="w-full max-w-[420px] rounded-16 bg-surface-raised p-0 backdrop:bg-[rgb(36_27_58_/_0.35)]"
+      className="m-auto w-[min(420px,calc(100vw-32px))] rounded-20 bg-surface-raised p-0 backdrop:bg-[rgb(36_27_58_/_0.35)]"
     >
       <div className="flex flex-col gap-3 p-6">
         <h2 className="font-display text-18 font-bold text-content-primary">{tieuDe}</h2>

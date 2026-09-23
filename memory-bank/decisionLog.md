@@ -478,3 +478,193 @@ thuộc >1 chủ đề. Vì `vocab_topics` vẫn là n-n nên `xoa_chu_de` xử 
 vai B bị chặn · xoá chủ đề tạm: vocab 11 → 9, chủ đề khác nguyên vẹn · cascade dọn sạch 3 bảng ·
 form đúng 8 ô · tìm kiếm "qua chuoi" ra 香蕉).
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-19] MB-28 — M9: đo thời gian học, dải 7 ngày, dialog căn giữa, bộ kiểm thử
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Dải 7 ngày hiện **số ngày + thứ + "Hôm nay" + số phút** | Logic vốn đã đúng "7 ngày gần nhất"; chỉ có nhãn thứ nên nhìn tưởng tuần cố định |
+| **Q2** | Đo thời gian **THẬT** (`review_log.thoi_gian_ms`), không ước lượng từ khoảng cách log | Người dùng chọn phương án B. Dòng cũ để `null` — không bịa số cho quá khứ |
+| **Q3** | **Trần 5 phút/lượt** + **chia đều** khi 1 màn ghi nhiều dòng log | Không có trần thì để máy chạy rồi bỏ đi sẽ thành "học 3 tiếng"; không chia đều thì matching 5 từ cộng trùng 5 lần |
+| **Q4** | Nút "Xoá đã đọc (N)" xoá hẳn khỏi DB, có xác nhận, giữ nguyên tin chưa đọc | |
+| **Q5** | **Mọi form/hộp xác nhận căn giữa màn hình** — CỐ Ý lệch mockup 15 (bottom sheet) | Người dùng yêu cầu; sheet bị đẩy sát mép trên và cắt mất phần đầu ở 390px. **Phiên sau đừng "sửa ngược" về bottom sheet** |
+| **Q6** | Bộ kiểm thử gom vào 1 chủ đề "Kiểm thử" 14 từ, đủ 5 stage, đến hạn hôm nay; chấp nhận stage3 gọi OpenRouter thật | Người dùng chốt |
+
+**Bằng chứng:** `npm test` 272/272 · build xanh · CDP **13/13 + 3/3** (25/25 dòng log mới đều có
+`thoi_gian_ms` trong khoảng 487–1678 ms · matching 3 dòng chia đều · 122 dòng cũ vẫn `null` ·
+Dashboard hiện `13/9 … 19/9` + `1′` · xoá 10 tin đã đọc, tin chưa đọc còn nguyên · form ở 390px cách
+đều trên/dưới 63px). `npm run seed:test` → new 3 · stage1 3 · stage2 3 · stage3 3 · intensive 2.
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-19] MB-29 — M10: 8 lỗi người dùng báo
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Giữ nguyên: `flashcard`/`grammar` xuất hiện ở MỌI stage; 4 dạng tính điểm lọc theo stage | Kiểm 300 dòng log cho thấy luồng hằng ngày vốn đã đúng; người dùng chọn (A) |
+| **Q2** | Màn Từ vựng thêm **"Tất cả từ vựng"** + chip lọc 6 stage + chip stage mỗi dòng | |
+| **Q3** | Ô nhập tiếng Trung **giữ giới hạn độ dài**, nhưng chỉ cắt **sau khi IME chốt chữ** | Gõ tiếp chứ không phải gõ lại — yêu cầu của người dùng |
+| **Q4** | Flashcard: nút 拼 · Space lật · 1/2/3 chọn · mặt sau thêm pinyin + câu ví dụ | |
+| **Q5** | Quy ước dữ liệu hội thoại: **1 dấu `___` mỗi câu** (chỗ A ở câu A, chỗ B ở câu B) | Xác minh trên dữ liệu gốc 苹果/橙子. Bộ kiểm thử M9 do tôi soạn đã vi phạm ⇒ sửa lại |
+
+**Lỗi tôi gây ra ở M9 và đã sửa:** `du-lieu-kiem-thu/kiem-thu.json` dồn 2 chỗ trống vào câu B làm vỡ
+layout màn hội thoại. Bài học: **payload tự soạn phải đối chiếu với dữ liệu thật đang chạy**, không
+chỉ đọc bảng payload trong SPEC (SPEC không nói rõ số chỗ trống mỗi câu).
+
+**Bài học kiểm thử lặp lại:** selector `.font-han` trần bắt trúng nút 拼 ở header (đã gặp ở M6a).
+Trong script CDP phải bám vào thẻ nội dung.
+
+**Bằng chứng:** `npm test` 284/284 · build xanh · CDP 14/15 — mục còn lại được chứng minh bằng
+**ảnh chụp** (`m10-flashcard-sau.png`: mặt sau hiện đủ nghĩa + pinyin + cụm từ + câu ví dụ, nút 拼 ở
+header, nhãn phím Again 1 / Hard 2 / Good 3).
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-20] MB-30 — M11: 6 việc người dùng báo
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | `max_tu_moi_luot` (mặc định **10**, dải **2–20** — người dùng chốt lại 20/09, ban đầu là 5–50) — Player dừng lượt khi đủ số TỪ hoàn thành | Trước đây mỗi lượt ôn sạch mọi từ due |
+| **Q2** | **Enter** = hành động chính mọi màn · **Shift+Enter** xuống dòng ở tự luận · **Space chỉ ở Flashcard** | Space ở màn khác giữ chức năng cuộn trang |
+| **Q3** | Thêm **phím 1–4** chọn đáp án trắc nghiệm / chip hội thoại | Nhất quán với 1/2/3 của Flashcard |
+| **Q4** | `promptGiaiThich` nêu rõ `dap_an` là đáp án đúng, cấm AI tự chọn đáp án khác | Trước đây `dap_an` có gửi nhưng prompt không nói, AI tự đoán |
+| **Q5** | Gợi ý bài hội thoại lộ **lần lượt ô chưa điền** (A→B) | Trước đây chỉ lộ được ô A |
+
+**🐞 Bốn bug thật đã vá:**
+1. `TracNghiem`: callback trong deps của effect có `setTimeout` ⇒ **trả lời hộ dây chuyền**, ghi
+   `review_log` dư. Vá: `onTraLoiRef` + `daGui`.
+1b. `TracNghiem`/`Matching`: xáo đáp án bằng `useMemo` theo mảng Player dựng MỚI mỗi render ⇒ ô xanh
+   **nhảy vị trí ngẫu nhiên** lúc lưu (người dùng thấy "đáp án random"). Vá: xáo 1 lần khi mount.
+2. Giới hạn lượt không chạy: bộ đếm suy từ `tt.da_xong_tu`, nhưng reducer chuyển `het_session` ngay
+   trong dispatch cộng `da_xong_tu` ⇒ luôn đọc 0. Vá: đếm **tại nguồn** trong `traLoi`.
+3. Cùng gốc: `daOnGiDo` cũng suy từ state ⇒ session 1 từ không điều hướng sang Tổng kết.
+
+**Bằng chứng:** `npm test` 297/297 · build xanh · CDP **9/9** (chọn 1 đáp án ⇒ **đúng 1 dòng log**:
+99 → 100) · đặt `max_tu_moi_luot = 1` ⇒ lượt ôn **đúng 1 từ**.
+**Chưa chứng minh tự động:** "đạt giới hạn thì tự sang Tổng kết" — bộ lái CDP không hoàn thành nổi 1
+từ (kẹt ở màn trắc nghiệm không nhận diện được), đã dừng đào theo quy tắc 3 lần của `agentic-guard`.
+**Trạng thái:** ✅ Đã áp dụng (trừ 1 khẳng định cần kiểm tay).
+
+### [2026-09-22] MB-31 — M12a: ngữ pháp 2 tầng + import nhiều file
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | **Ngữ pháp CỦA TỪ** (`exercises.type='grammar'`) là dạng **CÓ ĐIỀU KIỆN** — chỉ gắn khi từ có điểm DỄ DÙNG SAI (lượng từ riêng, ly hợp từ, giới từ bắt buộc, vị trí trạng ngữ, cặp dễ nhầm). Ước 20–30% số từ | Người dùng báo "từ nào cũng có ngữ pháp". **Nguyên nhân gốc KHÔNG ở app** mà ở skill: `SKILL.md` Bước 3.3 + checklist `payload-schemas.md` mục 5 liệt kê `grammar` vào "9 dạng bắt buộc" ⇒ AI làm đúng skill thì 猫/水 cũng có ngữ pháp |
+| **Q2** | **Ngữ pháp CỦA CHỦ ĐỀ** là thực thể riêng — bảng **`topic_grammar`** (bảng thứ 11), không nhét vào `exercises` | `exercises` bắt buộc `vocab_id`; nhét vào phải bịa `vocab_id` giả |
+| **Q3** | Hiện ở 3 chỗ: đầu lượt ôn chủ đề · cuối trước hội thoại · khối tra cứu ở màn Từ vựng. **KHÔNG** chèn vào ôn hằng ngày | Người dùng chốt |
+| **Q4** | Import nhiều file: **mỗi file 1 transaction riêng**, file hỏng chỉ báo ở dòng của nó | Người dùng chốt. Import 10 file mà 1 file hỏng vẫn giữ được 9 file kia |
+| **Q5** | Khối CSV không có tên topic → AI tự đặt tên theo nội dung, nêu ở báo cáo để người dùng đổi | Người dùng chốt |
+| **Q6** | Dòng CSV là ngữ pháp **chỉ khi** cột `Nghia` ghi `ngữ pháp`. Dòng nghi ngữ pháp mà thiếu nhãn (vd `越来越`) vẫn xử lý như từ vựng nhưng **phải liệt kê ở báo cáo** | Không đoán thay người dùng, cũng không im lặng bỏ qua |
+| **Q7** | Sửa `0007_import_topic.sql` **TẠI CHỖ** thay vì `create or replace` ở `0013` | Không có bảng lịch sử migration, mọi file chạy lại mỗi lần (MB-11) ⇒ giữ ĐÚNG 1 định nghĩa hàm. Copy sang file mới = 2 bản phải giữ đồng bộ, đúng bẫy đã trả giá ở bảng phạt (test X1) |
+
+**Kiến trúc reducer:** `importUi.giamTrangThai` tổng quát hoá từ 1 file sang **danh sách `MucFile[]`**
+(N=1 là trường hợp riêng). Mỗi file có `tt` độc lập: `loi | san_sang | dang_import | that_bai | xong`.
+Giá phải trả đã lường trước: 7 ca test reducer cũ viết lại thành 10 ca mới.
+
+**🐞 Gate đã đỏ ÂM THẦM từ M6c — phát hiện nhờ M12:** `check-schema.mjs` assert
+`(select count(*) from settings) === 5`, nhưng M6a/M6c/M11 đã thêm 3 key (`google_tts_api_key`,
+`tts_voice_en`, `max_tu_moi_luot`) ⇒ **2/14 mục đỏ suốt 3 milestone mà không ai chạy lại**.
+Đã sửa thành liệt kê **8 key tường minh** (đúng luật MB-13: không đếm theo trí nhớ) và mục kiểm
+quyền đọc chỉ assert `>= số key`, không chốt cứng số dòng.
+→ **Bài học: assertion chốt cứng một CON SỐ sẽ mục ruỗng khi dữ liệu lớn lên; assert theo DANH SÁCH TÊN.**
+
+**Bằng chứng:** `npm test` **307/307** (thêm 7 ca `importValidate` G1–G7, reducer 7→10 ca) ·
+`npm run test:import` **9/9** (thêm I7/I8/I9) · `check:schema` **14/14** (11 bảng, 9 index) ·
+`db:migrate` 13/13 chạy lại vẫn xanh · build + lint không phát sinh lỗi mới ·
+**CDP 14/14** trên app thật: 3 file 1 lúc (2 hợp lệ + 1 hỏng) → preview đếm đúng, import ra
+**2/3 file**, DB thật +2 topic +3 mục ngữ pháp, `thu_tu` đúng 1/2, sau đó **dọn sạch về nguyên trạng**.
+**Trạng thái:** ✅ M12a đã áp dụng.
+
+### [2026-09-23] MB-32 — M12b: ngữ pháp chủ đề ở Player + màn Từ vựng
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Dựng **ROUTE RIÊNG** `/on-tap/ngu-phap?topic=X&giai_doan=dau\|cuoi`, KHÔNG nhét vào `PlayerPage`/reducer `giamPlayer` | Mỗi chế độ mới thêm vào Player đều phải trả lời được "cái gì làm session kết thúc?" — đã trả giá ở M7 (26 lần cùng 1 màn, 82 dòng log rác, MB-26). Route riêng thì câu hỏi đó không phát sinh |
+| **Q2** | Chủ đề KHÔNG có mục ngữ pháp ⇒ route **tự chuyển tiếp** (`replace: true`) | Luồng cũ giữ nguyên 100%, không ai bị kẹt ở màn trống |
+| **Q3** | Giai đoạn `cuoi` trỏ sang **HỘI THOẠI**, không nhảy thẳng Tổng kết | §4.5 — hội thoại là phần thưởng kết thúc chủ đề. Tách thành hàm thuần `noiTiepTheo` + 3 ca test vì nhầm nhánh là mất hẳn màn hội thoại |
+| **Q4** | Nút **X** ở màn ngữ pháp → thẳng Tổng kết | Đồng nhất với mọi màn Player (MB-26/Q6) |
+| **Q5** | `Grammar.tsx` nhận `tuDam?` + `nhanNut?` thay vì viết component thứ hai | Cùng mockup 10, cùng công thức thị giác; tách đôi là 2 nguồn sự thật (cùng lý lẽ với `Ring.noiDung` ở MB-24/Q6) |
+| **Q6** | Màn Từ vựng: khối "Ngữ pháp chủ đề (N)" gấp/mở, **không có thì không hiện** | Không tạo trạng thái rỗng thừa; chế độ "Tất cả từ vựng" không có khối này |
+
+**🐞 Bẫy đã né:** `Grammar.tsx` bản cũ làm `content_target.split(vocab.word)`. Ngữ pháp chủ đề không
+có từ nào để in đậm, mà **`split('')` cắt vụn từng ký tự** ⇒ phải chặn tường minh bằng
+`tuDam ? content_target.split(tuDam) : [content_target]`.
+
+**Mẫu lỗi script lặp lần thứ 4 (M6a · M10 · M12b):** `innerText` trả về chữ **ĐÃ bị CSS
+`text-transform: uppercase` biến đổi** ⇒ so khớp `'Ngữ pháp chủ đề'` trượt, 2 mục báo đỏ oan trong
+khi app hoàn toàn đúng. → **Script CDP so khớp chuỗi UI phải dùng regex `/.../i`.**
+
+**Bằng chứng:** `npm test` **316/316** (thêm 9 ca `nguPhap` N1–N9) · build xanh · lint không phát
+sinh lỗi mới · **CDP 15/15**: tự seed 2 chủ đề (1 có 2 mục ngữ pháp, 1 không) → chọn chủ đề vào
+đúng giai đoạn `dau` · 2 dots · nhãn nút đổi "Tiếp theo" → "Bắt đầu ôn" · vào Player `che_do=topic` ·
+giai đoạn `cuoi` → `/on-tap/hoi-thoai` · chủ đề không ngữ pháp **tự chuyển tiếp** · ôn hằng ngày
+**không** đi qua màn này · màn Từ vựng hiện khối "(2)" và mở ra được → **dọn sạch dữ liệu kiểm**.
+**Trạng thái:** ✅ Đã áp dụng. M12 (a + b) hoàn tất.
+
+### [2026-09-23] MB-33 — Audit chuỗi Import: validator app siết lên ngang JSON Schema
+**Bối cảnh:** trước khi sinh 68 từ (≈550 bài tập) từ CSV, rà lại toàn bộ chuỗi
+`file JSON → validator → RPC → DB → Player` xem đã thống nhất chưa.
+
+**Cách rà (đo, không đọc suông):** đối chiếu **5 nguồn** — `SPECIFICATION.md` §6 · `importValidate.ts`
+(validator app) · `validate_import.py` (skill) · `import-schema.json` · **payload THẬT trong DB** +
+**kiểu Player thật sự đọc** (`player.ts`). Rồi bắn 19 file dị dạng vào validator app.
+
+**🔴 Kết quả: 18/19 file dị dạng LỌT QUA validator của app.** Gồm:
+- `vocab`: `word = ''`, `word = 123`, `meaning_vi` toàn khoảng trắng, **`lang=zh` mà `pinyin = null`**.
+- payload sai **SHAPE phần tử**: `distractors` là mảng chuỗi thay vì `{word,pinyin}`;
+  `tokens` dùng khoá `word` thay vì `text` — **đúng nguyên văn bug MB-21**; `correct_sentence` là chuỗi.
+- giá trị rỗng: `tokens: []`, `content_vi: ''`, `vietnamese_sentence: '  '`.
+- `dialogue`: dòng thiếu `text_zh`, `speaker = 'C'`, `lines: []`.
+- quan hệ: `blank_b_vocab_id` trỏ về **chính từ A** (bài 2 từ hoá 1 từ).
+
+**Nguyên nhân gốc:** `import-schema.json` vốn kiểm rất chặt (shape, minLength, điều kiện
+`lang=zh ⇒ pinyin`), NHƯNG nó chỉ chạy **ngoài app** trong skill và cần cài ajv/jsonschema.
+**Nút Import của app chỉ chạy `importValidate.ts`** — vốn chỉ kiểm "key có mặt".
+⇒ Có 2 cổng với 2 độ chặt khác nhau, cổng thật sự chặn dữ liệu bẩn lại là cổng lỏng hơn.
+
+**Chốt:** siết `importValidate.ts` lên **đúng bằng** `import-schema.json`:
+- Gộp `FIELD_PAYLOAD_BAT_BUOC` + `DO_DAI_MANG` thành **1 bảng `LUAT_PAYLOAD`** có mô tả shape
+  (`chuoi` · `chuoi_hoac_null` · `temp_id` · `cau` · `['mang_chuoi'|'mang_tu'|'mang_cau', n]`).
+- `vocab`: kiểm GIÁ TRỊ (chuỗi không rỗng) + `lang=zh ⇒ pinyin`/`collocation_pinyin` bắt buộc.
+- `dialogue`: `text_zh` không rỗng, `speaker ∈ {A,B}`, `lines` không rỗng.
+- `blank_b_vocab_id` trỏ về chính từ A ⇒ **lỗi**.
+- 2 bài **cùng dạng cho cùng 1 từ** ⇒ **cảnh báo** (không chặn — Player vẫn chạy, chỉ dựng 2 màn trùng).
+- `dialog_a_pinyin`/`dialog_b_pinyin` nay **bắt buộc có KEY** ở cả 3 validator (trước: chỉ JSON Schema đòi).
+
+**Test chống lệch S11 — thứ đáng giá nhất của lần này:** đọc thẳng `import-schema.json`, với MỖI
+field bắt buộc của MỖI dạng thì xoá đi và khẳng định validator TS phải báo lỗi. Từ nay schema đổi
+mà validator app quên theo là `npm test` đỏ ngay.
+
+**Bằng chứng:** `npm test` **328/328** (thêm 11 ca S1–S11) · `test:import` 9/9 · build xanh ·
+3 file mẫu vẫn hợp lệ ở cả 3 validator · Python khớp Schema 11/11 dạng ·
+bắn lại 19 ca dị dạng: **18 chặn, 1 còn lại là cảnh báo có chủ ý**.
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-23] MB-34 — M14: tách NHẬT KÝ HỌC khỏi từ vựng (streak không mất khi xoá từ)
+
+**Sự cố có thật, không phải phòng xa:** `review_log.vocab_id` khai `on delete cascade`, mà streak /
+số phút / dải 7 ngày ở Dashboard đều tính TỪ `review_log`. Người dùng xoá các chủ đề cũ ⇒ đo lúc
+lập thiết kế: `review_log` = **0 dòng**, streak về **0**. Toàn bộ lịch sử ôn 16–21/09 mất sạch,
+**không khôi phục được**.
+
+**Nguyên nhân sâu xa (đáng nhớ hơn cả cách sửa):** `review_log` gánh **2 vai có vòng đời khác nhau**
+— *sổ chi tiết theo từ* (Tổng kết phiên cần, §4.6) và *nhật ký học theo ngày* (streak cần).
+Cascade của vai đầu là ĐÚNG, nhưng nó giết luôn vai sau. → **Luật rút ra: trước khi cho một bảng
+gánh 2 vai, hỏi xem 2 vai đó có CÙNG vòng đời không.**
+
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Bảng **`nhat_ky_ngay`** (bảng thứ 12), **KHÔNG có khoá ngoại nào** | Chính là điểm mấu chốt: không FK thì `on delete cascade` không với tới. Có test N5 canh cổng này |
+| **Q2** | Chỉ 2 cột: `ngay` (PK) + `thoi_gian_ms` (`bigint`) | Người dùng chốt tối giản. `bigint` vì `int` tràn ở ~24 ngày học liên tục tính bằng ms |
+| **Q3** | Chốt **1 lần khi vào màn Tổng kết**, không cộng dồn theo từng câu | Người dùng chốt (tôi đã nêu rủi ro "thoát giữa chừng mất cả ngày", họ vẫn chọn) |
+| **Q4** | ⭐ Ghi bằng cách **TÍNH LẠI CẢ NGÀY** từ `review_log` rồi upsert, KHÔNG cộng delta | Cách này khử gần hết rủi ro của Q3 mà không đổi quyết định của người dùng: gọi nhiều lần vẫn đúng · lượt sau **tự vá lại** lượt trước bị mất · chỉ mất khi cả ngày không xong nổi 1 lượt VÀ xoá từ ngay hôm đó |
+| **Q5** | Upsert dùng **`greatest(mới, đã lưu)`** | Xoá từ giữa ngày làm `review_log` co lại; ghi đè thẳng sẽ khiến số phút vừa lưu bốc hơi |
+| **Q6** | Dashboard: quá khứ đọc `nhat_ky_ngay`, **hợp thêm HÔM NAY** từ `review_log` | Phiên đang học dở chưa chốt nhật ký; không hợp thì vừa ôn xong streak vẫn đứng yên |
+| **Q7** | Màn Tổng kết **giữ nguyên đọc `review_log`** | §4.6 cần chi tiết từng từ + stage; nó chỉ nói về hôm nay nên không cần chống xoá |
+| **Q8** | Ghi dòng **kể cả khi tổng = 0 ms** | Ngày có học nhưng mọi dòng `thoi_gian_ms = null` (dữ liệu trước M9) vẫn phải tính là NGÀY CÓ HỌC — streak đếm theo SỰ TỒN TẠI của ngày, không theo phút > 0 |
+
+**Hàm thuần `gopNhatKy`** (6 ca TDD K1–K6) nhận `nhat_ky_ngay` + log hôm nay → `{ngayCoHoc, phutMoiNgay}`.
+Hôm nay có ở cả 2 nguồn thì lấy **MAX, không cộng** (nhật ký đã bao gồm các lượt trước ⇒ cộng là đếm trùng).
+`tinhStreak` và `dai7Ngay` **không đổi 1 dòng** — chúng vốn nhận `Set` + `Map`, chỉ đổi NGUỒN.
+
+**Bằng chứng:** `npm test` **334/334** (thêm 6 ca) · `npm run test:nhatky` **5/5** · `test:import` 9/9 ·
+`test:player` 4/4 · `test:db` 9/9 · `check:schema` **12 bảng** xanh · migrate chạy lại vẫn xanh ·
+build + lint 0 lỗi · **CDP 8/9** — ca đỏ duy nhất là bước DỌN của script (PostgREST từ chối `DELETE`
+không có điều kiện lọc), đã dọn lại bằng `ngay=gte.2000-01-01` và xác nhận DB về nguyên trạng.
+Số liệu kiểm thật: seed 4 phút → vào Tổng kết → nhật ký 240000 ms · Dashboard hiện `4′`, streak 1 →
+**xoá chủ đề** → `review_log` về 0 nhưng **nhật ký vẫn 240000 ms, streak vẫn 1, vẫn hiện 4′**.
+**Trạng thái:** ✅ Đã áp dụng.
+

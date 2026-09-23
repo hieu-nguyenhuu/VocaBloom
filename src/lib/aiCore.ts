@@ -156,7 +156,10 @@ export type GiaiThich = {
 
 export function promptGiaiThich(dang: string): string {
   return `Người học đang làm bài dạng "${dang}" trong app học từ vựng.
-Giải thích ngắn gọn bằng tiếng Việt vì sao đáp án đúng, tối đa 3 câu.
+Dữ liệu người dùng gửi là JSON; trường "dap_an" LÀ ĐÁP ÁN ĐÚNG đã được hệ thống xác nhận.
+Hãy giải thích vì sao CHÍNH đáp án đó đúng — tuyệt đối không tự chọn đáp án khác, không nói nó sai.
+Nếu có trường "cau_hoi", bám sát câu hỏi đó khi giải thích.
+Giải thích ngắn gọn bằng tiếng Việt, tối đa 3 câu.
 CHỈ trả JSON thuần, KHÔNG markdown:
 {"question_translation_vi":"...","answer_pinyin":"...","answer_meaning_vi":"...","explanation_vi":"..."}
 Nếu ngôn ngữ đích là tiếng Anh thì để "answer_pinyin" là chuỗi rỗng.`

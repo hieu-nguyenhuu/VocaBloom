@@ -10,7 +10,7 @@
 import { readFileSync } from 'node:fs'
 import { chaySql } from './db-lib.mjs'
 
-const MAU = 'import_csv_vocab/references/example-output.json'
+const MAU = '.claude/skills/vocabCsv2Json/references/example-output.json'
 const gocJson = JSON.parse(readFileSync(MAU, 'utf8'))
 
 /** Nhúng object JS vào SQL bằng dollar-quoting để khỏi phải escape dấu nháy. */
@@ -25,7 +25,24 @@ function sua(hamSua) {
 }
 
 const DON_SACH = `truncate vocab, topics, notifications, review_log,
-  daily_retry_queue, word_state, exercises, vocab_topics, topic_dialogues cascade;`
+  daily_retry_queue, word_state, exercises, vocab_topics, topic_dialogues,
+  topic_grammar cascade;`
+
+/** M12 — 2 mục ngữ pháp CỦA CHỦ ĐỀ, gắn vào file mẫu để kiểm bước B6b. */
+const NGU_PHAP = [
+  {
+    content_target: 'một…cũng không…',
+    pinyin: 'yī … yě/dōu + bù/méi …',
+    content_vi: 'Nhấn mạnh phủ định tuyệt đối.',
+    vi_du: null, vi_du_pinyin: null, vi_du_vi: null,
+  },
+  {
+    content_target: 'V + 着 + V',
+    pinyin: 'V + zhe + V',
+    content_vi: 'Hành động đang tiếp diễn thì xảy ra việc khác.',
+    vi_du: null, vi_du_pinyin: null, vi_du_vi: null,
+  },
+]
 
 const CAC_CA = [
   {
@@ -105,6 +122,39 @@ const CAC_CA = [
                 and (select count(distinct id) from topics) = 2 as pass,
               format('topics=%s vocab=%s', (select count(*) from topics),
                      (select count(*) from vocab)) as chi_tiet`,
+  },
+  {
+    ma: 'I7',
+    ten: 'M12 — grammar chủ đề ghi đúng số dòng, đúng thứ tự, trả về so_ngu_phap',
+    sql: `create temp table kq_i7 as
+          select import_topic(${nhung(sua((d) => { d.grammar = NGU_PHAP }))}) as r;`,
+    assert: `select (select count(*) from topic_grammar) = 2
+                and (select (r ->> 'so_ngu_phap')::int from kq_i7) = 2
+                and (select content_target from topic_grammar where thu_tu = 1) = 'một…cũng không…'
+                and (select content_target from topic_grammar where thu_tu = 2) = 'V + 着 + V'
+                and (select count(*) from topic_grammar g
+                      join topics t on t.id = g.topic_id) = 2 as pass,
+              format('dong=%s so_ngu_phap=%s thu_tu=%s',
+                (select count(*) from topic_grammar),
+                (select r ->> 'so_ngu_phap' from kq_i7),
+                (select string_agg(thu_tu::text, ',' order by thu_tu) from topic_grammar)) as chi_tiet`,
+  },
+  {
+    ma: 'I8',
+    ten: 'M12 — file KHÔNG có khoá grammar vẫn import bình thường, 0 dòng ngữ pháp',
+    sql: `select import_topic(${nhung(gocJson)});`,
+    assert: `select (select count(*) from topic_grammar) = 0
+                and (select count(*) from topics) = 1 as pass,
+              format('topic_grammar=%s topics=%s',
+                (select count(*) from topic_grammar), (select count(*) from topics)) as chi_tiet`,
+  },
+  {
+    ma: 'I9',
+    ten: 'M12 — xoá topic thì ngữ pháp bị cascade dọn sạch',
+    sql: `select import_topic(${nhung(sua((d) => { d.grammar = NGU_PHAP }))});
+          delete from topics;`,
+    assert: `select (select count(*) from topic_grammar) = 0 as pass,
+              format('còn %s dòng topic_grammar', (select count(*) from topic_grammar)) as chi_tiet`,
   },
 ]
 

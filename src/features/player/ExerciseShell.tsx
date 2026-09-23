@@ -32,14 +32,16 @@ type Props = {
   rong: keyof typeof MAX
   dots?: { tong: number; hienTai: number } | undefined
   vienHeader?: boolean
+  /** Số từ trong session hiện tại — lộ ra `data-so-tu-phien` để kiểm thử tự động đọc được (M11). */
+  soTuPhien?: number | undefined
   children: ReactNode
 }
 
 const NUT_GHOST = 'flex flex-col items-center gap-1 text-10 font-medium'
 
-export default function ExerciseShell({ header, ghost, thoat, rong, dots, vienHeader = true, children }: Props) {
+export default function ExerciseShell({ header, ghost, thoat, rong, dots, vienHeader = true, soTuPhien, children }: Props) {
   return (
-    <main className="flex min-h-[100dvh] flex-col bg-surface-page">
+    <main className="flex min-h-[100dvh] flex-col bg-surface-page" data-so-tu-phien={soTuPhien}>
       <header
         className={`flex items-center justify-between px-[22px] pt-[22px] pb-2 md:px-16 md:py-9 ${
           vienHeader ? 'border-b border-border-card' : ''

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useDungPhim } from '../dungPhim.ts'
 import { chamArrange, xaoTron, type PayloadSapXep, type VocabDb } from '../../../lib/player.ts'
 
 /**
@@ -34,6 +35,13 @@ export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }
       return i === -1 ? cu : [...cu, i]
     })
   }, [soGoiY, payload.tokens, xao])
+
+  // M11/Q2: Enter = Kiểm tra
+  useDungPhim((e) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    kiemTra()
+  })
 
   function kiemTra() {
     if (kq !== null || khay.length === 0) return

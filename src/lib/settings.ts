@@ -12,6 +12,8 @@ export type CaiDat = {
   openrouter_model: string | null
   google_tts_api_key: string | null
   new_words_per_day: number
+  /** Số từ tối đa mỗi LƯỢT ôn (M11/Q1) — khác `new_words_per_day` (số từ MỚI kích hoạt/ngày). */
+  max_tu_moi_luot: number
   tts_voice: string
   tts_voice_en: string
   low_queue_alert_enabled: boolean
@@ -25,6 +27,7 @@ export const MAC_DINH: CaiDat = {
   openrouter_model: null,
   google_tts_api_key: null,
   new_words_per_day: 5,
+  max_tu_moi_luot: 10,
   tts_voice: 'cmn-CN-Wavenet-A',
   tts_voice_en: 'en-US-Neural2-C',
   low_queue_alert_enabled: true,
@@ -32,6 +35,13 @@ export const MAC_DINH: CaiDat = {
 
 export const MIN_TU_MOI = 1
 export const MAX_TU_MOI = 50
+export const MIN_LUOT = 2
+export const MAX_LUOT = 20
+
+/** Kẹp số từ mỗi lượt trong 2..20 (người dùng chốt 20/09) — ngoài dải này thì lượt ôn mất ý nghĩa. */
+export function chinhGioiHanLuot(hienTai: number, delta: number): number {
+  return Math.min(MAX_LUOT, Math.max(MIN_LUOT, hienTai + delta))
+}
 
 export function docCaiDat(rows: { key: string; value: unknown }[]): CaiDat {
   const m = new Map(rows.map((r) => [r.key, r.value]))
@@ -40,12 +50,14 @@ export function docCaiDat(rows: { key: string; value: unknown }[]): CaiDat {
     return typeof v === 'string' && v !== '' ? v : null
   }
   const so = m.get('new_words_per_day')
+  const gioiHan = m.get('max_tu_moi_luot')
   const bat = m.get('low_queue_alert_enabled')
   return {
     openrouter_api_key: chuoi('openrouter_api_key') ?? MAC_DINH.openrouter_api_key,
     openrouter_model: chuoi('openrouter_model') ?? MAC_DINH.openrouter_model,
     google_tts_api_key: chuoi('google_tts_api_key') ?? MAC_DINH.google_tts_api_key,
     new_words_per_day: typeof so === 'number' ? so : MAC_DINH.new_words_per_day,
+    max_tu_moi_luot: typeof gioiHan === 'number' ? gioiHan : MAC_DINH.max_tu_moi_luot,
     tts_voice: chuoi('tts_voice') ?? MAC_DINH.tts_voice,
     tts_voice_en: chuoi('tts_voice_en') ?? MAC_DINH.tts_voice_en,
     low_queue_alert_enabled: typeof bat === 'boolean' ? bat : MAC_DINH.low_queue_alert_enabled,

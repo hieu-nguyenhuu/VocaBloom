@@ -359,5 +359,15 @@
         "highlight_vocab_temp_ids": []
       }
     ]
-  }
+  },
+  "grammar": [
+    {
+      "content_target": "work as + a/an + nghề nghiệp",
+      "pinyin": null,
+      "content_vi": "Nói về nghề đang làm: bắt buộc có mạo từ a/an trước tên nghề số ít — người Việt hay bỏ quên.",
+      "vi_du": "She works as a doctor at the city hospital.",
+      "vi_du_pinyin": null,
+      "vi_du_vi": "Cô ấy làm bác sĩ ở bệnh viện thành phố."
+    }
+  ]
 }

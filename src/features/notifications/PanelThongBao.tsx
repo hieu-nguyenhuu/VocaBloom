@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Icon } from '../../components/icons.tsx'
+import HopXacNhan from '../../components/HopXacNhan.tsx'
 import { supabase } from '../../lib/supabase.ts'
-import { demChuaDoc, thoiGianTuongDoi, type TinDb } from '../../lib/thongBao.ts'
+import { demDaDoc, demChuaDoc, thoiGianTuongDoi, type TinDb } from '../../lib/thongBao.ts'
 
 /**
  * Thông báo (mockup 18 PC — panel xổ cạnh sidebar; 19 Mobile — sheet phủ bên phải).
@@ -22,23 +23,27 @@ const O_ICON = 'flex h-[34px] w-[34px] shrink-0 items-center justify-center roun
 export default function PanelThongBao({ dang, onDong, onDoiSoChuaDoc }: Props) {
   const [ds, setDs] = useState<TinDb[] | null>(null)
   const [loi, setLoi] = useState<string | null>(null)
+  const [hoiXoa, setHoiXoa] = useState(false)
+  const [dangXoa, setDangXoa] = useState(false)
+
+  const nap = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id, type, message, is_read, created_at')
+      .order('created_at', { ascending: false })
+      .limit(20)
+    if (error) {
+      setLoi(error.message)
+      return
+    }
+    const tin = (data ?? []) as TinDb[]
+    setDs(tin)
+    onDoiSoChuaDoc?.(demChuaDoc(tin))
+  }, [onDoiSoChuaDoc])
 
   useEffect(() => {
-    void (async () => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('id, type, message, is_read, created_at')
-        .order('created_at', { ascending: false })
-        .limit(20)
-      if (error) {
-        setLoi(error.message)
-        return
-      }
-      const tin = (data ?? []) as TinDb[]
-      setDs(tin)
-      onDoiSoChuaDoc?.(demChuaDoc(tin))
-    })()
-  }, [onDoiSoChuaDoc])
+    void nap()
+  }, [nap])
 
   async function danhDauDoc(ids: string[]) {
     if (ids.length === 0) return
@@ -56,16 +61,44 @@ export default function PanelThongBao({ dang, onDong, onDoiSoChuaDoc }: Props) {
 
   const bayGio = new Date()
   const chuaDoc = (ds ?? []).filter((t) => !t.is_read).map((t) => t.id)
+  const soDaDoc = demDaDoc(ds ?? [])
+
+  /** M9: xoá HẲN các tin đã đọc; tin chưa đọc giữ nguyên. */
+  async function xoaDaDoc() {
+    setDangXoa(true)
+    const { error } = await supabase.from('notifications').delete().eq('is_read', true)
+    setDangXoa(false)
+    setHoiXoa(false)
+    if (error) return setLoi(error.message)
+    void nap()
+  }
+
+  const hopXoa = hoiXoa ? (
+    <HopXacNhan
+      tieuDe="Xoá thông báo đã đọc?"
+      noiDung={`Sẽ xoá vĩnh viễn ${soDaDoc} thông báo đã đọc. Thông báo chưa đọc vẫn được giữ lại.`}
+      dangChay={dangXoa}
+      onDong={() => setHoiXoa(false)}
+      onXacNhan={() => void xoaDaDoc()}
+    />
+  ) : null
 
   const noiDung = (
     <>
       <div className="flex items-center justify-between gap-2 px-3 pt-3 pb-2">
         <h2 className="font-display text-15 font-bold text-content-primary">Thông báo</h2>
-        {chuaDoc.length > 0 && (
-          <button type="button" onClick={() => void danhDauDoc(chuaDoc)} className="text-12 font-semibold text-accent">
-            Đánh dấu đã đọc tất cả
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {chuaDoc.length > 0 && (
+            <button type="button" onClick={() => void danhDauDoc(chuaDoc)} className="text-12 font-semibold text-accent">
+              Đánh dấu đã đọc tất cả
+            </button>
+          )}
+          {soDaDoc > 0 && (
+            <button type="button" onClick={() => setHoiXoa(true)} className="text-12 font-semibold text-danger-text">
+              Xoá đã đọc ({soDaDoc})
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="max-h-[360px] overflow-y-auto">
@@ -96,6 +129,7 @@ export default function PanelThongBao({ dang, onDong, onDoiSoChuaDoc }: Props) {
           </button>
         ))}
       </div>
+      {hopXoa}
     </>
   )
 

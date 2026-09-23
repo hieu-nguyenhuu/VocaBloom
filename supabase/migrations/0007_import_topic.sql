@@ -22,6 +22,7 @@ declare
   so_tu       int := 0;
   so_bai      int := 0;
   so_dong     int := 0;
+  so_ngu_phap int := 0;               -- M12: ngữ pháp CỦA CHỦ ĐỀ
 begin
   if du_lieu -> 'topic' ->> 'name' is null then
     raise exception 'topic.name bắt buộc phải có';
@@ -101,7 +102,20 @@ begin
     end if;
   end if;
 
+  -- B6b. Ngữ pháp CỦA CHỦ ĐỀ (M12) — thực thể riêng, không gắn vocab nào nên không cần
+  -- dịch temp_id. Khoá 'grammar' là TUỲ CHỌN: file không có vẫn import bình thường.
+  if jsonb_typeof(du_lieu -> 'grammar') = 'array' then
+    insert into topic_grammar (topic_id, thu_tu, content_target, pinyin, content_vi,
+                               vi_du, vi_du_pinyin, vi_du_vi)
+    select v_topic_id, thu_tu, g ->> 'content_target', g ->> 'pinyin', g ->> 'content_vi',
+           g ->> 'vi_du', g ->> 'vi_du_pinyin', g ->> 'vi_du_vi'
+    from jsonb_array_elements(du_lieu -> 'grammar') with ordinality as x(g, thu_tu);
+
+    get diagnostics so_ngu_phap = row_count;
+  end if;
+
   -- B7.
   return jsonb_build_object('topic_id', v_topic_id, 'so_tu', so_tu,
-                            'so_bai_tap', so_bai, 'so_dong_hoi_thoai', so_dong);
+                            'so_bai_tap', so_bai, 'so_dong_hoi_thoai', so_dong,
+                            'so_ngu_phap', so_ngu_phap);
 end $fn$;

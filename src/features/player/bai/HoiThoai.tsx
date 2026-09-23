@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { soKhopDapAn, xaoTron, type PayloadDialog, type VocabDb } from '../../../lib/player.ts'
+import { oGoiY, soKhopDapAn, tachChoTrong, xaoTron, type PayloadDialog, type VocabDb } from '../../../lib/player.ts'
+import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
 
 /**
  * Pattern 7 — hội thoại điền chỗ trống (mockup 08). 1 record = 2 chỗ trống = 2 TỪ (§4.4):
@@ -39,13 +40,35 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
     () => new Set(chip.filter((c) => c !== dapAnA && c !== dapAnB).slice(0, Math.min(soGoiY, 2))),
     [chip, dapAnA, dapAnB, soGoiY],
   )
-  const goiYFill = soGoiY > 0 ? dapAnA : ''
+  // M11/#5: lộ LẦN LƯỢT các ô CHƯA điền (A rồi B). Lỗi cũ chỉ lộ ô A nên ô B không bao giờ được gợi ý.
+  const oDuocGoiY = oGoiY(soGoiY, dienA, dienB, Boolean(dapAnB))
+  const goiYFill = oDuocGoiY.includes('a') ? dapAnA : ''
+  const goiYFillB = oDuocGoiY.includes('b') ? dapAnB : ''
 
   function chot(a: string, b: string) {
     const ket = { a: soKhopDapAn(a, dapAnA, lang), b: dapAnB ? soKhopDapAn(b, dapAnB, lang) : false }
     setKq(ket)
     setTimeout(() => onTraLoi(ket, soGoiY > 0), ket.a && ket.b ? 600 : 1000)
   }
+
+  // M11/Q2-Q3: Enter = Kiểm tra (chế độ điền) · phím 1–4 = chọn chip thứ n (chế độ chọn)
+  useDungPhim((e) => {
+    if (kq !== null) return
+    if (cheDo === 'fill_dialog') {
+      if (e.key !== 'Enter') return
+      e.preventDefault()
+      const a = dienA || goiYFill
+      const b = dienB || goiYFillB
+      if (a && (!dapAnB || b)) chot(a, b)
+      return
+    }
+    const i = soThuTuPhim(e, chip.length)
+    if (i === null) return
+    const c = chip[i]
+    if (!c || anDi.has(c) || dienB !== '') return
+    e.preventDefault()
+    bamChip(c)
+  }, true)
 
   function bamChip(c: string) {
     if (kq) return
@@ -84,11 +107,13 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
   }
 
   function cau(text: string, gia_tri: string, dat: (v: string) => void, dapAn: string) {
-    const [truoc, sau] = text.split('___')
+    // Dữ liệu chuẩn: mỗi câu đúng 1 dấu `___`. `tachChoTrong` chịu được cả câu 0 hoặc nhiều dấu
+    // mà không nuốt mất chữ (bản cũ split rồi lấy 2 phần đầu ⇒ ô trống nhảy lung tung).
+    const { truoc, sau } = tachChoTrong(text)
     return (
       <span lang={lang} className="font-han text-18 text-content-primary md:text-19">
         {truoc}
-        {oTrong(gia_tri, dat, dapAn)}
+        {sau !== null && oTrong(gia_tri, dat, dapAn)}
         {sau}
       </span>
     )
@@ -106,7 +131,7 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
         </div>
         <div className={KHOI}>
           <div className="mb-2 text-13 font-bold text-content-muted">B</div>
-          {cau(payload.dialog_b, dienB, setDienB, dapAnB)}
+          {cau(payload.dialog_b, dienB || goiYFillB, setDienB, dapAnB)}
           {hienPhienAm && payload.dialog_b_pinyin && (
             <div className="mt-2 text-12 text-content-muted">{payload.dialog_b_pinyin}</div>
           )}
@@ -130,8 +155,8 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
       ) : (
         <button
           type="button"
-          onClick={() => kq === null && chot(dienA || goiYFill, dienB)}
-          disabled={kq !== null || (!dienA && !goiYFill) || (Boolean(dapAnB) && !dienB)}
+          onClick={() => kq === null && chot(dienA || goiYFill, dienB || goiYFillB)}
+          disabled={kq !== null || (!dienA && !goiYFill) || (Boolean(dapAnB) && !dienB && !goiYFillB)}
           className="rounded-14 bg-accent py-[17px] text-16 font-semibold text-white disabled:opacity-60"
         >
           Kiểm tra

@@ -12,6 +12,7 @@ import {
   type HangRetry,
   type Man,
   type VocabDb,
+  catTheoGioiHan,
 } from '../../lib/player.ts'
 import {
   boBaiCua,
@@ -23,6 +24,7 @@ import {
 } from '../../lib/srs.ts'
 import { chamBaiTuLuan, giaiThichBai } from '../../lib/ai.ts'
 import { dungTuVerdict, type GiaiThich as NoiDungGiaiThich, type KetQuaCham } from '../../lib/aiCore.ts'
+import { docCaiDat, MAC_DINH } from '../../lib/settings.ts'
 import { supabase } from '../../lib/supabase.ts'
 import ExerciseShell, { type Ghost } from './ExerciseShell.tsx'
 import Ring from './Ring.tsx'
@@ -49,6 +51,15 @@ import TuLuan from './bai/TuLuan.tsx'
  */
 
 type DongWordState = TrangThaiTu & { vocab: VocabDb }
+
+/**
+ * M9/Q2 — thời gian 1 lượt trả lời, kẹp trần 5 phút (để máy chạy rồi bỏ đi không thành giờ học)
+ * và chia đều khi 1 màn ghi nhiều dòng log (matching N từ, hội thoại 2 từ) để không cộng trùng.
+ */
+const TRAN_MS = 5 * 60_000
+function tinhThoiGian(moc: number, soDong = 1): number {
+  return Math.round(Math.min(Date.now() - moc, TRAN_MS) / Math.max(1, soDong))
+}
 
 /** vocab_id → dạng bài có record (tính cả vai B của bài hội thoại) — dùng lọc hàng retry (M4b/Q4). */
 function dungMapRecord(baiTap: BaiTapDb[]): Record<string, DangBai[]> {
@@ -103,6 +114,15 @@ export default function PlayerPage() {
   const dapAnTuLuan = useRef<Record<string, string>>({})
   const [chamTt, setChamTt] = useState<{ b: 'dang_cham' | 'xong' | 'loi'; loi?: string; chiSo: number }>({ b: 'dang_cham', chiSo: 0 })
   const ketQuaAI = useRef<Record<string, KetQuaCham>>({})
+  /**
+   * M9/Q2 — đo thời gian học THẬT: mốc đặt lại mỗi khi sang màn mới.
+   * Kẹp trần 5 phút/lượt: để máy chạy rồi bỏ đi không được tính thành hàng giờ học.
+   * Màn ghi NHIỀU dòng log (matching N từ, hội thoại 2 từ) thì chia đều, tránh cộng trùng.
+   */
+  const mocMan = useRef(Date.now())
+  /** M11/Q1: số TỪ đã hoàn thành trong LƯỢT này + giới hạn đọc từ `settings.max_tu_moi_luot`. */
+  const soTuXongLuot = useRef(0)
+  const gioiHanLuot = useRef(MAC_DINH.max_tu_moi_luot)
   /** Chế độ topic: các từ ĐANG due hôm nay — chỉ những từ này mới được cộng điểm/dời lịch (M7/Q2). */
   const dueTrongTopic = useRef<Set<string>>(new Set())
   /**
@@ -139,6 +159,8 @@ export default function PlayerPage() {
   const napSession = useCallback(async () => {
     const homNay = homNayVN(new Date())
     try {
+      const cauHinh = await supabase.from('settings').select('key, value')
+      gioiHanLuot.current = docCaiDat((cauHinh.data ?? []) as { key: string; value: unknown }[]).max_tu_moi_luot
       // Từ đã có log hôm nay → không đưa lại vào session thường (DEC-06); từ có hàng retry → chỉ lượt retry
       const [logRes, retryRes] = await Promise.all([
         supabase.from('review_log').select('vocab_id').gte('reviewed_at', `${homNay}T00:00:00+07:00`),
@@ -196,13 +218,17 @@ export default function PlayerPage() {
 
       const phienAll = topicId ? gomSessionTopic(dong) : gomSession(dong)
       if (phienAll.length === 0) return dispatch({ loai: 'khong_co_tu' })
+      // Đã ôn đủ số từ cho phép trong lượt ⇒ dừng, sang Tổng kết (M11/Q1)
+      if (soTuXongLuot.current >= gioiHanLuot.current) return dispatch({ loai: 'khong_co_tu' })
 
       // Duyệt từng session cho tới khi gặp session CÒN bài tính điểm. Session chỉ còn
       // flashcard/grammar (từ đã làm hết bài tính điểm nhưng chưa đủ ngưỡng) phải bỏ qua, nếu không
       // sẽ nạp đi nạp lại vô hạn — bug phát hiện khi kiểm thật M4b.
       const idsTatCa = dong.map((t) => t.vocab_id)
       const baiTapTatCa = await taiBaiTap(idsTatCa)
-      for (const phien of phienAll) {
+      for (const phienGoc of phienAll) {
+        const phien = catTheoGioiHan(phienGoc, soTuXongLuot.current, gioiHanLuot.current)
+        if (phien.length === 0) return dispatch({ loai: 'khong_co_tu' })
         const stage = phien[0]!.stage
         // Session thuần 1 stage ⇒ chỉ lấy dạng của CÁC TỪ TRONG PHIÊN, và luôn chặn trong bộ bài
         // của stage đó (hàng đợi null = ôn lại cả bộ).
@@ -262,13 +288,24 @@ export default function PlayerPage() {
   }, [tt, napSession, navigate])
   useEffect(() => {
     if (tt.buoc !== 'khong_co_tu' || !daOnGiDo.current) return
-    // Làm HẾT lượt ôn chủ đề → hội thoại kết thúc (§4.5). Bấm X giữa chừng đi đường `thoat` ở trên,
-    // tức là về thẳng Tổng kết và KHÔNG hiện hội thoại (M7/Q6).
-    navigate(topicId ? `/on-tap/hoi-thoai?topic=${topicId}` : '/on-tap/tong-ket', { replace: true })
+    // Làm HẾT lượt ôn chủ đề → ngữ pháp chủ đề (M12b) → hội thoại kết thúc (§4.5).
+    // Màn ngữ pháp tự chuyển tiếp sang hội thoại nếu chủ đề không có mục nào.
+    // Bấm X giữa chừng đi đường `thoat` ở trên, tức về thẳng Tổng kết và KHÔNG hiện gì (M7/Q6).
+    navigate(
+      topicId ? `/on-tap/ngu-phap?topic=${topicId}&giai_doan=cuoi` : '/on-tap/tong-ket',
+      { replace: true },
+    )
   }, [tt.buoc, navigate, topicId])
   useEffect(() => {
     if (tt.buoc === 'dang_on' && tt.da_xong_tu.length > 0) daOnGiDo.current = true
   }, [tt])
+
+
+  // Sang màn mới ⇒ bấm lại đồng hồ đo thời gian của lượt đó (M9/Q2)
+  const chiSoMan = tt.buoc === 'dang_on' ? tt.chi_so : -1
+  useEffect(() => {
+    mocMan.current = Date.now()
+  }, [chiSoMan])
 
   // ── Ghi kết quả ────────────────────────────────────────────────────────────
   /** Gọi RPC 1 transaction; trả về true nếu ghi được. Lỗi → banner + "Thử lại" gọi lại đúng lời gọi này. */
@@ -285,7 +322,7 @@ export default function PlayerPage() {
   }
 
   const traLoi = useCallback(
-    (vocab_id: string, dang_bai: DangBai, dung: boolean, dung_goi_y: boolean, la_bai_cuoi: boolean, khong_sang = false): Promise<boolean> => {
+    (vocab_id: string, dang_bai: DangBai, dung: boolean, dung_goi_y: boolean, la_bai_cuoi: boolean, khong_sang = false, soChia = 1): Promise<boolean> => {
       const s = ttRef.current
       if (s.buoc !== 'dang_on') return Promise.resolve(false)
       const trang_thai = s.trang_thai[vocab_id]
@@ -302,11 +339,16 @@ export default function PlayerPage() {
           points: 0,
           stage_before: trang_thai.stage,
           stage_after: trang_thai.stage,
+          thoi_gian_ms: tinhThoiGian(mocMan.current, soChia),
         }
         setSoGoiY(0)
-        return goiRpc({ p_state: null, p_log, p_retry: null, p_xoa_retry: false }, () =>
-          dispatch({ loai: 'luu_ok', trang_thai_moi: trang_thai, ...(la_bai_cuoi ? { xong_tu: vocab_id } : {}), khong_sang }),
-        )
+        return goiRpc({ p_state: null, p_log, p_retry: null, p_xoa_retry: false }, () => {
+          if (la_bai_cuoi) {
+            soTuXongLuot.current += 1
+            daOnGiDo.current = true
+          }
+          dispatch({ loai: 'luu_ok', trang_thai_moi: trang_thai, ...(la_bai_cuoi ? { xong_tu: vocab_id } : {}), khong_sang })
+        })
       }
 
       const kq = xuLyTraLoi({ trang_thai, dang_bai, dung, dung_goi_y, dang_due: true, la_bai_cuoi_cua_tu: la_bai_cuoi, hom_nay: homNayVN(new Date()) })
@@ -314,8 +356,24 @@ export default function PlayerPage() {
       // Lọc dạng mà từ này KHÔNG có record, tránh hàng retry dựng 0 màn (M4b/Q4)
       const p_retry = locRetryTheoRecord(kq.vao_retry_queue as HangRetry | null, dangCoRecord.current[vocab_id] ?? [])
       return goiRpc(
-        { p_state: kq.trang_thai_moi, p_log: kq.dong_review_log, p_retry, p_xoa_retry: cheDoRetry && la_bai_cuoi },
-        () => dispatch({ loai: 'luu_ok', trang_thai_moi: kq.trang_thai_moi, ...(la_bai_cuoi ? { xong_tu: vocab_id } : {}), khong_sang }),
+        {
+          p_state: kq.trang_thai_moi,
+          p_log: { ...kq.dong_review_log, thoi_gian_ms: tinhThoiGian(mocMan.current, soChia) },
+          p_retry,
+          p_xoa_retry: cheDoRetry && la_bai_cuoi,
+        },
+        () => {
+          // Đếm NGAY tại nguồn (M11/Q1). KHÔNG suy từ state: reducer xử lý `luu_ok` của bài cuối
+          // vừa cộng `da_xong_tu` vừa chuyển sang `het_session` trong CÙNG một dispatch, nên
+          // state không bao giờ ở `dang_on` với số đã tăng ⇒ effect đếm luôn thấy 0 (bug kiểm thật).
+          if (la_bai_cuoi) {
+            soTuXongLuot.current += 1
+            // Cùng lý do: `daOnGiDo` suy từ state cũng không bao giờ bật khi session chỉ có 1 từ,
+            // khiến Player đứng ở màn "không còn từ" thay vì sang Tổng kết.
+            daOnGiDo.current = true
+          }
+          dispatch({ loai: 'luu_ok', trang_thai_moi: kq.trang_thai_moi, ...(la_bai_cuoi ? { xong_tu: vocab_id } : {}), khong_sang })
+        },
       )
     },
     [cheDoRetry, topicId],
@@ -327,7 +385,7 @@ export default function PlayerPage() {
     const { day_cuoi_session, vao_retry } = xuLyFlashcard(nut)
     if (day_cuoi_session) return dispatch({ loai: 'hard_day_cuoi' })
     const st = s.trang_thai[vocab_id]!
-    const p_log = { vocab_id, exercise_type: 'flashcard', is_correct: !vao_retry, used_hint: false, points: 0, stage_before: st.stage, stage_after: st.stage }
+    const p_log = { vocab_id, exercise_type: 'flashcard', is_correct: !vao_retry, used_hint: false, points: 0, stage_before: st.stage, stage_after: st.stage, thoi_gian_ms: tinhThoiGian(mocMan.current) }
     void goiRpc(
       { p_state: null, p_log, p_retry: vao_retry ? { reason: 'flashcard_again', exercise_types: null } : null, p_xoa_retry: false },
       () => dispatch({ loai: 'luu_ok' }),
@@ -339,7 +397,7 @@ export default function PlayerPage() {
     const ids = m.vocab_ids
     for (let i = batDau; i < ids.length; i++) {
       const id = ids[i]!
-      const ok = await traLoi(id, 'matching', kq[id] ?? false, false, m.la_bai_cuoi[id] ?? false, i < ids.length - 1)
+      const ok = await traLoi(id, 'matching', kq[id] ?? false, false, m.la_bai_cuoi[id] ?? false, i < ids.length - 1, ids.length)
       if (!ok) {
         thuLaiRef.current = () => matchingXong(m, kq, i)
         return
@@ -353,7 +411,7 @@ export default function PlayerPage() {
     for (let i = batDau; i < ids.length; i++) {
       const id = ids[i]!
       const dung = id === m.vocab_a ? kq.a : kq.b
-      const ok = await traLoi(id, m.loai, dung, soGoiY > 0, m.la_bai_cuoi[id] ?? false, i < ids.length - 1)
+      const ok = await traLoi(id, m.loai, dung, soGoiY > 0, m.la_bai_cuoi[id] ?? false, i < ids.length - 1, ids.length)
       if (!ok) {
         thuLaiRef.current = () => dialogXong(m, kq, i)
         return
@@ -385,7 +443,7 @@ export default function PlayerPage() {
         const id = m.vocab_ids[i]!
         const r = ketQuaAI.current[id]
         if (!r) continue
-        const ok = await traLoi(id, m.dang, dungTuVerdict(r.verdict), false, m.la_bai_cuoi[id] ?? false, true)
+        const ok = await traLoi(id, m.dang, dungTuVerdict(r.verdict), false, m.la_bai_cuoi[id] ?? false, true, m.vocab_ids.length)
         if (!ok) return
       }
       setChamTt({ b: 'xong', chiSo: 0 })
@@ -463,6 +521,7 @@ export default function PlayerPage() {
   const man = tt.man[tt.chi_so]!
   const khoi = [...new Set(tt.man.map((m) => m.loai))]
   const dots = { tong: khoi.length, hienTai: khoi.indexOf(man.loai) }
+  const soTuPhien = Object.keys(tt.trang_thai).length
   const ghostChung = { phienAm: hienPhienAm, toggle: () => setHienPhienAm((v) => !v) }
 
   /**
@@ -501,7 +560,7 @@ export default function PlayerPage() {
         header={stChinh ? <Ring total_points={stChinh.total_points} stage={stChinh.stage} size={60} /> : null}
         thoat={thoat}
         rong={640}
-        dots={dots}
+        dots={dots} soTuPhien={soTuPhien}
       >
         {bannerLoi}
         <ChamAI
@@ -539,7 +598,7 @@ export default function PlayerPage() {
         ghost={ghost}
         thoat={thoat}
         rong={680}
-        dots={dots}
+        dots={dots} soTuPhien={soTuPhien}
       >
         {bannerLoi}
         <HoiThoai
@@ -558,7 +617,7 @@ export default function PlayerPage() {
 
   if (man.loai === 'matching') {
     return (
-      <ExerciseShell thoat={thoat} rong={620} dots={dots} vienHeader={false}>
+      <ExerciseShell thoat={thoat} rong={620} dots={dots} soTuPhien={soTuPhien} vienHeader={false}>
         {bannerLoi}
         <Matching key={tt.chi_so} dsTu={man.vocab_ids.map((id) => vocab[id]!)} onXong={(kq) => void matchingXong(man, kq)} />
       </ExerciseShell>
@@ -572,15 +631,15 @@ export default function PlayerPage() {
   switch (man.loai) {
     case 'flashcard':
       return (
-        <ExerciseShell header={tieuDe('Flashcard')} thoat={thoat} rong={520} dots={dots} vienHeader={false}>
+        <ExerciseShell header={tieuDe('Flashcard')} ghost={ghostChung} thoat={thoat} rong={520} dots={dots} soTuPhien={soTuPhien} vienHeader={false}>
           {bannerLoi}
           <Flashcard key={`${tt.chi_so}-${v.id}`} vocab={v} hienPhienAm={hienPhienAm} onChon={(nut) => flashcard(v.id, nut)} />
         </ExerciseShell>
       )
     case 'grammar':
       return (
-        <ExerciseShell ghost={ghostChung} thoat={thoat} rong={640} dots={dots} vienHeader={false}>
-          <Grammar key={tt.chi_so} vocab={v} payload={man.payload} hienPhienAm={hienPhienAm} onTiep={() => dispatch({ loai: 'sang_man' })} />
+        <ExerciseShell ghost={ghostChung} thoat={thoat} rong={640} dots={dots} soTuPhien={soTuPhien} vienHeader={false}>
+          <Grammar key={tt.chi_so} vocab={v} tuDam={v.word} payload={man.payload} hienPhienAm={hienPhienAm} onTiep={() => dispatch({ loai: 'sang_man' })} />
         </ExerciseShell>
       )
     case 'selection':
@@ -595,7 +654,7 @@ export default function PlayerPage() {
         giaiThich: nutGiaiThich(v.id, man.loai, false, { cau_hoi: tn.moTa ?? v.word, dap_an: tn.dapAn, word: v.word, meaning_vi: v.meaning_vi }),
       }
       return (
-        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={600} dots={dots}>
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={600} dots={dots} soTuPhien={soTuPhien}>
           {bannerLoi}
           <TracNghiem
             key={tt.chi_so}
@@ -617,7 +676,7 @@ export default function PlayerPage() {
     case 'trans_collocation': {
       const ghost: Ghost = { ...ghostChung, goiY: () => setSoGoiY((k) => k + 1), boQua: () => void traLoi(v.id, man.loai, false, false, man.la_bai_cuoi_cua_tu) }
       return (
-        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={560} dots={dots}>
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={560} dots={dots} soTuPhien={soTuPhien}>
           {bannerLoi}
           <DienTu key={tt.chi_so} vocab={v} cheDo={man.loai} hienPhienAm={hienPhienAm} soGoiY={soGoiY}
             onTraLoi={(dung, goiY) => void traLoi(v.id, man.loai, dung, goiY, man.la_bai_cuoi_cua_tu)} />
@@ -636,7 +695,7 @@ export default function PlayerPage() {
         },
       }
       return (
-        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={640} dots={dots}>
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={640} dots={dots} soTuPhien={soTuPhien}>
           {bannerLoi}
           <TuLuan
             key={tt.chi_so}
@@ -665,7 +724,7 @@ export default function PlayerPage() {
         }),
       }
       return (
-        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={640} dots={dots}>
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={640} dots={dots} soTuPhien={soTuPhien}>
           {bannerLoi}
           <SapXep key={tt.chi_so} vocab={v} payload={man.payload} hienPhienAm={hienPhienAm} soGoiY={soGoiY}
             onTraLoi={(dung, goiY) => void traLoi(v.id, 'arrange_words', dung, goiY, man.la_bai_cuoi_cua_tu)} />
@@ -675,7 +734,7 @@ export default function PlayerPage() {
     case 'fast_decision': {
       const ghost: Ghost = { ...ghostChung, boQua: () => void traLoi(v.id, 'fast_decision', false, false, man.la_bai_cuoi_cua_tu) }
       return (
-        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={560} dots={dots}>
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={560} dots={dots} soTuPhien={soTuPhien}>
           {bannerLoi}
           <FastDecision key={tt.chi_so} vocab={v} payload={man.payload} hienPhienAm={hienPhienAm}
             onTraLoi={(dung) => void traLoi(v.id, 'fast_decision', dung, false, man.la_bai_cuoi_cua_tu)} />

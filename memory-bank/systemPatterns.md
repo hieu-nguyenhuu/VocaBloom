@@ -120,14 +120,28 @@ Toàn app dùng **SVG path vẽ tay trích từ 2 file HTML** (`stroke-width` 1.
 - **Player ở PC:** shell giữ ~420–480px **căn giữa**, KHÔNG giãn full-width. Hội thoại max-width ~560px; Tổng kết phiên ~480px.
 - Dùng `min-h-[100dvh]`, KHÔNG dùng `h-screen` / `100vh`. Chia cột bằng CSS Grid, không tính phần trăm bằng flex.
 
-## 6. Mô hình dữ liệu (**10 bảng** — SQL đầy đủ ở `SPECIFICATION.md` §2)
+## 6. Mô hình dữ liệu (**12 bảng** — SQL đầy đủ ở `SPECIFICATION.md` §2)
 
+> ⚠️ **Đính chính 2026-09-23 (M14):** thêm bảng thứ **12** `nhat_ky_ngay` (nhật ký học theo ngày,
+> migration `0014`) — KHÔNG có trong `SPECIFICATION.md` §2.
+>
+> ⚠️ **Đính chính 2026-09-22 (M12):** thêm bảng thứ **11** `topic_grammar` (ngữ pháp CỦA CHỦ ĐỀ,
+> migration `0013`) — KHÔNG có trong `SPECIFICATION.md` §2.
+>
 > ⚠️ **Đính chính 2026-09-09:** `SPECIFICATION.md` §2 đánh số **9 nhóm** nhưng nhóm 2 chứa
-> **2 bảng** (`vocab` + `vocab_topics`) → tổng thực tế là **10 bảng**. Bản cũ của file này ghi "9 bảng".
+> **2 bảng** (`vocab` + `vocab_topics`) → tổng lúc đó là **10 bảng**. Bản cũ của file này ghi "9 bảng".
 > Đếm nhầm = bỏ sót `vocab_topics` khi bật RLS ⇒ hở toàn bộ quan hệ từ vựng ↔ chủ đề.
 > Mọi script/migration phải liệt kê tên bảng **tường minh**, không đếm theo trí nhớ.
 
-`topics` · `vocab` · `vocab_topics` (n-n) · `word_state` (lõi SRS, PK = `vocab_id`) · `daily_retry_queue` · `exercises` (payload JSONB + `ai_explanation` lazy-cache) · `review_log` (có `stage_before`/`stage_after`, ghi ở MỌI dòng) · `topic_dialogues` (1 topic = 1 hội thoại) · `notifications` · `settings` (key-value).
+`topics` · `vocab` · `vocab_topics` (n-n) · `word_state` (lõi SRS, PK = `vocab_id`) · `daily_retry_queue` · `exercises` (payload JSONB + `ai_explanation` lazy-cache) · `review_log` (có `stage_before`/`stage_after`, ghi ở MỌI dòng) · `topic_dialogues` (1 topic = 1 hội thoại) · `notifications` · `settings` (key-value) · **`topic_grammar`** (M12 — ngữ pháp của chủ đề, 1 topic ↔ 0…n mục, `on delete cascade`).
+
+⚠️ **`nhat_ky_ngay` CỐ Ý KHÔNG CÓ KHOÁ NGOẠI NÀO (M14).** Đó không phải thiếu sót — đó là toàn bộ
+lý do bảng tồn tại. `review_log.vocab_id` có `on delete cascade`, nên xoá từ vựng là xoá luôn lịch
+sử học; streak/số phút phải nằm ở nơi cascade không với tới. **Đừng "sửa" bằng cách thêm FK.**
+
+**2 loại ngữ pháp — đừng lẫn (M12):** `exercises.type = 'grammar'` là ngữ pháp **CỦA TỪ** (gắn 1 vocab,
+dạng CÓ ĐIỀU KIỆN — chỉ gắn khi từ dễ dùng sai); bảng `topic_grammar` là ngữ pháp **CỦA CHỦ ĐỀ**
+(không gắn từ nào, không tính điểm, không vào SRS).
 
 Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `exercise_type` = 17 giá trị.
 
@@ -184,7 +198,14 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
    Cửa Management chạy quyền `postgres` (bypass RLS) ⇒ chạy được cũng không chứng minh app sẽ
    chạy được. Chỉ dùng Management API cho migration và test.
 
-## 10. Import — 3 bẫy đã trả giá (từ M2a, 2026-09-09)
+## 10. Import — 3 bẫy đã trả giá (từ M2a, 2026-09-09) + mở rộng M12
+
+**M12 (2026-09-22):** file import thêm khoá **tuỳ chọn** `grammar` ở gốc (ngang hàng `dialogue`) →
+bảng `topic_grammar`. Màn Import nhận **nhiều file 1 lúc**, **mỗi file 1 transaction riêng**:
+1 file hỏng KHÔNG kéo đổ các file còn lại. `import_topic()` trả thêm `so_ngu_phap`.
+⚠️ `import-schema.json` có `additionalProperties: false` ⇒ thêm khoá mới vào file import mà quên
+sửa schema thì chính schema sẽ từ chối file.
+
 
 1. **`blank_b_vocab_id` nằm LỒNG trong payload jsonb.** Khi đổi `temp_id → uuid` phải `jsonb_set`
    vào trong payload, không chỉ đổi `vocab_temp_id` ở ngoài. Quên = Player không tìm ra "từ B"

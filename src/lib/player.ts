@@ -511,3 +511,48 @@ const KHONG_TINH_DIEM: ReadonlySet<Man['loai']> = new Set([
 export function coBaiTinhDiem(man: Man[]): boolean {
   return man.some((m) => !KHONG_TINH_DIEM.has(m.loai))
 }
+
+// ── M10: nhập liệu & hội thoại ──────────────────────────────────────────────
+
+/**
+ * Tách câu hội thoại quanh MỘT chỗ trống. Quy ước dữ liệu (§6.2/§6.3, xác minh trên dữ liệu thật):
+ * mỗi câu đúng 1 dấu `___`.
+ * Phòng vệ khi dữ liệu lệch quy ước: 0 dấu → `sau = null` (câu chỉ là ngữ cảnh, KHÔNG chèn ô);
+ * ≥2 dấu → chèn ô ở dấu ĐẦU và giữ NGUYÊN VĂN phần còn lại. Bản cũ dùng `split('___')` rồi lấy 2
+ * phần đầu nên nuốt mất đuôi câu và ô trống nhảy lung tung (lỗi người dùng báo 19/09).
+ */
+export function tachChoTrong(text: string): { truoc: string; sau: string | null } {
+  const i = text.indexOf('___')
+  if (i < 0) return { truoc: text, sau: null }
+  return { truoc: text.slice(0, i), sau: text.slice(i + 3) }
+}
+
+/**
+ * Giới hạn độ dài ô nhập, nhưng KHÔNG cắt khi IME đang gõ.
+ * IME tiếng Trung chèn pinyin latin tạm thời vào ô ⇒ chuỗi tạm thời dài hơn đáp án; cắt ngay lúc đó
+ * sẽ xoá mất chữ Hán đã gõ trước (người dùng báo: gõ 一杯 rồi gõ 咖啡 thì mất 一杯).
+ * Đếm theo KÝ TỰ hiển thị (code point), không dùng `.length` của UTF-16.
+ */
+export function gioiHanNhap(giaTri: string, soKyTu: number, dangGoIme: boolean): string {
+  if (dangGoIme) return giaTri
+  return [...giaTri].slice(0, soKyTu).join('')
+}
+
+/**
+ * Ô nào CHƯA điền thì lộ trước, theo thứ tự A → B; mỗi lần bấm Gợi ý lộ thêm 1 ô (M11/#5).
+ * Lỗi cũ: chỉ lộ ô A nên bài 2 chỗ trống không bao giờ gợi ý được ô B.
+ */
+export function oGoiY(soGoiY: number, dienA: string, dienB: string, coB: boolean): ('a' | 'b')[] {
+  const trong: ('a' | 'b')[] = []
+  if (!dienA) trong.push('a')
+  if (coB && !dienB) trong.push('b')
+  return trong.slice(0, Math.max(0, soGoiY))
+}
+
+/**
+ * Cắt session cho vừa số từ còn được phép ôn trong LƯỢT (M11/Q1, `max_tu_moi_luot`).
+ * Trả mảng rỗng ⇒ đã đạt giới hạn, Player dừng lượt và sang Tổng kết.
+ */
+export function catTheoGioiHan<T>(phien: readonly T[], daXong: number, gioiHan: number): T[] {
+  return phien.slice(0, Math.max(0, gioiHan - daXong))
+}

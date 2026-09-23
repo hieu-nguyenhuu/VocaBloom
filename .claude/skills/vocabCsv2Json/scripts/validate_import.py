@@ -35,8 +35,11 @@ PAYLOAD_REQUIRED_FIELDS = {
     "arrange_words": {"tokens"},
     "trans_sentence": {"vietnamese_sentence"},
     "complete_situation": {"situation_vi", "given_sentence_zh", "given_sentence_pinyin"},
-    "select_dialog": {"dialog_a", "dialog_b", "blank_a_answer", "blank_b_vocab_id", "distractors"},
-    "fill_dialog": {"dialog_a", "dialog_b", "blank_a_answer", "blank_b_vocab_id"},
+    # M13: 2 field phiên âm ĐÃ được đưa vào bắt buộc cho khớp import-schema.json + app
+    "select_dialog": {"dialog_a", "dialog_a_pinyin", "dialog_b", "dialog_b_pinyin",
+                      "blank_a_answer", "blank_b_vocab_id", "distractors"},
+    "fill_dialog": {"dialog_a", "dialog_a_pinyin", "dialog_b", "dialog_b_pinyin",
+                    "blank_a_answer", "blank_b_vocab_id"},
 }
 
 # type -> (field chứa list, độ dài bắt buộc)
@@ -53,11 +56,18 @@ VOCAB_REQUIRED_FIELDS = {
     "example_sentence", "example_meaning_vi", "lang",
 }
 
+# M12/Q1: `grammar` (ngữ pháp CỦA TỪ) đã được BỎ khỏi danh sách bắt buộc — nó là dạng
+# CÓ ĐIỀU KIỆN, chỉ gắn cho từ thực sự có điểm dễ dùng sai. Bắt mọi từ phải có `grammar`
+# chính là nguyên nhân khiến "từ nào cũng có ngữ pháp".
 RECOMMENDED_COVERAGE = {
-    "grammar", "selection", "audio_recognition", "fast_decision",
+    "selection", "audio_recognition", "fast_decision",
     "select_on_describe", "select_sentence", "arrange_words",
     "trans_sentence", "complete_situation",
 }
+
+# M12 — ngữ pháp CỦA CHỦ ĐỀ (khoá "grammar" ở gốc file, ngang hàng "dialogue"). Tuỳ chọn.
+TOPIC_GRAMMAR_REQUIRED = {"content_target", "pinyin", "content_vi"}
+TOPIC_GRAMMAR_OPTIONAL = {"vi_du", "vi_du_pinyin", "vi_du_vi"}
 
 
 def validate_file(path):
@@ -159,6 +169,34 @@ def validate_file(path):
         for vid in line.get("highlight_vocab_temp_ids", []):
             if vid not in temp_ids:
                 errors.append(f"dialogue.lines[{i}]: highlight_vocab_temp_ids chứa temp_id không tồn tại: '{vid}'")
+
+    # --- Ngữ pháp CỦA CHỦ ĐỀ (M12) ---
+    topic_grammar = data.get("grammar")
+    if topic_grammar is not None:
+        if not isinstance(topic_grammar, list):
+            errors.append("'grammar' phải là mảng các mục ngữ pháp của chủ đề (hoặc bỏ hẳn khoá này)")
+        else:
+            for i, muc in enumerate(topic_grammar):
+                label = f"grammar[{i}]"
+                if not isinstance(muc, dict):
+                    errors.append(f"{label}: phải là object")
+                    continue
+                for field in sorted(TOPIC_GRAMMAR_REQUIRED):
+                    if field not in muc:
+                        errors.append(f"{label}: thiếu field bắt buộc '{field}'"
+                                      + (" (dùng null nếu lang='en')" if field == "pinyin" else ""))
+                for field in ("content_target", "content_vi"):
+                    if not str(muc.get(field) or "").strip():
+                        errors.append(f"{label}.{field}: rỗng")
+                thua = set(muc) - TOPIC_GRAMMAR_REQUIRED - TOPIC_GRAMMAR_OPTIONAL
+                if thua:
+                    errors.append(f"{label}: field thừa không có trong schema: {sorted(thua)}")
+                # Chỉ nhắc phiên âm khi mục này CÓ pinyin (topic tiếng Trung).
+                # Topic lang='en' để pinyin=null thì ví dụ cũng không có phiên âm.
+                if (str(muc.get("pinyin") or "").strip()
+                        and str(muc.get("vi_du") or "").strip()
+                        and not str(muc.get("vi_du_pinyin") or "").strip()):
+                    warnings.append(f"{label}: có 'vi_du' nhưng thiếu 'vi_du_pinyin'")
 
     # --- Coverage check (warning, không phải lỗi cứng) ---
     for v in vocab_list:

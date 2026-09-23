@@ -16,7 +16,14 @@ export type KetQuaValidate = {
   hop_le: boolean
   loi: ViTri[]
   canh_bao: ViTri[]
-  tom_tat: { ten_topic: string; so_tu: number; so_bai_tap: number; so_dong_hoi_thoai: number }
+  tom_tat: {
+    ten_topic: string
+    so_tu: number
+    so_bai_tap: number
+    so_dong_hoi_thoai: number
+    /** M12 — số mục ngữ pháp CỦA CHỦ ĐỀ (khoá `grammar`), khác hẳn exercise_type 'grammar'. */
+    so_ngu_phap: number
+  }
 }
 
 const KIEU_HOP_LE = [
@@ -31,27 +38,48 @@ const KIEU_KHONG_PAYLOAD = new Set([
   'flashcard', 'matching', 'translate', 'listen_fill', 'make_sentence', 'trans_collocation',
 ])
 
-const FIELD_PAYLOAD_BAT_BUOC: Record<string, string[]> = {
-  grammar: ['content_target', 'pinyin', 'content_vi'],
-  selection: ['distractors'],
-  audio_recognition: ['distractors'],
-  fast_decision: ['wrong_meaning'],
-  select_on_describe: ['description', 'distractors'],
-  select_sentence: ['correct_sentence', 'wrong_sentences'],
-  arrange_words: ['tokens'],
-  trans_sentence: ['vietnamese_sentence'],
-  complete_situation: ['situation_vi', 'given_sentence_zh', 'given_sentence_pinyin'],
-  select_dialog: ['dialog_a', 'dialog_b', 'blank_a_answer', 'blank_b_vocab_id', 'distractors'],
-  fill_dialog: ['dialog_a', 'dialog_b', 'blank_a_answer', 'blank_b_vocab_id'],
-}
+/**
+ * Luật cho TỪNG field của payload (M13) — 1 nguồn sự thật thay cho 2 bảng rời trước đây.
+ *
+ * ⚠️ Vì sao phải kiểm tới SHAPE chứ không chỉ "key có mặt": `import-schema.json` kiểm rất chặt
+ * nhưng nó chạy NGOÀI app (trong skill, cần cài ajv). Nút Import của app chỉ chạy file này.
+ * Đo thật 2026-09-23: 13/13 file dị dạng lọt qua bản cũ — đúng lớp lỗi đã gây ra MB-21
+ * (`arrange_words` đọc khoá `text` nhưng payload ghi `word` ⇒ chip mất chữ Hán, chấm luôn sai).
+ *
+ *   'chuoi'            — chuỗi KHÔNG rỗng
+ *   'chuoi_hoac_null'  — KEY bắt buộc có mặt, giá trị chuỗi hoặc null (dùng cho phiên âm, §6.5)
+ *   'temp_id'          — chuỗi không rỗng, phải khớp temp_id có thật (kiểm ở lớp 2)
+ *   ['mang_chuoi', n]  — mảng đúng n chuỗi không rỗng
+ *   ['mang_tu', n]     — mảng đúng n object { word, pinyin }
+ *   ['mang_cau', n]    — mảng đúng n object { text, pinyin }; n = 0 nghĩa là "ít nhất 2"
+ *   'cau'              — 1 object { text, pinyin }
+ */
+type LuatField = 'chuoi' | 'chuoi_hoac_null' | 'temp_id' | 'cau' | [string, number]
 
-/** type -> [tên field mảng, độ dài bắt buộc] */
-const DO_DAI_MANG: Record<string, [string, number]> = {
-  selection: ['distractors', 3],
-  audio_recognition: ['distractors', 3],
-  select_on_describe: ['distractors', 3],
-  select_dialog: ['distractors', 2],
-  select_sentence: ['wrong_sentences', 3],
+const LUAT_PAYLOAD: Record<string, Record<string, LuatField>> = {
+  grammar: { content_target: 'chuoi', pinyin: 'chuoi_hoac_null', content_vi: 'chuoi' },
+  selection: { distractors: ['mang_chuoi', 3] },
+  audio_recognition: { distractors: ['mang_chuoi', 3] },
+  fast_decision: { wrong_meaning: 'chuoi' },
+  select_on_describe: { description: 'chuoi', distractors: ['mang_tu', 3] },
+  select_sentence: { correct_sentence: 'cau', wrong_sentences: ['mang_cau', 3] },
+  arrange_words: { tokens: ['mang_cau', 0] },
+  trans_sentence: { vietnamese_sentence: 'chuoi' },
+  complete_situation: {
+    situation_vi: 'chuoi',
+    given_sentence_zh: 'chuoi',
+    given_sentence_pinyin: 'chuoi_hoac_null',
+  },
+  select_dialog: {
+    dialog_a: 'chuoi', dialog_a_pinyin: 'chuoi_hoac_null',
+    dialog_b: 'chuoi', dialog_b_pinyin: 'chuoi_hoac_null',
+    blank_a_answer: 'chuoi', blank_b_vocab_id: 'temp_id', distractors: ['mang_tu', 2],
+  },
+  fill_dialog: {
+    dialog_a: 'chuoi', dialog_a_pinyin: 'chuoi_hoac_null',
+    dialog_b: 'chuoi', dialog_b_pinyin: 'chuoi_hoac_null',
+    blank_a_answer: 'chuoi', blank_b_vocab_id: 'temp_id',
+  },
 }
 
 const FIELD_VOCAB_BAT_BUOC = [
@@ -59,9 +87,24 @@ const FIELD_VOCAB_BAT_BUOC = [
   'collocation_meaning_vi', 'example_sentence', 'example_meaning_vi', 'lang',
 ] as const
 
-/** 9 dạng nên có đủ cho mỗi từ — thiếu chỉ CẢNH BÁO, không chặn (§10.5). */
+/** Phải là chuỗi KHÔNG rỗng (M13). */
+const FIELD_VOCAB_CHUOI = [
+  'temp_id', 'word', 'meaning_vi', 'collocation',
+  'collocation_meaning_vi', 'example_sentence', 'example_meaning_vi',
+] as const
+
+/** Phiên âm: chuỗi hoặc null; lang=zh thì bắt buộc có nội dung (§6.5). */
+const FIELD_VOCAB_PHIEN_AM = ['pinyin', 'collocation_pinyin'] as const
+
+/**
+ * 8 dạng nên có đủ cho mỗi từ — thiếu chỉ CẢNH BÁO, không chặn (§10.5).
+ *
+ * M12/Q1: `grammar` (ngữ pháp CỦA TỪ) đã được BỎ khỏi danh sách này — nó là dạng CÓ ĐIỀU KIỆN,
+ * chỉ gắn cho từ thực sự có điểm dễ dùng sai. Bắt mọi từ phải có `grammar` chính là nguyên nhân
+ * khiến "từ nào cũng có ngữ pháp" (DESIGN.md §2).
+ */
 const DANG_KHUYEN_NGHI = [
-  'grammar', 'selection', 'audio_recognition', 'fast_decision', 'select_on_describe',
+  'selection', 'audio_recognition', 'fast_decision', 'select_on_describe',
   'select_sentence', 'arrange_words', 'trans_sentence', 'complete_situation',
 ] as const
 
@@ -73,10 +116,22 @@ function laChuoiKhongRong(x: unknown): x is string {
   return typeof x === 'string' && x.trim() !== ''
 }
 
+/**
+ * Cặp "nội dung + phiên âm" (§6.5): `{ word, pinyin }` cho từ, `{ text, pinyin }` cho câu.
+ * KEY `pinyin` phải có mặt (null hợp lệ khi lang = en); dùng SAI khoá chính là bug MB-21.
+ */
+function laCap(x: unknown, khoa: 'word' | 'text'): boolean {
+  if (!laObject(x)) return false
+  if (!laChuoiKhongRong(x[khoa])) return false
+  if (!('pinyin' in x)) return false
+  const p = x['pinyin']
+  return p === null || typeof p === 'string'
+}
+
 export function validateImportFile(raw: unknown): KetQuaValidate {
   const loi: ViTri[] = []
   const canh_bao: ViTri[] = []
-  const tom_tat = { ten_topic: '', so_tu: 0, so_bai_tap: 0, so_dong_hoi_thoai: 0 }
+  const tom_tat = { ten_topic: '', so_tu: 0, so_bai_tap: 0, so_dong_hoi_thoai: 0, so_ngu_phap: 0 }
   const bao = (duong_dan: string, thong_diep: string) => loi.push({ duong_dan, thong_diep })
 
   if (!laObject(raw)) {
@@ -112,6 +167,23 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
       if (lang !== 'zh' && lang !== 'en') {
         bao(`vocab[${i}].lang`, `Chỉ nhận 'zh' hoặc 'en', đang là ${JSON.stringify(lang)}.`)
       }
+
+      // M13 — kiểm GIÁ TRỊ, không chỉ kiểm key có mặt. `word: ''` hay `word: 123` từng lọt hết.
+      for (const field of FIELD_VOCAB_CHUOI) {
+        if (field in tu && !laChuoiKhongRong(tu[field])) {
+          bao(`vocab[${i}].${field}`, 'Phải là chuỗi không rỗng.')
+        }
+      }
+      for (const field of FIELD_VOCAB_PHIEN_AM) {
+        if (!(field in tu)) continue
+        const gt = tu[field]
+        if (gt !== null && typeof gt !== 'string') {
+          bao(`vocab[${i}].${field}`, 'Phải là chuỗi hoặc null.')
+        } else if (lang === 'zh' && !laChuoiKhongRong(gt)) {
+          // §6.5 + JSON Schema: lang=zh thì phiên âm BẮT BUỘC có nội dung thật
+          bao(`vocab[${i}].${field}`, 'Từ tiếng Trung bắt buộc có phiên âm (không được null/rỗng).')
+        }
+      }
       const tempId = tu['temp_id']
       if (!laChuoiKhongRong(tempId)) {
         bao(`vocab[${i}].temp_id`, 'Thiếu hoặc rỗng — cần để nối exercises/dialogue (§10.2).')
@@ -126,6 +198,7 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
   // ── exercises (lớp 1 + lớp 2) ────────────────────────────────────────
   const dsBai = raw['exercises']
   const daCoBai = new Map<string, Set<string>>() // temp_id -> tập type đã có
+  const daThayCap = new Set<string>() // `${temp_id}|${type}` — bắt bài trùng dạng cho cùng 1 từ
 
   if (dsBai !== undefined && !Array.isArray(dsBai)) {
     bao('exercises', 'Nếu có thì phải là mảng.')
@@ -159,36 +232,79 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
 
       if (!kieuHopLe || KIEU_KHONG_PAYLOAD.has(kieu)) return
 
-      // Payload: đủ field theo §6
+      // Payload: kiểm ĐỦ FIELD + ĐÚNG SHAPE theo §6 (M13 — xem ghi chú ở LUAT_PAYLOAD)
       const payload = bai['payload']
-      const canField = FIELD_PAYLOAD_BAT_BUOC[kieu] ?? []
-      if (canField.length > 0 && !laObject(payload)) {
+      const luatCua = LUAT_PAYLOAD[kieu] ?? {}
+      const coLuat = Object.keys(luatCua).length > 0
+      if (coLuat && !laObject(payload)) {
         bao(`${g}.payload`, `Dạng '${kieu}' cần payload là object.`)
         return
       }
       if (!laObject(payload)) return
 
-      for (const field of canField) {
-        if (!(field in payload)) bao(`${g}.payload.${field}`, `Dạng '${kieu}' thiếu field này.`)
+      for (const [field, luat] of Object.entries(luatCua)) {
+        const duong = `${g}.payload.${field}`
+        if (!(field in payload)) {
+          bao(duong, `Dạng '${kieu}' thiếu field này.`)
+          continue
+        }
+        const gt = payload[field]
+
+        if (luat === 'chuoi') {
+          if (!laChuoiKhongRong(gt)) bao(duong, 'Phải là chuỗi không rỗng.')
+          continue
+        }
+        if (luat === 'chuoi_hoac_null') {
+          // Phiên âm: KEY luôn phải có; null hợp lệ khi lang = en (§6.5)
+          if (gt !== null && typeof gt !== 'string') bao(duong, 'Phải là chuỗi hoặc null.')
+          continue
+        }
+        if (luat === 'temp_id') {
+          if (!laChuoiKhongRong(gt) || !tempIdCoThat.has(gt)) {
+            bao(duong, `Không có temp_id ${JSON.stringify(gt)} nào trong mảng vocab.`)
+          } else if (gt === bai['vocab_temp_id']) {
+            // Bài 2 TỪ (§4.4) mà cả 2 chỗ trống trỏ về cùng 1 từ ⇒ Player ghi log 2 lần cho 1 từ
+            bao(duong, 'Trỏ về chính từ của bài này — bài 2 từ phải là 2 từ KHÁC nhau.')
+          }
+          continue
+        }
+        if (luat === 'cau') {
+          if (!laCap(gt, 'text')) bao(duong, 'Phải là object { text, pinyin } (key pinyin luôn có mặt).')
+          continue
+        }
+
+        // Còn lại là mảng: ['mang_chuoi' | 'mang_tu' | 'mang_cau', số phần tử]
+        const [kieuMang, soLuong] = luat
+        if (!Array.isArray(gt)) {
+          bao(duong, 'Phải là mảng.')
+          continue
+        }
+        if (soLuong > 0 && gt.length !== soLuong) {
+          bao(duong, `Phải có đúng ${soLuong} phần tử, đang có ${gt.length}.`)
+        } else if (soLuong === 0 && gt.length < 2) {
+          bao(duong, `Phải có ít nhất 2 phần tử, đang có ${gt.length}.`)
+        }
+        gt.forEach((pt, k) => {
+          if (kieuMang === 'mang_chuoi') {
+            if (!laChuoiKhongRong(pt)) bao(`${duong}[${k}]`, 'Phải là chuỗi không rỗng.')
+          } else if (kieuMang === 'mang_tu') {
+            if (!laCap(pt, 'word')) bao(`${duong}[${k}]`, 'Phải là object { word, pinyin } — KHÔNG phải chuỗi.')
+          } else if (kieuMang === 'mang_cau') {
+            if (!laCap(pt, 'text')) bao(`${duong}[${k}]`, 'Phải là object { text, pinyin } — chú ý khoá là `text`, không phải `word`.')
+          }
+        })
       }
 
-      // Payload: độ dài mảng cố định
-      const luat = DO_DAI_MANG[kieu]
-      if (luat) {
-        const [tenField, doDai] = luat
-        const gt = payload[tenField]
-        if (Array.isArray(gt) && gt.length !== doDai) {
-          bao(`${g}.payload.${tenField}`, `Phải có đúng ${doDai} phần tử, đang có ${gt.length}.`)
+      // Cảnh báo: 2 bài CÙNG dạng cho CÙNG 1 từ ⇒ Player dựng 2 màn trùng nhau
+      if (laChuoiKhongRong(vTempId)) {
+        const khoa = `${vTempId}|${kieu}`
+        if (daThayCap.has(khoa)) {
+          canh_bao.push({
+            duong_dan: g,
+            thong_diep: `Trùng: từ '${vTempId}' đã có một bài '${kieu}' khác trong file này.`,
+          })
         }
-      }
-
-      // Lớp 2: blank_b_vocab_id lồng trong payload
-      if ('blank_b_vocab_id' in payload) {
-        const bId = payload['blank_b_vocab_id']
-        if (!laChuoiKhongRong(bId) || !tempIdCoThat.has(bId)) {
-          bao(`${g}.payload.blank_b_vocab_id`,
-            `Không có temp_id ${JSON.stringify(bId)} nào trong mảng vocab.`)
-        }
+        daThayCap.add(khoa)
       }
     })
   }
@@ -201,10 +317,21 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
     } else {
       const dsDong = hoiThoai['lines']
       tom_tat.so_dong_hoi_thoai = dsDong.length
+      // M13: có khoá `dialogue` mà 0 dòng thì RPC bỏ qua, người dùng tưởng đã nhập hội thoại
+      if (dsDong.length === 0) {
+        bao('dialogue.lines', 'Mảng rỗng — bỏ hẳn khoá `dialogue` nếu chủ đề không có hội thoại.')
+      }
       dsDong.forEach((dong, i) => {
         if (!laObject(dong)) {
           bao(`dialogue.lines[${i}]`, 'Phải là object.')
           return
+        }
+        // M13 — nội dung câu là thứ Player hiển thị; thiếu thì màn hội thoại ra dòng trống
+        if (!laChuoiKhongRong(dong['text_zh'])) {
+          bao(`dialogue.lines[${i}].text_zh`, 'Phải là chuỗi không rỗng (giữ tên field này kể cả topic tiếng Anh).')
+        }
+        if (dong['speaker'] !== 'A' && dong['speaker'] !== 'B') {
+          bao(`dialogue.lines[${i}].speaker`, `Chỉ nhận 'A' hoặc 'B', đang là ${JSON.stringify(dong['speaker'])}.`)
         }
         const ds = dong['highlight_vocab_temp_ids']
         if (ds === undefined) return
@@ -217,6 +344,45 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
             bao(`dialogue.lines[${i}].highlight_vocab_temp_ids`,
               `Không có temp_id ${JSON.stringify(id)} nào trong mảng vocab.`)
           }
+        }
+      })
+    }
+  }
+
+  // ── grammar: ngữ pháp CỦA CHỦ ĐỀ (M12) ───────────────────────────────
+  // Thực thể riêng, không gắn vocab nào ⇒ không có lớp 2 (temp_id). Khoá TUỲ CHỌN.
+  const dsNguPhap = raw['grammar']
+  if (dsNguPhap !== undefined && dsNguPhap !== null) {
+    if (!Array.isArray(dsNguPhap)) {
+      bao('grammar', 'Nếu có grammar thì phải là mảng các mục ngữ pháp của chủ đề.')
+    } else {
+      tom_tat.so_ngu_phap = dsNguPhap.length
+      dsNguPhap.forEach((muc, i) => {
+        if (!laObject(muc)) {
+          bao(`grammar[${i}]`, 'Phải là object.')
+          return
+        }
+        if (!laChuoiKhongRong(muc['content_target'])) {
+          bao(`grammar[${i}].content_target`, 'Thiếu hoặc rỗng — nội dung ngữ pháp bằng ngôn ngữ đích.')
+        }
+        if (!laChuoiKhongRong(muc['content_vi'])) {
+          bao(`grammar[${i}].content_vi`, 'Thiếu hoặc rỗng — giải thích tiếng Việt.')
+        }
+        // Cùng quy ước với payload `grammar` của từ: KEY phải tồn tại, giá trị null khi lang = en.
+        if (!('pinyin' in muc)) {
+          bao(`grammar[${i}].pinyin`, 'Thiếu key (dùng null nếu lang = en).')
+        }
+        // Chỉ nhắc phiên âm khi mục NÀY có pinyin (tức topic tiếng Trung). Topic tiếng Anh
+        // để pinyin = null thì câu ví dụ cũng không có phiên âm — nhắc là nhắc nhầm.
+        if (
+          laChuoiKhongRong(muc['pinyin']) &&
+          laChuoiKhongRong(muc['vi_du']) &&
+          !laChuoiKhongRong(muc['vi_du_pinyin'])
+        ) {
+          canh_bao.push({
+            duong_dan: `grammar[${i}].vi_du_pinyin`,
+            thong_diep: 'Có câu ví dụ nhưng thiếu phiên âm.',
+          })
         }
       })
     }

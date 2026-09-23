@@ -1,0 +1,616 @@
+{
+  "topic": {
+    "name": "Topic B",
+    "description": "Cơ thể, sức khoẻ và chuyện nơi công sở."
+  },
+  "vocab": [
+    {
+      "temp_id": "v1",
+      "word": "脚",
+      "pinyin": "jiǎo",
+      "meaning_vi": "bàn chân",
+      "collocation": "左脚",
+      "collocation_pinyin": "zuǒ jiǎo",
+      "collocation_meaning_vi": "chân trái",
+      "example_sentence": "他的脚受伤了，走得很慢。",
+      "example_meaning_vi": "Chân anh ấy bị thương nên đi rất chậm.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v2",
+      "word": "楼",
+      "pinyin": "lóu",
+      "meaning_vi": "toà nhà, tầng lầu",
+      "collocation": "三楼",
+      "collocation_pinyin": "sān lóu",
+      "collocation_meaning_vi": "tầng ba",
+      "example_sentence": "经理的办公室在三楼。",
+      "example_meaning_vi": "Phòng làm việc của giám đốc ở tầng ba.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v3",
+      "word": "树",
+      "pinyin": "shù",
+      "meaning_vi": "cây, cây cối",
+      "collocation": "一棵树",
+      "collocation_pinyin": "yì kē shù",
+      "collocation_meaning_vi": "một cái cây",
+      "example_sentence": "楼前边有几棵大树。",
+      "example_meaning_vi": "Phía trước toà nhà có mấy cây to.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v4",
+      "word": "腿",
+      "pinyin": "tuǐ",
+      "meaning_vi": "chân (cả cẳng chân)",
+      "collocation": "腿疼",
+      "collocation_pinyin": "tuǐ téng",
+      "collocation_meaning_vi": "đau chân",
+      "example_sentence": "爬山以后我的腿很疼。",
+      "example_meaning_vi": "Sau khi leo núi chân tôi rất đau.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v5",
+      "word": "疼",
+      "pinyin": "téng",
+      "meaning_vi": "đau",
+      "collocation": "头疼",
+      "collocation_pinyin": "tóu téng",
+      "collocation_meaning_vi": "đau đầu",
+      "example_sentence": "我今天有点儿头疼。",
+      "example_meaning_vi": "Hôm nay tôi hơi đau đầu.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v6",
+      "word": "容易",
+      "pinyin": "róngyì",
+      "meaning_vi": "dễ, dễ dàng",
+      "collocation": "很容易",
+      "collocation_pinyin": "hěn róngyì",
+      "collocation_meaning_vi": "rất dễ",
+      "example_sentence": "这个问题不容易回答。",
+      "example_meaning_vi": "Câu hỏi này không dễ trả lời.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v7",
+      "word": "秘书",
+      "pinyin": "mìshū",
+      "meaning_vi": "thư ký",
+      "collocation": "当秘书",
+      "collocation_pinyin": "dāng mìshū",
+      "collocation_meaning_vi": "làm thư ký",
+      "example_sentence": "她是经理的秘书。",
+      "example_meaning_vi": "Cô ấy là thư ký của giám đốc.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v8",
+      "word": "经理",
+      "pinyin": "jīnglǐ",
+      "meaning_vi": "giám đốc, quản lý",
+      "collocation": "公司经理",
+      "collocation_pinyin": "gōngsī jīnglǐ",
+      "collocation_meaning_vi": "giám đốc công ty",
+      "example_sentence": "经理今天不在公司。",
+      "example_meaning_vi": "Hôm nay giám đốc không có ở công ty.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v9",
+      "word": "办公室",
+      "pinyin": "bàngōngshì",
+      "meaning_vi": "văn phòng, phòng làm việc",
+      "collocation": "在办公室",
+      "collocation_pinyin": "zài bàngōngshì",
+      "collocation_meaning_vi": "ở văn phòng",
+      "example_sentence": "他的办公室很干净。",
+      "example_meaning_vi": "Văn phòng của anh ấy rất sạch sẽ.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v10",
+      "word": "告诉",
+      "pinyin": "gàosu",
+      "meaning_vi": "nói cho biết, bảo",
+      "collocation": "告诉我",
+      "collocation_pinyin": "gàosu wǒ",
+      "collocation_meaning_vi": "nói cho tôi biết",
+      "example_sentence": "请你告诉我经理的电话。",
+      "example_meaning_vi": "Xin hãy cho tôi biết số điện thoại của giám đốc.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v11",
+      "word": "胖",
+      "pinyin": "pàng",
+      "meaning_vi": "mập, béo",
+      "collocation": "有点儿胖",
+      "collocation_pinyin": "yǒudiǎnr pàng",
+      "collocation_meaning_vi": "hơi mập",
+      "example_sentence": "最近我胖了三公斤。",
+      "example_meaning_vi": "Gần đây tôi tăng ba cân.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v12",
+      "word": "其实",
+      "pinyin": "qíshí",
+      "meaning_vi": "thực ra, kỳ thực",
+      "collocation": "其实不难",
+      "collocation_pinyin": "qíshí bù nán",
+      "collocation_meaning_vi": "thực ra không khó",
+      "example_sentence": "其实这个工作很容易。",
+      "example_meaning_vi": "Thực ra công việc này rất dễ.",
+      "lang": "zh"
+    },
+    {
+      "temp_id": "v13",
+      "word": "瘦",
+      "pinyin": "shòu",
+      "meaning_vi": "gầy, ốm",
+      "collocation": "太瘦了",
+      "collocation_pinyin": "tài shòu le",
+      "collocation_meaning_vi": "gầy quá",
+      "example_sentence": "他比以前瘦多了。",
+      "example_meaning_vi": "Anh ấy gầy hơn trước nhiều.",
+      "lang": "zh"
+    }
+  ],
+  "exercises": [
+    { "vocab_temp_id": "v1", "type": "selection", "payload": { "distractors": ["bàn tay", "đầu gối", "vai"] } },
+    { "vocab_temp_id": "v1", "type": "audio_recognition", "payload": { "distractors": ["ngón tay", "cánh tay", "lưng"] } },
+    { "vocab_temp_id": "v1", "type": "fast_decision", "payload": { "wrong_meaning": "bàn tay" } },
+    { "vocab_temp_id": "v1", "type": "select_on_describe", "payload": {
+      "description": "Bộ phận ở dưới cùng của cơ thể, dùng để đứng và đi, thường mang giày.",
+      "distractors": [
+        { "word": "手", "pinyin": "shǒu" },
+        { "word": "头", "pinyin": "tóu" },
+        { "word": "眼睛", "pinyin": "yǎnjing" }
+      ] } },
+    { "vocab_temp_id": "v1", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我的脚有点儿疼。", "pinyin": "Wǒ de jiǎo yǒudiǎnr téng." },
+      "wrong_sentences": [
+        { "text": "我脚的有点儿疼。", "pinyin": "Wǒ jiǎo de yǒudiǎnr téng." },
+        { "text": "我的脚是疼。", "pinyin": "Wǒ de jiǎo shì téng." },
+        { "text": "我的脚疼有点儿。", "pinyin": "Wǒ de jiǎo téng yǒudiǎnr." }
+      ] } },
+    { "vocab_temp_id": "v1", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "他的", "pinyin": "tā de" },
+      { "text": "脚", "pinyin": "jiǎo" },
+      { "text": "受伤了", "pinyin": "shòushāng le" },
+      { "text": "走得", "pinyin": "zǒu de" },
+      { "text": "很慢", "pinyin": "hěn màn" }
+    ] } },
+    { "vocab_temp_id": "v1", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Giày này nhỏ quá, chân tôi rất khó chịu." } },
+    { "vocab_temp_id": "v1", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn đi bộ cả ngày, tối về bạn cùng phòng hỏi thăm.",
+      "given_sentence_zh": "今天走了太多路，",
+      "given_sentence_pinyin": "Jīntiān zǒu le tài duō lù," } },
+
+    { "vocab_temp_id": "v2", "type": "grammar", "payload": {
+      "content_target": "数字 + 楼",
+      "pinyin": "shùzì + lóu",
+      "content_vi": "「三楼」nghĩa là TẦNG BA, không phải 'ba toà nhà'. Muốn đếm số toà nhà phải dùng lượng từ: 三座楼. Người học hay nhầm hai nghĩa này." } },
+    { "vocab_temp_id": "v2", "type": "selection", "payload": { "distractors": ["cầu thang", "phòng ngủ", "sân"] } },
+    { "vocab_temp_id": "v2", "type": "audio_recognition", "payload": { "distractors": ["cửa sổ", "hành lang", "thang máy"] } },
+    { "vocab_temp_id": "v2", "type": "fast_decision", "payload": { "wrong_meaning": "cầu thang" } },
+    { "vocab_temp_id": "v2", "type": "select_on_describe", "payload": {
+      "description": "Công trình nhiều tầng; đi với con số thì chỉ tầng thứ mấy của công trình đó.",
+      "distractors": [
+        { "word": "房间", "pinyin": "fángjiān" },
+        { "word": "电梯", "pinyin": "diàntī" },
+        { "word": "门口", "pinyin": "ménkǒu" }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "经理的办公室在三楼。", "pinyin": "Jīnglǐ de bàngōngshì zài sān lóu." },
+      "wrong_sentences": [
+        { "text": "经理的办公室在三个楼。", "pinyin": "Jīnglǐ de bàngōngshì zài sān ge lóu." },
+        { "text": "办公室三楼在。", "pinyin": "Bàngōngshì sān lóu zài." },
+        { "text": "经理的办公室是在三楼的。", "pinyin": "Jīnglǐ de bàngōngshì shì zài sān lóu de." }
+      ] } },
+    { "vocab_temp_id": "v2", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "经理的", "pinyin": "jīnglǐ de" },
+      { "text": "办公室", "pinyin": "bàngōngshì" },
+      { "text": "在", "pinyin": "zài" },
+      { "text": "三楼", "pinyin": "sān lóu" }
+    ] } },
+    { "vocab_temp_id": "v2", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Nhà tôi ở tầng năm của toà nhà kia." } },
+    { "vocab_temp_id": "v2", "type": "complete_situation", "payload": {
+      "situation_vi": "Khách đến công ty hỏi bạn phòng giám đốc ở đâu.",
+      "given_sentence_zh": "您坐电梯上去，",
+      "given_sentence_pinyin": "Nín zuò diàntī shàngqù," } },
+
+    { "vocab_temp_id": "v3", "type": "selection", "payload": { "distractors": ["hoa", "cỏ", "lá"] } },
+    { "vocab_temp_id": "v3", "type": "audio_recognition", "payload": { "distractors": ["rừng", "vườn", "quả"] } },
+    { "vocab_temp_id": "v3", "type": "fast_decision", "payload": { "wrong_meaning": "hoa" } },
+    { "vocab_temp_id": "v3", "type": "select_on_describe", "payload": {
+      "description": "Thực vật cao lớn, có thân gỗ và tán lá, thường trồng ngoài đường hoặc trong công viên.",
+      "distractors": [
+        { "word": "花", "pinyin": "huā" },
+        { "word": "草", "pinyin": "cǎo" },
+        { "word": "山", "pinyin": "shān" }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "楼前边有几棵大树。", "pinyin": "Lóu qiánbian yǒu jǐ kē dà shù." },
+      "wrong_sentences": [
+        { "text": "楼前边有几个大树。", "pinyin": "Lóu qiánbian yǒu jǐ ge dà shù." },
+        { "text": "几棵大树有楼前边。", "pinyin": "Jǐ kē dà shù yǒu lóu qiánbian." },
+        { "text": "楼前边是有几棵大树。", "pinyin": "Lóu qiánbian shì yǒu jǐ kē dà shù." }
+      ] } },
+    { "vocab_temp_id": "v3", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "楼", "pinyin": "lóu" },
+      { "text": "前边", "pinyin": "qiánbian" },
+      { "text": "有", "pinyin": "yǒu" },
+      { "text": "几棵", "pinyin": "jǐ kē" },
+      { "text": "大树", "pinyin": "dà shù" }
+    ] } },
+    { "vocab_temp_id": "v3", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Trước cửa văn phòng có một cái cây rất to." } },
+    { "vocab_temp_id": "v3", "type": "complete_situation", "payload": {
+      "situation_vi": "Trời nắng gắt, bạn rủ đồng nghiệp ra ngoài nghỉ một lát.",
+      "given_sentence_zh": "太热了，我们去",
+      "given_sentence_pinyin": "Tài rè le, wǒmen qù" } },
+
+    { "vocab_temp_id": "v4", "type": "selection", "payload": { "distractors": ["cánh tay", "cổ", "bụng"] } },
+    { "vocab_temp_id": "v4", "type": "audio_recognition", "payload": { "distractors": ["vai", "lưng", "ngón chân"] } },
+    { "vocab_temp_id": "v4", "type": "fast_decision", "payload": { "wrong_meaning": "cánh tay" } },
+    { "vocab_temp_id": "v4", "type": "select_on_describe", "payload": {
+      "description": "Phần cơ thể nối từ hông xuống bàn chân, dùng để đi và chạy; leo núi nhiều thì chỗ này mỏi nhất.",
+      "distractors": [
+        { "word": "手", "pinyin": "shǒu" },
+        { "word": "脖子", "pinyin": "bózi" },
+        { "word": "肚子", "pinyin": "dùzi" }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "爬山以后我的腿很疼。", "pinyin": "Páshān yǐhòu wǒ de tuǐ hěn téng." },
+      "wrong_sentences": [
+        { "text": "我的腿很疼爬山以后。", "pinyin": "Wǒ de tuǐ hěn téng páshān yǐhòu." },
+        { "text": "爬山以后我的腿是疼。", "pinyin": "Páshān yǐhòu wǒ de tuǐ shì téng." },
+        { "text": "爬山以后疼我的腿很。", "pinyin": "Páshān yǐhòu téng wǒ de tuǐ hěn." }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "爬山", "pinyin": "páshān" },
+      { "text": "以后", "pinyin": "yǐhòu" },
+      { "text": "我的", "pinyin": "wǒ de" },
+      { "text": "腿", "pinyin": "tuǐ" },
+      { "text": "很疼", "pinyin": "hěn téng" }
+    ] } },
+    { "vocab_temp_id": "v4", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Hôm qua chạy bộ nhiều nên hôm nay chân tôi rất mỏi." } },
+    { "vocab_temp_id": "v4", "type": "complete_situation", "payload": {
+      "situation_vi": "Đồng nghiệp rủ bạn đi leo núi lần nữa vào cuối tuần.",
+      "given_sentence_zh": "上次爬完山",
+      "given_sentence_pinyin": "Shàng cì pá wán shān" } },
+
+    { "vocab_temp_id": "v5", "type": "grammar", "payload": {
+      "content_target": "身体部位 + 疼",
+      "pinyin": "shēntǐ bùwèi + téng",
+      "content_vi": "「疼」là tính từ, đặt SAU bộ phận cơ thể và KHÔNG dùng 是: nói 我头疼 / 我的腿很疼, không nói 我的腿是疼. Muốn nói mức độ thì thêm 很 / 有点儿 trước 疼." } },
+    { "vocab_temp_id": "v5", "type": "selection", "payload": { "distractors": ["ngứa", "mệt", "lạnh"] } },
+    { "vocab_temp_id": "v5", "type": "audio_recognition", "payload": { "distractors": ["chóng mặt", "buồn nôn", "nóng"] } },
+    { "vocab_temp_id": "v5", "type": "fast_decision", "payload": { "wrong_meaning": "mệt" } },
+    { "vocab_temp_id": "v5", "type": "select_on_describe", "payload": {
+      "description": "Cảm giác khó chịu ở một bộ phận cơ thể khi bị thương hoặc bị bệnh, nặng thì phải đi khám.",
+      "distractors": [
+        { "word": "累", "pinyin": "lèi" },
+        { "word": "饿", "pinyin": "è" },
+        { "word": "冷", "pinyin": "lěng" }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "我今天有点儿头疼。", "pinyin": "Wǒ jīntiān yǒudiǎnr tóu téng." },
+      "wrong_sentences": [
+        { "text": "我今天头疼有点儿。", "pinyin": "Wǒ jīntiān tóu téng yǒudiǎnr." },
+        { "text": "我今天是头疼。", "pinyin": "Wǒ jīntiān shì tóu téng." },
+        { "text": "我今天很有点儿头疼。", "pinyin": "Wǒ jīntiān hěn yǒudiǎnr tóu téng." }
+      ] } },
+    { "vocab_temp_id": "v5", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "今天", "pinyin": "jīntiān" },
+      { "text": "有点儿", "pinyin": "yǒudiǎnr" },
+      { "text": "头疼", "pinyin": "tóu téng" }
+    ] } },
+    { "vocab_temp_id": "v5", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Tôi đau bụng, hôm nay không đi làm được." } },
+    { "vocab_temp_id": "v5", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn gọi điện cho thư ký để xin nghỉ vì không khoẻ.",
+      "given_sentence_zh": "不好意思，我今天",
+      "given_sentence_pinyin": "Bù hǎoyìsi, wǒ jīntiān" } },
+
+    { "vocab_temp_id": "v6", "type": "selection", "payload": { "distractors": ["khó", "quan trọng", "phức tạp"] } },
+    { "vocab_temp_id": "v6", "type": "audio_recognition", "payload": { "distractors": ["nhanh", "rẻ", "tiện lợi"] } },
+    { "vocab_temp_id": "v6", "type": "fast_decision", "payload": { "wrong_meaning": "khó" } },
+    { "vocab_temp_id": "v6", "type": "select_on_describe", "payload": {
+      "description": "Tính chất của việc không tốn nhiều sức hay thời gian, ai cũng làm được.",
+      "distractors": [
+        { "word": "难", "pinyin": "nán" },
+        { "word": "忙", "pinyin": "máng" },
+        { "word": "重要", "pinyin": "zhòngyào" }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "这个问题不容易回答。", "pinyin": "Zhège wèntí bù róngyì huídá." },
+      "wrong_sentences": [
+        { "text": "这个问题回答不容易。", "pinyin": "Zhège wèntí huídá bù róngyì." },
+        { "text": "这个问题没有容易。", "pinyin": "Zhège wèntí méiyǒu róngyì." },
+        { "text": "这个问题不容易得回答。", "pinyin": "Zhège wèntí bù róngyì de huídá." }
+      ] } },
+    { "vocab_temp_id": "v6", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "这个", "pinyin": "zhège" },
+      { "text": "问题", "pinyin": "wèntí" },
+      { "text": "不", "pinyin": "bù" },
+      { "text": "容易", "pinyin": "róngyì" },
+      { "text": "回答", "pinyin": "huídá" }
+    ] } },
+    { "vocab_temp_id": "v6", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Công việc này thực ra rất dễ học." } },
+    { "vocab_temp_id": "v6", "type": "complete_situation", "payload": {
+      "situation_vi": "Nhân viên mới lo lắng vì sợ công việc quá khó, bạn trấn an họ.",
+      "given_sentence_zh": "别担心，这个工作",
+      "given_sentence_pinyin": "Bié dānxīn, zhège gōngzuò" } },
+
+    { "vocab_temp_id": "v7", "type": "selection", "payload": { "distractors": ["kế toán", "bác sĩ", "giáo viên"] } },
+    { "vocab_temp_id": "v7", "type": "audio_recognition", "payload": { "distractors": ["nhân viên bán hàng", "lái xe", "y tá"] } },
+    { "vocab_temp_id": "v7", "type": "fast_decision", "payload": { "wrong_meaning": "kế toán" } },
+    { "vocab_temp_id": "v7", "type": "select_on_describe", "payload": {
+      "description": "Người giúp sếp sắp xếp lịch làm việc, nhận điện thoại và chuẩn bị giấy tờ.",
+      "distractors": [
+        { "word": "医生", "pinyin": "yīshēng" },
+        { "word": "老师", "pinyin": "lǎoshī" },
+        { "word": "服务员", "pinyin": "fúwùyuán" }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "她是经理的秘书。", "pinyin": "Tā shì jīnglǐ de mìshū." },
+      "wrong_sentences": [
+        { "text": "她是秘书的经理。", "pinyin": "Tā shì mìshū de jīnglǐ." },
+        { "text": "她很秘书。", "pinyin": "Tā hěn mìshū." },
+        { "text": "她是经理秘书的。", "pinyin": "Tā shì jīnglǐ mìshū de." }
+      ] } },
+    { "vocab_temp_id": "v7", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "她", "pinyin": "tā" },
+      { "text": "是", "pinyin": "shì" },
+      { "text": "经理的", "pinyin": "jīnglǐ de" },
+      { "text": "秘书", "pinyin": "mìshū" }
+    ] } },
+    { "vocab_temp_id": "v7", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Thư ký nói giám đốc đang ở trong văn phòng." } },
+    { "vocab_temp_id": "v7", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn gọi đến công ty, người nhấc máy hỏi bạn muốn gặp ai.",
+      "given_sentence_zh": "您好，我想",
+      "given_sentence_pinyin": "Nín hǎo, wǒ xiǎng" } },
+
+    { "vocab_temp_id": "v8", "type": "selection", "payload": { "distractors": ["thư ký", "đồng nghiệp", "khách hàng"] } },
+    { "vocab_temp_id": "v8", "type": "audio_recognition", "payload": { "distractors": ["nhân viên", "chủ nhà", "hiệu trưởng"] } },
+    { "vocab_temp_id": "v8", "type": "fast_decision", "payload": { "wrong_meaning": "đồng nghiệp" } },
+    { "vocab_temp_id": "v8", "type": "select_on_describe", "payload": {
+      "description": "Người phụ trách một công ty hay một bộ phận, có quyền quyết định công việc.",
+      "distractors": [
+        { "word": "秘书", "pinyin": "mìshū" },
+        { "word": "客人", "pinyin": "kèrén" },
+        { "word": "同事", "pinyin": "tóngshì" }
+      ] } },
+    { "vocab_temp_id": "v8", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "经理今天不在公司。", "pinyin": "Jīnglǐ jīntiān bú zài gōngsī." },
+      "wrong_sentences": [
+        { "text": "经理不在公司今天。", "pinyin": "Jīnglǐ bú zài gōngsī jīntiān." },
+        { "text": "今天经理没在公司。", "pinyin": "Jīntiān jīnglǐ méi zài gōngsī." },
+        { "text": "经理今天是不在公司。", "pinyin": "Jīnglǐ jīntiān shì bú zài gōngsī." }
+      ] } },
+    { "vocab_temp_id": "v8", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "经理", "pinyin": "jīnglǐ" },
+      { "text": "今天", "pinyin": "jīntiān" },
+      { "text": "不在", "pinyin": "bú zài" },
+      { "text": "公司", "pinyin": "gōngsī" }
+    ] } },
+    { "vocab_temp_id": "v8", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Giám đốc bảo tôi đến văn phòng của ông ấy." } },
+    { "vocab_temp_id": "v8", "type": "complete_situation", "payload": {
+      "situation_vi": "Khách hẹn gặp giám đốc nhưng ông ấy đi họp chưa về.",
+      "given_sentence_zh": "对不起，",
+      "given_sentence_pinyin": "Duìbuqǐ," } },
+
+    { "vocab_temp_id": "v9", "type": "selection", "payload": { "distractors": ["phòng họp", "lớp học", "nhà ăn"] } },
+    { "vocab_temp_id": "v9", "type": "audio_recognition", "payload": { "distractors": ["thư viện", "phòng khách", "cửa hàng"] } },
+    { "vocab_temp_id": "v9", "type": "fast_decision", "payload": { "wrong_meaning": "phòng họp" } },
+    { "vocab_temp_id": "v9", "type": "select_on_describe", "payload": {
+      "description": "Căn phòng trong công ty, nơi mọi người ngồi làm việc với bàn ghế và máy tính.",
+      "distractors": [
+        { "word": "教室", "pinyin": "jiàoshì" },
+        { "word": "房间", "pinyin": "fángjiān" },
+        { "word": "饭馆", "pinyin": "fànguǎn" }
+      ] } },
+    { "vocab_temp_id": "v9", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "他的办公室很干净。", "pinyin": "Tā de bàngōngshì hěn gānjìng." },
+      "wrong_sentences": [
+        { "text": "他办公室的很干净。", "pinyin": "Tā bàngōngshì de hěn gānjìng." },
+        { "text": "他的办公室干净很。", "pinyin": "Tā de bàngōngshì gānjìng hěn." },
+        { "text": "他的办公室是很干净的吗。", "pinyin": "Tā de bàngōngshì shì hěn gānjìng de ma." }
+      ] } },
+    { "vocab_temp_id": "v9", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "他的", "pinyin": "tā de" },
+      { "text": "办公室", "pinyin": "bàngōngshì" },
+      { "text": "很", "pinyin": "hěn" },
+      { "text": "干净", "pinyin": "gānjìng" }
+    ] } },
+    { "vocab_temp_id": "v9", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Văn phòng của chúng tôi ở tầng ba." } },
+    { "vocab_temp_id": "v9", "type": "complete_situation", "payload": {
+      "situation_vi": "Đồng nghiệp mới hỏi bạn chỗ ngồi làm việc ở đâu.",
+      "given_sentence_zh": "我带你去看看，",
+      "given_sentence_pinyin": "Wǒ dài nǐ qù kànkan," } },
+
+    { "vocab_temp_id": "v10", "type": "grammar", "payload": {
+      "content_target": "告诉 + 人 + 事情",
+      "pinyin": "gàosu + rén + shìqing",
+      "content_vi": "「告诉」mang HAI tân ngữ: người nghe trước, nội dung sau — 告诉我这件事. KHÔNG thêm 给 như tiếng Việt 'nói cho ai': viết 告诉给我 là sai." } },
+    { "vocab_temp_id": "v10", "type": "selection", "payload": { "distractors": ["hỏi", "trả lời", "nghe"] } },
+    { "vocab_temp_id": "v10", "type": "audio_recognition", "payload": { "distractors": ["giải thích", "nhắc nhở", "kể chuyện"] } },
+    { "vocab_temp_id": "v10", "type": "fast_decision", "payload": { "wrong_meaning": "hỏi" } },
+    { "vocab_temp_id": "v10", "type": "select_on_describe", "payload": {
+      "description": "Đưa một thông tin cho người khác biết bằng lời nói; sau nó phải có người nghe rồi mới tới nội dung.",
+      "distractors": [
+        { "word": "问", "pinyin": "wèn" },
+        { "word": "回答", "pinyin": "huídá" },
+        { "word": "听", "pinyin": "tīng" }
+      ] } },
+    { "vocab_temp_id": "v10", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "请你告诉我经理的电话。", "pinyin": "Qǐng nǐ gàosu wǒ jīnglǐ de diànhuà." },
+      "wrong_sentences": [
+        { "text": "请你告诉给我经理的电话。", "pinyin": "Qǐng nǐ gàosu gěi wǒ jīnglǐ de diànhuà." },
+        { "text": "请你告诉经理的电话我。", "pinyin": "Qǐng nǐ gàosu jīnglǐ de diànhuà wǒ." },
+        { "text": "请你对我告诉经理的电话。", "pinyin": "Qǐng nǐ duì wǒ gàosu jīnglǐ de diànhuà." }
+      ] } },
+    { "vocab_temp_id": "v10", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "请你", "pinyin": "qǐng nǐ" },
+      { "text": "告诉", "pinyin": "gàosu" },
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "经理的", "pinyin": "jīnglǐ de" },
+      { "text": "电话", "pinyin": "diànhuà" }
+    ] } },
+    { "vocab_temp_id": "v10", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Thư ký đã nói cho tôi biết địa chỉ công ty." } },
+    { "vocab_temp_id": "v10", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn quên giờ họp ngày mai và nhờ đồng nghiệp nhắc lại.",
+      "given_sentence_zh": "明天的会议几点开始？",
+      "given_sentence_pinyin": "Míngtiān de huìyì jǐ diǎn kāishǐ?" } },
+
+    { "vocab_temp_id": "v11", "type": "selection", "payload": { "distractors": ["gầy", "cao", "khoẻ"] } },
+    { "vocab_temp_id": "v11", "type": "audio_recognition", "payload": { "distractors": ["thấp", "trẻ", "đẹp"] } },
+    { "vocab_temp_id": "v11", "type": "fast_decision", "payload": { "wrong_meaning": "gầy" } },
+    { "vocab_temp_id": "v11", "type": "select_on_describe", "payload": {
+      "description": "Trạng thái cơ thể nhiều thịt, cân nặng vượt mức bình thường; trái nghĩa với gầy.",
+      "distractors": [
+        { "word": "瘦", "pinyin": "shòu" },
+        { "word": "高", "pinyin": "gāo" },
+        { "word": "年轻", "pinyin": "niánqīng" }
+      ] } },
+    { "vocab_temp_id": "v11", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "最近我胖了三公斤。", "pinyin": "Zuìjìn wǒ pàng le sān gōngjīn." },
+      "wrong_sentences": [
+        { "text": "最近我是胖了三公斤。", "pinyin": "Zuìjìn wǒ shì pàng le sān gōngjīn." },
+        { "text": "最近我胖三公斤了很。", "pinyin": "Zuìjìn wǒ pàng sān gōngjīn le hěn." },
+        { "text": "最近三公斤我胖了。", "pinyin": "Zuìjìn sān gōngjīn wǒ pàng le." }
+      ] } },
+    { "vocab_temp_id": "v11", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "最近", "pinyin": "zuìjìn" },
+      { "text": "我", "pinyin": "wǒ" },
+      { "text": "胖了", "pinyin": "pàng le" },
+      { "text": "三公斤", "pinyin": "sān gōngjīn" }
+    ] } },
+    { "vocab_temp_id": "v11", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Dạo này anh ấy mập hơn trước một chút." } },
+    { "vocab_temp_id": "v11", "type": "complete_situation", "payload": {
+      "situation_vi": "Lâu ngày gặp lại, bạn thân nói bạn trông khác trước.",
+      "given_sentence_zh": "是啊，最近我",
+      "given_sentence_pinyin": "Shì a, zuìjìn wǒ" } },
+
+    { "vocab_temp_id": "v12", "type": "grammar", "payload": {
+      "content_target": "其实 + 主谓句",
+      "pinyin": "qíshí + zhǔwèijù",
+      "content_vi": "「其实」đứng ĐẦU CÂU hoặc ngay sau chủ ngữ để nói ra sự thật khác với vẻ bề ngoài: 其实这个工作很容易 / 这个工作其实很容易. Không đặt cuối câu như 'thực ra' của tiếng Việt." } },
+    { "vocab_temp_id": "v12", "type": "selection", "payload": { "distractors": ["đương nhiên", "có lẽ", "cuối cùng"] } },
+    { "vocab_temp_id": "v12", "type": "audio_recognition", "payload": { "distractors": ["nói chung", "may mà", "hình như"] } },
+    { "vocab_temp_id": "v12", "type": "fast_decision", "payload": { "wrong_meaning": "đương nhiên" } },
+    { "vocab_temp_id": "v12", "type": "select_on_describe", "payload": {
+      "description": "Từ dùng để nói ra tình hình thật, thường trái với điều người nghe đang nghĩ.",
+      "distractors": [
+        { "word": "当然", "pinyin": "dāngrán" },
+        { "word": "可能", "pinyin": "kěnéng" },
+        { "word": "最后", "pinyin": "zuìhòu" }
+      ] } },
+    { "vocab_temp_id": "v12", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "其实这个工作很容易。", "pinyin": "Qíshí zhège gōngzuò hěn róngyì." },
+      "wrong_sentences": [
+        { "text": "这个工作很容易其实。", "pinyin": "Zhège gōngzuò hěn róngyì qíshí." },
+        { "text": "其实的这个工作很容易。", "pinyin": "Qíshí de zhège gōngzuò hěn róngyì." },
+        { "text": "这个工作很其实容易。", "pinyin": "Zhège gōngzuò hěn qíshí róngyì." }
+      ] } },
+    { "vocab_temp_id": "v12", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "其实", "pinyin": "qíshí" },
+      { "text": "这个", "pinyin": "zhège" },
+      { "text": "工作", "pinyin": "gōngzuò" },
+      { "text": "很", "pinyin": "hěn" },
+      { "text": "容易", "pinyin": "róngyì" }
+    ] } },
+    { "vocab_temp_id": "v12", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Thực ra tôi không quen giám đốc." } },
+    { "vocab_temp_id": "v12", "type": "complete_situation", "payload": {
+      "situation_vi": "Mọi người tưởng bạn rất giỏi tiếng Trung, nhưng bạn mới học một năm.",
+      "given_sentence_zh": "大家都说我说得好，",
+      "given_sentence_pinyin": "Dàjiā dōu shuō wǒ shuō de hǎo," } },
+
+    { "vocab_temp_id": "v13", "type": "selection", "payload": { "distractors": ["mập", "yếu", "nhỏ"] } },
+    { "vocab_temp_id": "v13", "type": "audio_recognition", "payload": { "distractors": ["cao", "mệt", "trắng"] } },
+    { "vocab_temp_id": "v13", "type": "fast_decision", "payload": { "wrong_meaning": "mập" } },
+    { "vocab_temp_id": "v13", "type": "select_on_describe", "payload": {
+      "description": "Trạng thái cơ thể ít thịt, cân nặng dưới mức bình thường; trái nghĩa với mập.",
+      "distractors": [
+        { "word": "胖", "pinyin": "pàng" },
+        { "word": "矮", "pinyin": "ǎi" },
+        { "word": "累", "pinyin": "lèi" }
+      ] } },
+    { "vocab_temp_id": "v13", "type": "select_sentence", "payload": {
+      "correct_sentence": { "text": "他比以前瘦多了。", "pinyin": "Tā bǐ yǐqián shòu duō le." },
+      "wrong_sentences": [
+        { "text": "他比以前很瘦。", "pinyin": "Tā bǐ yǐqián hěn shòu." },
+        { "text": "他以前比瘦多了。", "pinyin": "Tā yǐqián bǐ shòu duō le." },
+        { "text": "他比以前瘦很多了吗。", "pinyin": "Tā bǐ yǐqián shòu hěn duō le ma." }
+      ] } },
+    { "vocab_temp_id": "v13", "type": "arrange_words", "payload": { "tokens": [
+      { "text": "他", "pinyin": "tā" },
+      { "text": "比", "pinyin": "bǐ" },
+      { "text": "以前", "pinyin": "yǐqián" },
+      { "text": "瘦", "pinyin": "shòu" },
+      { "text": "多了", "pinyin": "duō le" }
+    ] } },
+    { "vocab_temp_id": "v13", "type": "trans_sentence", "payload": { "vietnamese_sentence": "Dạo này cô ấy gầy đi nhiều, chắc là quá bận." } },
+    { "vocab_temp_id": "v13", "type": "complete_situation", "payload": {
+      "situation_vi": "Bạn gặp lại đồng nghiệp sau kỳ nghỉ dài và thấy anh ấy khác hẳn.",
+      "given_sentence_zh": "好久不见，你怎么",
+      "given_sentence_pinyin": "Hǎojiǔ bú jiàn, nǐ zěnme" } },
+
+    { "vocab_temp_id": "v8", "type": "select_dialog", "payload": {
+      "dialog_a": "请问___在吗？我想跟他谈一件事。",
+      "dialog_a_pinyin": "Qǐngwèn ___ zài ma? Wǒ xiǎng gēn tā tán yí jiàn shì.",
+      "dialog_b": "他在三楼的___，您上去吧。",
+      "dialog_b_pinyin": "Tā zài sān lóu de ___, nín shàngqù ba.",
+      "blank_a_answer": "经理",
+      "blank_b_vocab_id": "v9",
+      "distractors": [
+        { "word": "西瓜", "pinyin": "xīguā" },
+        { "word": "音乐", "pinyin": "yīnyuè" }
+      ] } },
+    { "vocab_temp_id": "v4", "type": "fill_dialog", "payload": {
+      "dialog_a": "昨天爬山以后，我的___特别累。",
+      "dialog_a_pinyin": "Zuótiān páshān yǐhòu, wǒ de ___ tèbié lèi.",
+      "dialog_b": "我也是，今天早上起来还有点儿___。",
+      "dialog_b_pinyin": "Wǒ yě shì, jīntiān zǎoshang qǐlái hái yǒudiǎnr ___.",
+      "blank_a_answer": "腿",
+      "blank_b_vocab_id": "v5" } }
+  ],
+  "grammar": [
+    {
+      "content_target": "V + 来/去",
+      "pinyin": "V + lái/qù",
+      "content_vi": "「来」và「去」đặt SAU động từ để chỉ hướng so với người nói: hướng về phía người nói dùng 来 (上来、进来), đi xa người nói dùng 去 (上去、进去). Người học hay chọn nhầm vì tiếng Việt chỉ có 'lên/vào'.",
+      "vi_du": "经理在三楼，您上去吧。",
+      "vi_du_pinyin": "Jīnglǐ zài sān lóu, nín shàngqù ba.",
+      "vi_du_vi": "Giám đốc ở tầng ba, mời anh đi lên."
+    },
+    {
+      "content_target": "V + 了… 就 + V",
+      "pinyin": "V + le … jiù + V",
+      "content_vi": "Diễn tả hành động thứ hai xảy ra NGAY SAU hành động thứ nhất: 下了班就回家 (tan làm là về nhà luôn). Vế đầu dùng 了 chỉ hoàn thành, vế sau bắt buộc có 就; thiếu 就 là mất nghĩa 'ngay lập tức'.",
+      "vi_du": "他下了班就去医院看病。",
+      "vi_du_pinyin": "Tā xià le bān jiù qù yīyuàn kàn bìng.",
+      "vi_du_vi": "Anh ấy tan làm là đi bệnh viện khám luôn."
+    }
+  ],
+  "dialogue": {
+    "lines": [
+      { "speaker": "A", "text_zh": "你好，请问经理在办公室吗？", "pinyin": "Nǐ hǎo, qǐngwèn jīnglǐ zài bàngōngshì ma?", "text_vi": "Chào chị, cho hỏi giám đốc có ở văn phòng không ạ?", "highlight_vocab_temp_ids": ["v8", "v9"] },
+      { "speaker": "B", "text_zh": "他在三楼，您上去吧。我是他的秘书。", "pinyin": "Tā zài sān lóu, nín shàngqù ba. Wǒ shì tā de mìshū.", "text_vi": "Ông ấy ở tầng ba, mời anh lên. Tôi là thư ký của ông ấy.", "highlight_vocab_temp_ids": ["v2", "v7"] },
+      { "speaker": "A", "text_zh": "谢谢。您能告诉我怎么走吗？", "pinyin": "Xièxie. Nín néng gàosu wǒ zěnme zǒu ma?", "text_vi": "Cảm ơn chị. Chị chỉ giúp tôi đường đi được không?", "highlight_vocab_temp_ids": ["v10"] },
+      { "speaker": "B", "text_zh": "很容易，出电梯就看见了。", "pinyin": "Hěn róngyì, chū diàntī jiù kànjiàn le.", "text_vi": "Dễ lắm, ra khỏi thang máy là thấy ngay.", "highlight_vocab_temp_ids": ["v6"] },
+      { "speaker": "A", "text_zh": "好的。不好意思，我走得慢，昨天爬山以后腿很疼。", "pinyin": "Hǎo de. Bù hǎoyìsi, wǒ zǒu de màn, zuótiān páshān yǐhòu tuǐ hěn téng.", "text_vi": "Vâng. Ngại quá, tôi đi hơi chậm, hôm qua leo núi xong chân đau lắm.", "highlight_vocab_temp_ids": ["v4", "v5"] },
+      { "speaker": "B", "text_zh": "我也常常这样，脚也不舒服。", "pinyin": "Wǒ yě chángcháng zhèyàng, jiǎo yě bù shūfu.", "text_vi": "Tôi cũng hay bị thế, bàn chân cũng khó chịu.", "highlight_vocab_temp_ids": ["v1"] },
+      { "speaker": "A", "text_zh": "其实多运动身体会好一点儿。", "pinyin": "Qíshí duō yùndòng shēntǐ huì hǎo yìdiǎnr.", "text_vi": "Thực ra vận động nhiều thì người sẽ khoẻ hơn.", "highlight_vocab_temp_ids": ["v12"] },
+      { "speaker": "B", "text_zh": "是啊，我最近胖了，我朋友却瘦了很多。", "pinyin": "Shì a, wǒ zuìjìn pàng le, wǒ péngyou què shòu le hěn duō.", "text_vi": "Đúng vậy, dạo này tôi mập ra, còn bạn tôi thì gầy đi nhiều.", "highlight_vocab_temp_ids": ["v11", "v13"] },
+      { "speaker": "A", "text_zh": "楼下那几棵树旁边可以散步，很舒服。", "pinyin": "Lóu xià nà jǐ kē shù pángbiān kěyǐ sànbù, hěn shūfu.", "text_vi": "Bên mấy cái cây dưới nhà đi dạo được đấy, thoải mái lắm.", "highlight_vocab_temp_ids": ["v3"] },
+      { "speaker": "B", "text_zh": "好主意，下班以后我去试试。", "pinyin": "Hǎo zhǔyi, xiàbān yǐhòu wǒ qù shìshi.", "text_vi": "Ý hay đấy, tan làm tôi sẽ thử.", "highlight_vocab_temp_ids": [] }
+    ]
+  }
+}
