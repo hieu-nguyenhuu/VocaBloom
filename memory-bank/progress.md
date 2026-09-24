@@ -35,6 +35,15 @@
 - [x] **M13 — Audit chuỗi Import + siết validator app + skill `vocabCsv2Json`** (2026-09-23).
 - [x] **M14 — Tách nhật ký học khỏi từ vựng (streak không mất khi xoá từ)** (2026-09-23).
 - [x] **M15 — Lịch sử học + ruby vá chuỗi** (2026-09-24).
+- [x] **M16 — Chọn giao diện Sáng / Tối / Hệ thống** (2026-09-24).
+
+### ✅ M16 — Chọn giao diện (XONG 2026-09-24)
+- [x] `src/lib/giaoDien.ts` thuần (9 ca TDD): `docCheDo` · `thuocTinhTheme` · `DS_CHE_DO` + **X-giaodien
+      chống lệch** với script inline trong `index.html`.
+- [x] `index.html`: script inline áp theme TRƯỚC khi vẽ, bọc `try/catch`.
+- [x] `tokens.css`: **thêm `color-scheme`** vào cả 3 nhánh — sửa lỗi tiềm ẩn từ M0 (+1 ca test).
+- [x] `ChonGiaoDien.tsx` — 3 nút liền nhau bằng radio GỐC, nhóm riêng "Giao diện" ở đầu màn Cài đặt.
+- [x] `npm test` **364/364** · build + lint 0 lỗi · **CDP 13/13** (gồm đo "không nháy" bằng số).
 
 ### ✅ M15 — Lịch sử học + ruby vá chuỗi (XONG 2026-09-24)
 - [x] Migration `0015`: cột `da_va` + RPC `vi_ruby()` + `va_ngay()` (revoke/grant đầy đủ).

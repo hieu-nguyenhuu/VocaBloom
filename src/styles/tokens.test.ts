@@ -92,6 +92,20 @@ describe('Dark mode — 3 nhánh', () => {
     expect([...auto].filter((v) => !manual.has(v))).toEqual([])
     expect([...manual].filter((v) => !auto.has(v))).toEqual([])
   })
+
+  it('M16 — CẢ 3 nhánh khai color-scheme, đúng sáng/tối tương ứng', () => {
+    // Thiếu color-scheme thì phần tử GỐC của trình duyệt (popup <select> chọn giọng, thanh cuộn)
+    // không biết trang đang tối ⇒ ép Tối trên OS Sáng sẽ bật popup nền trắng giữa trang tối.
+    // Lỗi này tiềm ẩn từ M0, chỉ lộ ra khi M16 cho phép ép theme ngược với OS.
+    const mediaStart = b.lastIndexOf('@media')
+    const manualStart = b.lastIndexOf(':root[data-theme="dark"]')
+    const sang = b.slice(0, mediaStart)
+    const toiTheoOS = b.slice(mediaStart, manualStart)
+    const toiEp = b.slice(manualStart)
+    expect(sang).toMatch(/color-scheme:\s*light/)
+    expect(toiTheoOS).toMatch(/color-scheme:\s*dark/)
+    expect(toiEp).toMatch(/color-scheme:\s*dark/)
+  })
 })
 
 describe('TẦNG C — Mastery Ring bất biến (DEC-12)', () => {

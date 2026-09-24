@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-24** (kết thúc M15 — lịch sử học + ruby vá chuỗi)
+> Cập nhật lần cuối: **2026-09-24** (kết thúc M16 — chọn giao diện Sáng/Tối/Hệ thống)
 
 ## Trạng thái hiện tại
 
@@ -30,6 +30,18 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M13 (Audit chuỗi Import + siết validator app) — ✅ XONG 2026-09-23.**
 **M14 (Tách nhật ký học khỏi từ vựng) — ✅ XONG 2026-09-23.**
 **M15 (Lịch sử học + ruby vá chuỗi) — ✅ XONG 2026-09-24.**
+**M16 (Chọn giao diện Sáng / Tối / Hệ thống) — ✅ XONG 2026-09-24.**
+
+### M16 vừa xong (2026-09-24)
+- Nhóm **"Giao diện"** ở đầu màn Cài đặt, 3 nút Sáng / Tối / Hệ thống. Lưu **localStorage** theo từng
+  thiết bị, khoá `vb-giao-dien`. **KHÔNG** qua bảng `settings`.
+- ⚠️ `index.html` có **script inline lặp lại** khoá + phép ánh xạ của `giaoDien.ts` (phải chạy trước
+  khi app tải để không nháy). Có test `X-giaodien` canh — sửa 1 nơi phải sửa cả nơi kia.
+- Đã sửa lỗi tiềm ẩn từ M0: thêm **`color-scheme`** vào cả 3 nhánh `tokens.css`.
+- ⚠️ **Bài học công cụ:** script chèn qua `Page.addScriptToEvaluateOnNewDocument` chạy lúc
+  `document.documentElement` còn **`null`** ⇒ muốn `MutationObserver` thì phải quan sát `document`.
+- ⚠️ **Giới hạn có từ trước (không thuộc M16):** chặn localStorage thì Supabase **không giữ được phiên
+  đăng nhập** ⇒ người dùng không vào được app. Theme thì vẫn không làm vỡ gì.
 
 ### 🔴 Sự cố 2026-09-24 — xoá nhầm dữ liệu thật (MB-36), ĐÃ khôi phục
 - Script CDP của M15 `DELETE`-sạch bảng `nhat_ky_ngay` (6 lần trong 2 phút) ⇒ mất dòng học 24/9.

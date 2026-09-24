@@ -106,6 +106,10 @@
    (Nhánh 3 tồn tại để sau này thêm nút đổi theme mà không phải viết lại token.)
    ========================================================================== */
 :root {
+  /* M16: báo trình duyệt vẽ phần tử GỐC (popup <select>, thanh cuộn) theo đúng theme.
+     Thiếu dòng này thì ép Tối trên OS Sáng sẽ bật popup nền trắng giữa trang tối. */
+  color-scheme: light;
+
   /* Bề mặt */
   --vb-surface-app: var(--raw-white);
   --vb-surface-page: var(--raw-white);
@@ -169,6 +173,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+    color-scheme: dark;
     --vb-surface-app: var(--raw-d-app);
     --vb-surface-page: var(--raw-d-page);
     --vb-surface-sidebar: var(--raw-d-sidebar);
@@ -221,6 +226,7 @@
 }
 
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --vb-surface-app: var(--raw-d-app);
   --vb-surface-page: var(--raw-d-page);
   --vb-surface-sidebar: var(--raw-d-sidebar);

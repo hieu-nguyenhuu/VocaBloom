@@ -5,6 +5,7 @@ import { demTuThieuAudio, genAudioChoTu, nghegiongThu, type KetQuaGen } from '..
 import { GIONG_EN, GIONG_ZH, NHAN_GIONG, type MaNgonNgu } from '../../lib/ttsCore.ts'
 import { Icon } from '../../components/icons.tsx'
 import KhungTrang from '../shell/KhungTrang.tsx'
+import ChonGiaoDien from './ChonGiaoDien.tsx'
 
 /**
  * Màn Cài đặt (mockup 17 PC / 18 Mobile · SPECIFICATION §11). Ghi NGAY khi đổi — mockup không có
@@ -176,6 +177,14 @@ export default function CaiDatPage() {
 
       <div className="flex flex-col gap-7 md:grid md:grid-cols-[1.2fr_1fr] md:items-start md:gap-8">
         <div className="flex flex-col gap-7">
+          {/* M16 — nhóm riêng ở ĐẦU màn. Lưu theo từng thiết bị (localStorage), không qua bảng settings. */}
+          <Nhom ten="Giao diện">
+            <div className={HANG}>
+              <span className={NHAN}>Chế độ hiển thị</span>
+              <ChonGiaoDien />
+            </div>
+          </Nhom>
+
           <Nhom ten="AI & OpenRouter">
             <div className={HANG}>
               <span className={NHAN}>API key</span>

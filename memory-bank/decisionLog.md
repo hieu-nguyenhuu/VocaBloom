@@ -76,7 +76,7 @@ Ghi các quyết định có ảnh hưởng kiến trúc. DEC-01→DEC-23 đã c
   với mockup, không bịa ngữ nghĩa. (Chỉ MÀU mới bắt buộc đi qua 2 lớp — `UI_DESIGN.md` §2.)
 - **Trạng thái:** ✅ Đã áp dụng, `npm run build` + `npm test` xanh.
 
-### [2026-09-06] MB-08 — Dark mode 3 nhánh, chưa có nút toggle
+### [2026-09-06] MB-08 — Dark mode 3 nhánh, chưa có nút toggle  *(⇒ nút toggle làm ở M16, MB-37)*
 - **Quyết định:** `tokens.css` viết đủ 3 nhánh — `:root` (light) · `@media (prefers-color-scheme:
   dark) :root:not([data-theme="light"])` · `:root[data-theme="dark"]`.
 - **Mặc định chạy theo hệ điều hành, KHÔNG thêm UI nào** — mockup màn 17 (Cài đặt) không có nút
@@ -732,5 +732,40 @@ chọn phương án "cộng delta" thì dữ liệu này mất vĩnh viễn.
 **Luật rút ra cho mọi phiên sau:** trước khi kết luận "tính năng không chạy", phải kiểm **log
 request** (`edge_logs`), đừng suy từ trạng thái bảng mà mình vừa đụng vào. Và khi người dùng nói
 ngược lại quan sát của mình, khả năng cao là **quan sát của mình bị nhiễm**, không phải họ nhớ nhầm.
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-24] MB-37 — M16: Chọn giao diện Sáng / Tối / Hệ thống
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Lưu ở **`localStorage`**, theo từng thiết bị (khoá `vb-giao-dien`) | Người dùng chốt. Máy bàn sáng, điện thoại tối — độc lập |
+| **Q2** | **3 nút liền nhau** (segmented) — kiểu điều khiển MỚI, chưa có trong mockup | Người dùng chốt. Nút đang chọn nền TÍM (UI_DESIGN §63 cấm hồng trên nút) |
+| **Q3** | Áp theme bằng **script inline trong `index.html`**, TRƯỚC khi trang vẽ | Áp sau khi React mount thì mỗi lần mở app nháy trắng rồi mới tối — lý do chính để chọn localStorage thay vì DB |
+| **Q4** | ⭐ Thêm **`color-scheme`** vào cả 3 nhánh `tokens.css` | Lỗi tiềm ẩn từ M0, xem bên dưới |
+| **Q5** | localStorage lạ / ném lỗi ⇒ rơi về **Hệ thống**, bọc `try/catch` ở cả 2 nơi | Chế độ ẩn danh / chặn cookie làm localStorage ném lỗi |
+| **Q6** | Test chống lệch `X-giaodien` giữa script inline và `giaoDien.ts` | Lần thứ 5 dự án dùng mẫu này |
+| **Q7** | Dựng bằng **`<input type="radio">` GỐC** ẩn `sr-only` bọc `<label>`, KHÔNG tự dựng nút + `role="radio"` | `ponytail`: trình duyệt cho sẵn điều hướng phím mũi tên + Tab dừng 1 lần + trình đọc màn hình hiểu đúng, 0 dòng JS |
+
+**Phần CSS màu không viết lại dòng nào** — MB-08 (M0) đã viết đủ 3 nhánh chính để chờ ngày này.
+M16 chỉ đặt/gỡ `data-theme` trên `<html>`. Đây là minh chứng rõ nhất cho việc đầu tư đúng ở tầng nền.
+
+**⭐ Lỗi tiềm ẩn phát hiện khi khảo sát:** cả dự án **chưa khai `color-scheme` ở đâu**. Chưa lộ vì theme
+luôn khớp OS; nhưng ngay khi cho ép Tối trên OS Sáng thì phần tử GỐC của trình duyệt (popup `<select>`
+chọn giọng ở Cài đặt, thanh cuộn) sẽ vẽ **nền trắng giữa trang tối**. Tính năng này sẽ làm lỗi lộ ra
+nên sửa cùng lúc. Test RED trước, xác nhận lỗi có thật, rồi mới GREEN.
+
+**Bằng chứng:** `npm test` **364/364** (thêm 9 ca `giaoDien` + 1 ca `color-scheme`) · build + lint
+**0 lỗi** · **CDP 13/13**, gồm:
+- **T7 "không nháy" đo bằng số, không bằng mắt:** ghi giá trị `data-theme` ngay lúc thẻ `<body>` vừa
+  được tạo ⇒ đã là `dark` trong khi React **chưa mount**.
+- T10: đang Hệ thống, OS đổi sang tối ⇒ app tối theo ngay mà không tải lại, không cần JS lắng nghe.
+- T11: OS đang Tối, chọn Sáng ⇒ vẫn sáng (chặn được nhánh tối-theo-OS).
+- T12: phím mũi tên đổi lựa chọn — có sẵn nhờ radio gốc.
+- T13: chặn localStorage ⇒ **0 lỗi JS**, theme rơi về Hệ thống.
+
+**⚠️ Ghi nhận trung thực:** lần chạy đầu 11/13. Cả 2 ca đỏ là lỗi **bộ đo**, đã điều tra xác minh trước
+khi kết luận: (1) script chèn qua `addScriptToEvaluateOnNewDocument` chạy lúc `document.documentElement`
+còn `null` ⇒ `observe()` ném lỗi, bộ đo không gắn được — phải quan sát `document`; (2) chặn localStorage
+thì **Supabase không giữ được phiên đăng nhập** ⇒ bị đưa về `/dang-nhap`, không vào nổi Cài đặt —
+giới hạn có từ trước, không thuộc M16; đã đổi assertion sang đo đúng thứ M16 cam kết.
 **Trạng thái:** ✅ Đã áp dụng.
 

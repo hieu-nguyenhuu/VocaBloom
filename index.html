@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <script>
+      // M16 — áp giao diện TRƯỚC khi trang vẽ, để không nháy trắng rồi mới tối.
+      // Phải khớp src/lib/giaoDien.ts (KHOA_LUU + thuocTinhTheme) — có test chống lệch X-giaodien.
+      // try/catch: localStorage có thể ném lỗi ở chế độ ẩn danh / khi bị chặn ⇒ im lặng theo hệ thống.
+      try {
+        var c = localStorage.getItem('vb-giao-dien')
+        if (c === 'sang') document.documentElement.dataset.theme = 'light'
+        else if (c === 'toi') document.documentElement.dataset.theme = 'dark'
+      } catch (e) {}
+    </script>
+
     <!-- 3 font theo UI_DESIGN.md §4 — chuỗi copy nguyên từ VocaBloom_PCView.html,
          bổ sung preconnect tới fonts.gstatic.com (mockup thiếu → font tải chậm 1 nhịp) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
