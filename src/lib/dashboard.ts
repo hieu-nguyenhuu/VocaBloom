@@ -70,6 +70,8 @@ export type ODai = {
   /** "18/9" — M9/Q1: có số ngày thì mới thấy rõ đây là 7 ngày GẦN NHẤT, không phải tuần cố định. */
   ngayThang: string
   daOn: boolean
+  /** M15 — ngày này được VÁ bằng ruby chứ không phải học thật; phải hiện khác (Q9). */
+  daVa: boolean
   laHomNay: boolean
   /** Số phút học trong ngày (0 nếu không học hoặc dòng log cũ chưa đo). */
   phut: number
@@ -139,6 +141,8 @@ export function dai7Ngay(
   ngayCoLog: ReadonlySet<string>,
   homNay: string,
   phutMoiNgay: ReadonlyMap<string, number> = new Map(),
+  // M15: tham số TUỲ CHỌN để 31 ca test hiện có không phải sửa dòng nào
+  ngayDaVa: ReadonlySet<string> = new Set(),
 ): ODai[] {
   return Array.from({ length: 7 }, (_, i) => {
     const ngay = luiNgay(homNay, 6 - i)
@@ -148,6 +152,7 @@ export function dai7Ngay(
       thu: THU_NGAN[thuCua(ngay)]!,
       ngayThang: `${d}/${m}`,
       daOn: ngayCoLog.has(ngay),
+      daVa: ngayDaVa.has(ngay),
       laHomNay: ngay === homNay,
       phut: phutMoiNgay.get(ngay) ?? 0,
     }

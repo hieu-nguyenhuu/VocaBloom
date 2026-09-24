@@ -30,8 +30,16 @@ export type TenIcon =
   | 'sua'
   | 'xoa'
   | 'tim'
+  // Lịch sử học (M15) — viên ruby; mockup KHÔNG có icon này, tự vẽ cùng nét với bộ hiện có
+  | 'ruby'
 
 const PATH: Record<TenIcon, ReactElement> = {
+  ruby: (
+    <>
+      <path d="M8 4h8l3 5-7 11-7-11z" />
+      <path d="M5 9h14M9.5 9L12 20M14.5 9L12 20M8 4l1.5 5M16 4l-1.5 5" />
+    </>
+  ),
   dashboard: (
     <>
       <path d="M4 11l8-7 8 7" />

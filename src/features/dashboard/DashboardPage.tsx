@@ -47,6 +47,8 @@ type DuLieu = {
   coTu: boolean
   streak: number
   dai: ODai[]
+  /** M15 — số ruby còn lại, do server tính (`vi_ruby`). */
+  ruby: number
   vuon: { stage: StageCay; so: number }[]
   ganDay: TuGanDay[]
   chuaDoc: number
@@ -64,15 +66,20 @@ function The({ nhan, so, nen, mauNhan }: { nhan: string; so: number; nen: string
 }
 
 function ONgay({ o }: { o: ODai }) {
-  const vien = o.daOn
-    ? 'bg-award-icon'
-    : o.laHomNay
+  // M15/Q9: ngày VÁ bằng ruby phải nhìn khác ngày học thật — không tự đánh lừa mình
+  const vien = o.daVa
+    ? 'border border-dashed border-award-icon bg-surface-card'
+    : o.daOn
+      ? 'bg-award-icon'
+      : o.laHomNay
       ? 'border-2 border-award-icon bg-surface-card'
       : 'border border-award-icon/40 bg-surface-card'
   return (
     <div className="flex flex-col items-center gap-1">
       <div className={`flex h-[26px] w-[26px] items-center justify-center rounded-pill ${vien}`}>
-        {o.daOn ? (
+        {o.daVa ? (
+          <Icon ten="ruby" size={13} className="text-award-icon" />
+        ) : o.daOn ? (
           <Icon ten="tick" size={13} strokeWidth={2.4} className="text-white" />
         ) : o.laHomNay ? (
           <Icon ten="an-mung" size={12} fill="currentColor" stroke="none" className="text-award-icon" />
@@ -101,7 +108,7 @@ export default function DashboardPage() {
   async function nap() {
     const now = new Date()
     const homNay = homNayVN(now)
-    const [dueRes, vuonRes, ganDayRes, logRes, nhatKyRes, tbRes] = await Promise.all([
+    const [dueRes, vuonRes, ganDayRes, logRes, nhatKyRes, tbRes, viRes] = await Promise.all([
       supabase
         .from('word_state')
         .select('next_review_date')
@@ -122,9 +129,11 @@ export default function DashboardPage() {
         .gte('reviewed_at', `${homNay}T00:00:00+07:00`),
       supabase
         .from('nhat_ky_ngay')
-        .select('ngay, thoi_gian_ms')
+        .select('ngay, thoi_gian_ms, da_va')
         .gte('ngay', luiNgay(homNay, 30)),
       supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false),
+      // M15: tổng ruby PHẢI do server tính — màn Lịch sử lazy-load nên client không đủ dữ liệu
+      supabase.rpc('vi_ruby'),
     ])
     const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? nhatKyRes.error ?? tbRes.error
     if (e) return setLoi(e.message)
@@ -133,7 +142,9 @@ export default function DashboardPage() {
     const gd = (ganDayRes.data ?? []) as unknown as (TuGanDay & { vocab: { word: string } | null })[]
     const { dungHan, quaHan, tong } = demDenHan(dueRes.data ?? [], homNay)
     const logs = (logRes.data ?? []) as { reviewed_at: string; thoi_gian_ms: number | null }[]
-    const nhatKy = (nhatKyRes.data ?? []) as { ngay: string; thoi_gian_ms: number | null }[]
+    const nhatKy = (nhatKyRes.data ?? []) as { ngay: string; thoi_gian_ms: number | null; da_va?: boolean }[]
+    const ngayDaVa = new Set(nhatKy.filter((d) => d.da_va).map((d) => d.ngay))
+    const ruby = (viRes.data as { con?: number } | null)?.con ?? 0
     const { ngayCoHoc: ngay, phutMoiNgay: phut } = gopNhatKy(nhatKy, logs, homNay)
     setLoi(null)
     setDl({
@@ -144,7 +155,8 @@ export default function DashboardPage() {
       tong,
       coTu: (vuonRes.data ?? []).length > 0,
       streak: tinhStreak(ngay, homNay),
-      dai: dai7Ngay(ngay, homNay, phut),
+      dai: dai7Ngay(ngay, homNay, phut, ngayDaVa),
+      ruby,
       vuon: gomKhuVuon((vuonRes.data ?? []) as { stage: string }[]) as { stage: StageCay; so: number }[],
       ganDay: gd.map((t) => ({ ...t, word: t.vocab?.word ?? '?' })),
       chuaDoc: tbRes.count ?? 0,
@@ -226,6 +238,18 @@ export default function DashboardPage() {
           {dl.dai.map((o) => (
             <ONgay key={o.ngay} o={o} />
           ))}
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-award-icon/20 pt-2.5">
+          {/* Ví ruby: HỒNG vì là thành tích, cố ý KHÔNG bấm được (UI_DESIGN §63) */}
+          <span className="flex items-center gap-1.5">
+            <Icon ten="ruby" size={14} className="text-award-icon" />
+            <span className="text-12 font-bold text-award-text">{dl.ruby}</span>
+            <span className="text-12 text-award-text/80">ruby</span>
+          </span>
+          {/* Nút: TÍM, vì hồng không được đặt trên phần tử bấm được */}
+          <Link to="/lich-su" className="text-12 font-semibold text-accent">
+            Xem tất cả
+          </Link>
         </div>
       </div>
 

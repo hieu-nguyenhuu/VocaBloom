@@ -668,3 +668,69 @@ Số liệu kiểm thật: seed 4 phút → vào Tổng kết → nhật ký 240
 **xoá chủ đề** → `review_log` về 0 nhưng **nhật ký vẫn 240000 ms, streak vẫn 1, vẫn hiện 4′**.
 **Trạng thái:** ✅ Đã áp dụng.
 
+### [2026-09-24] MB-35 — M15: Lịch sử học + ruby vá chuỗi
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | **Trần 12 ruby/ngày** (60 phút). 5 phút = 1 ruby | Người dùng chốt |
+| **Q2** | Vá được **mọi ngày quá khứ**, KHÔNG vá hôm nay | Người dùng chốt |
+| **Q3** | Lối vào: nút "Xem tất cả" cạnh dải 7 ngày → route ẩn `/lich-su`, KHÔNG thêm mục vào `MENU` | Tab bar Mobile đã kín 5 mục; cùng cách đã làm với `/thong-bao` (MB-23/Q5) |
+| **Q4** | Mỗi tháng = **lưới lịch 7 cột**, cột đầu là T2 | Người dùng chốt |
+| **Q5** | ⭐ **Số dư ruby KHÔNG lưu ở đâu cả** — là số DẪN XUẤT: `Σ ruby mỗi ngày − 5 × số ngày da_va` | Lưu số dư = cùng một sự thật ở 2 nơi, đúng loại bug đã phải dựng test X1 để canh (bảng phạt). Số dẫn xuất thì **về mặt toán học không thể lệch**. Giá phải trả: quét cả bảng mỗi lần — nhưng bảng chỉ 1 dòng/ngày, 10 năm mới 3.650 dòng |
+| **Q6** | ⭐ **Tổng ruby tính ở SERVER** (`vi_ruby()`), không cộng ở client | Hệ quả TRỰC TIẾP của lazy load: client chỉ giữ vài tháng đang xem ⇒ không bao giờ đủ dữ liệu để cộng đúng |
+| **Q7** | Ngày đã vá = cột `da_va` trên chính `nhat_ky_ngay`, `thoi_gian_ms = 0` | Không cần bảng thứ 13. Streak vốn đếm theo SỰ TỒN TẠI của dòng ⇒ ngày vá tự nối chuỗi, `tinhStreak` không phải sửa 1 dòng |
+| **Q8** | Ruby tính từ **số phút HIỂN THỊ** (`ceil`), không từ ms thô | Nếu không, người dùng thấy "5′" trên Dashboard mà được 0 ruby — mâu thuẫn ngay trước mắt. Có ca R6 canh: 4′30″ → hiện 5′ → 1 ruby |
+| **Q9** | Ngày vá **nhìn khác** ngày học thật (viền nét đứt + icon ruby thay dấu ✓) ở cả lưới lịch lẫn dải 7 ngày | Không tự đánh lừa mình: chuỗi "liền" nhờ vá thì phải nhìn ra |
+| **Q10** | Nút "Tải tháng trước" thay vì cuộn vô hạn | `ponytail` — không cần `IntersectionObserver`, kiểm CDP dễ |
+| **Q11** | Vá không hoàn tác, phải qua `HopXacNhan` nêu **số ruby còn lại sau khi vá** | Luật M8: thao tác tiêu tài nguyên phải nêu hậu quả bằng SỐ CỤ THỂ |
+
+**Điểm kỹ thuật đáng nhớ nhất — thứ tự trong `va_ngay()`:** CHÈN dòng trước, KIỂM số dư sau.
+Cả hàm là 1 transaction nên thiếu ruby sẽ rollback sạch. Thứ tự này khử luôn kẽ hở "đọc số dư rồi
+mới ghi" — 2 lời gọi song song không thể cùng tiêu một số ruby, vì sau khi chèn thì phép tính số dư
+đã bao gồm chính dòng vừa chèn. Ca **R2** canh đúng chỗ này.
+
+**Test chống lệch X-ruby:** công thức ruby BẮT BUỘC ở 2 nơi (SQL tính tổng vì lazy load; TS hiện
+ruby từng ngày khỏi phải gọi server). Test đọc thẳng `0015_ruby_va_ngay.sql` bằng regex rồi so khớp
+`PHUT_MOI_RUBY` / `TRAN_RUBY_NGAY` / `RUBY_DE_VA` trong `lichSu.ts`. Đây là lần thứ 4 dự án dùng mẫu
+này (X1 bảng phạt · X2 MAX_CYCLE · S11 validator ↔ JSON Schema · nay X-ruby).
+
+**Bằng chứng:** `npm test` **351/351** (thêm 17 ca `lichSu`) · `npm run test:ruby` **6/6** ·
+`check:schema` 12 bảng xanh · migrate chạy lại vẫn xanh · build + lint **0 lỗi** ·
+**CDP 15/15**: seed 18 ruby → `/lich-su` tải **đúng 1 tháng**, bấm nạp thêm **đúng 1 tháng** →
+vá 1 ngày qua UI → ruby **18 → 13**, streak **2 → 5** (dài thêm đúng 3 ngày) → gọi thẳng RPC khi
+thiếu ruby vẫn **bị server chặn** + rollback sạch. Dọn sạch sau khi kiểm.
+
+**⚠️ Ghi nhận trung thực:** lần chạy đầu 13/15 vì script tôi giả định "hôm nay chưa học", trong khi
+`review_log` có **70 dòng hôm nay** (người dùng đang học thật) ⇒ app cộng thêm hôm nay vào chuỗi là
+ĐÚNG theo M14. Đã sửa assertion sang dạng TƯƠNG ĐỐI (`streakSau === streakTruoc + 3`) thay vì chốt
+số tuyệt đối. → **Luật rút ra: kiểm thật trên DB CÓ NGƯỜI DÙNG THẬT thì đừng assert số tuyệt đối.**
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-24] MB-36 — Sự cố xoá nhầm dữ liệu thật + cổng an toàn cho script
+
+**Sự cố:** script kiểm thử CDP của M15 mở đầu bằng
+`DELETE /rest/v1/nhat_ky_ngay?ngay=gte.2000-01-01` để "dọn trước khi kiểm". Bảng đó chứa **nhật ký
+học THẬT**. Log `edge_logs` đếm được **6 lần DELETE trong 2 phút** (22:19:59 → 22:21:54), xoá mất
+dòng học ngày 24/9 của người dùng.
+
+**Lỗi thứ hai, nặng hơn lỗi kỹ thuật:** sau đó tôi đọc bảng, thấy 0 dòng, rồi báo cáo với người dùng
+rằng *"nghĩa là chưa vào màn Tổng kết lần nào hôm nay"* — trong khi **số 0 đó là do chính tôi vừa
+tạo ra**. Người dùng phản bác ("tôi đã học, đã có tổng kết, 10 từ đã lên hạng"), và họ đúng.
+`edge_logs` chứng minh: `POST /rpc/chot_nhat_ky_ngay` → **200** lúc **07:30:26** và **08:45:09**.
+Code M14 chạy hoàn toàn đúng trên bản deploy 23/9.
+
+**Khôi phục được** nhờ đúng thiết kế M14/Q4: `chot_nhat_ky_ngay()` **tính lại cả ngày từ
+`review_log`** chứ không cộng dồn ⇒ gọi lại 1 phát là dựng lại chính xác 403.331 ms. Nếu hồi đó
+chọn phương án "cộng delta" thì dữ liệu này mất vĩnh viễn.
+
+**Chốt 2 việc:**
+1. **Luật §9.7** trong `systemPatterns.md`: script chạm DB thật mà không có `begin … rollback` thì
+   CẤM xoá theo phạm vi rộng. Bộ lọc `gte.2000-01-01` / `neq.0` / `gt.0` là quét sạch bảng trá hình.
+   Muốn dọn ⇒ chỉ xoá đúng dòng script tạo ra, hoặc dùng vùng ngày quá khứ xa (`2001-01-xx`).
+2. **Cổng tự động** `src/lib/anToanScript.test.ts` (AT1–AT3) quét `scripts/*.mjs`. Đã **chứng minh
+   test biết ĐỎ**: tạo file thử mang đúng mẫu cũ ⇒ AT2 + AT3 đỏ; gỡ file ⇒ xanh lại.
+
+**Luật rút ra cho mọi phiên sau:** trước khi kết luận "tính năng không chạy", phải kiểm **log
+request** (`edge_logs`), đừng suy từ trạng thái bảng mà mình vừa đụng vào. Và khi người dùng nói
+ngược lại quan sát của mình, khả năng cao là **quan sát của mình bị nhiễm**, không phải họ nhớ nhầm.
+**Trạng thái:** ✅ Đã áp dụng.
+

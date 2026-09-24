@@ -34,6 +34,22 @@
 - [x] **M12b — Ngữ pháp chủ đề ở Player + màn Từ vựng** (2026-09-23). Chi tiết ngay dưới.
 - [x] **M13 — Audit chuỗi Import + siết validator app + skill `vocabCsv2Json`** (2026-09-23).
 - [x] **M14 — Tách nhật ký học khỏi từ vựng (streak không mất khi xoá từ)** (2026-09-23).
+- [x] **M15 — Lịch sử học + ruby vá chuỗi** (2026-09-24).
+
+### ✅ M15 — Lịch sử học + ruby vá chuỗi (XONG 2026-09-24)
+- [x] Migration `0015`: cột `da_va` + RPC `vi_ruby()` + `va_ngay()` (revoke/grant đầy đủ).
+      **Không thêm bảng** — vẫn 12 bảng.
+- [x] `src/lib/lichSu.ts` thuần (**17 ca TDD**): `rubyCuaNgay` (trần 12) · `luoiThang` (ô đệm,
+      tháng 28/30/31 ngày, ngày tương lai) · `canTroVa` · `tenThang`/`thangTruoc`/`khoangThang`
+      + **X-ruby chống lệch SQL ↔ TS** + X2 giữ tính thuần.
+- [x] `npm run test:ruby` **6/6** — R2 (thiếu ruby ⇒ raise + rollback sạch) · R5 (trần 12 ở 3 tiếng)
+      · R6 (4′30″ hiện 5′ nên được 1 ruby).
+- [x] Icon `ruby` (tự vẽ, mockup không có) · `LichSuPage` + route ẩn `/lich-su` · lưới lịch 7 cột
+      + nút "Tải tháng trước" (lazy load ĐÚNG 1 tháng/lần) + `HopXacNhan` nêu số ruby còn lại.
+- [x] Dashboard: ví ruby (hồng, không bấm được) + nút "Xem tất cả" (tím) + ngày vá hiện khác ngày
+      học thật. `dai7Ngay` thêm tham số thứ 4 **tuỳ chọn** ⇒ 31 ca test cũ không phải sửa.
+- [x] `npm test` **351/351** · build + lint **0 lỗi** · check:schema 12 bảng ·
+      **CDP 15/15**: vá 1 ngày → ruby 18→13, streak 2→5; gọi thẳng RPC khi thiếu ruby bị server chặn.
 
 ### ✅ M14 — Nhật ký học sống sót qua việc xoá từ vựng (XONG 2026-09-23)
 - [x] **Sự cố có thật:** `review_log.vocab_id` có `on delete cascade`; người dùng xoá chủ đề cũ ⇒

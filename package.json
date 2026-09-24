@@ -14,6 +14,7 @@
     "db:migrate": "node scripts/db-migrate.mjs",
     "check:schema": "node scripts/check-schema.mjs",
     "test:db": "node scripts/test-maintenance.mjs",
+    "test:ruby": "node scripts/test-ruby.mjs",
     "test:nhatky": "node scripts/test-nhat-ky.mjs",
     "test:import": "node scripts/test-import.mjs",
     "import:file": "node scripts/import-file.mjs",

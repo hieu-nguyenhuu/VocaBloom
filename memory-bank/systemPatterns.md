@@ -197,6 +197,19 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 6. **Script chạm dữ liệu thật phải đi qua đăng nhập + PostgREST**, KHÔNG dùng Management API.
    Cửa Management chạy quyền `postgres` (bypass RLS) ⇒ chạy được cũng không chứng minh app sẽ
    chạy được. Chỉ dùng Management API cho migration và test.
+7. **🔴 CẤM XOÁ THEO PHẠM VI RỘNG trong script không có `begin … rollback`** (sự cố 2026-09-24).
+   Script kiểm thử CDP mở đầu bằng `DELETE /rest/v1/nhat_ky_ngay?ngay=gte.2000-01-01` để "dọn cho
+   sạch" — bảng đó chứa **nhật ký học THẬT**, xoá mất dòng học của chính hôm đó (log Supabase:
+   **6 lần DELETE trong 2 phút**). Bộ lọc kiểu `gte.2000-01-01`, `neq.0`, `gt.0` nhìn thì có điều
+   kiện nhưng thực chất quét sạch bảng. PostgREST ghi thẳng, KHÔNG rollback được.
+   - Muốn dọn ⇒ chỉ xoá **đúng dòng do chính script tạo ra** (ghi nhớ id/ngày lúc tạo), hoặc dùng
+     vùng dữ liệu kiểm thử ở quá khứ xa (VD ngày `2001-01-xx`) không đụng ngày thật.
+   - `src/lib/anToanScript.test.ts` (AT1–AT3) canh cổng này tự động; đã chứng minh test biết ĐỎ.
+   - ⚠️ **Bài học nặng hơn cả lỗi kỹ thuật:** sau khi xoá, tôi đọc bảng thấy 0 dòng rồi kết luận
+     "người dùng chưa vào màn Tổng kết" — trong khi số 0 đó là do chính mình vừa tạo ra, và báo cáo
+     kết luận sai đó cho người dùng. **`edge_logs` của Supabase mới là bằng chứng**: nó cho thấy
+     `chot_nhat_ky_ngay` chạy thành công 07:30 và 08:45. → Trước khi kết luận "tính năng không
+     chạy", phải kiểm **log request** chứ đừng suy từ trạng thái bảng mà mình vừa đụng vào.
 
 ## 10. Import — 3 bẫy đã trả giá (từ M2a, 2026-09-09) + mở rộng M12
 

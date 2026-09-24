@@ -3,6 +3,7 @@ import TokenSheet from './dev/TokenSheet.tsx'
 import DangNhap from './features/auth/DangNhap.tsx'
 import RequireAuth from './features/auth/RequireAuth.tsx'
 import DashboardPage from './features/dashboard/DashboardPage.tsx'
+import LichSuPage from './features/lichsu/LichSuPage.tsx'
 import ImportPage from './features/import/ImportPage.tsx'
 import TrangThongBao from './features/notifications/TrangThongBao.tsx'
 import ChonChuDePage from './features/player/ChonChuDePage.tsx'
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/cai-dat" element={<CaiDatPage />} />
           {/* Route ẩn (không có trong MENU) — Dashboard Mobile mở qua nút chuông ở header */}
           <Route path="/thong-bao" element={<TrangThongBao />} />
+          <Route path="/lich-su" element={<LichSuPage />} />
           <Route path="/dev/tokens" element={<TokenSheet />} />
           <Route path="*" element={<Stub ten="Không tìm thấy trang" moc="—" />} />
         </Route>

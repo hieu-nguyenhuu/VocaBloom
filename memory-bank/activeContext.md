@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-23** (kết thúc M14 — tách nhật ký học khỏi từ vựng)
+> Cập nhật lần cuối: **2026-09-24** (kết thúc M15 — lịch sử học + ruby vá chuỗi)
 
 ## Trạng thái hiện tại
 
@@ -29,6 +29,31 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M12b (Ngữ pháp chủ đề ở Player + màn Từ vựng) — ✅ XONG 2026-09-23.**
 **M13 (Audit chuỗi Import + siết validator app) — ✅ XONG 2026-09-23.**
 **M14 (Tách nhật ký học khỏi từ vựng) — ✅ XONG 2026-09-23.**
+**M15 (Lịch sử học + ruby vá chuỗi) — ✅ XONG 2026-09-24.**
+
+### 🔴 Sự cố 2026-09-24 — xoá nhầm dữ liệu thật (MB-36), ĐÃ khôi phục
+- Script CDP của M15 `DELETE`-sạch bảng `nhat_ky_ngay` (6 lần trong 2 phút) ⇒ mất dòng học 24/9.
+- **Khôi phục được** nhờ `chot_nhat_ky_ngay()` tính lại cả ngày từ `review_log` (M14/Q4) — nếu
+  hồi đó chọn "cộng delta" thì mất vĩnh viễn.
+- ⚠️ Tôi còn kết luận sai từ chính dữ liệu mình vừa phá ("chưa vào Tổng kết lần nào"). `edge_logs`
+  chứng minh ngược lại: `chot_nhat_ky_ngay` → 200 lúc 07:30 và 08:45.
+- Đã thêm **luật §9.7** + **cổng test `anToanScript.test.ts`** (AT1–AT3), đã chứng minh test biết đỏ.
+- **Nhớ:** muốn biết tính năng có chạy không thì xem `edge_logs`, đừng suy từ bảng mình vừa đụng.
+
+### M15 vừa xong (2026-09-24)
+- Luật ruby: **5 phút = 1 ruby, trần 12 ruby/ngày**; **5 ruby vá 1 ngày** quá khứ (không vá hôm nay).
+- ⭐ **Số dư ruby KHÔNG lưu ở đâu cả** — dẫn xuất từ `nhat_ky_ngay`: `Σ ruby mỗi ngày − 5 × số ngày
+  da_va`. Đừng "tối ưu" bằng cách thêm cột số dư: đó là đưa cùng một sự thật về 2 nơi.
+- ⭐ **Tổng ruby do SERVER tính** (`vi_ruby()`) vì màn Lịch sử lazy-load ⇒ client không bao giờ đủ
+  dữ liệu để cộng đúng. Ruby TỪNG NGÀY thì client tự tính (`lichSu.ts`) cho khỏi gọi server mỗi ô.
+- `va_ngay()`: **CHÈN trước, KIỂM số dư sau** — cả hàm 1 transaction nên thiếu ruby là rollback;
+  thứ tự này khử kẽ hở "đọc số dư rồi mới ghi".
+- Route ẩn **`/lich-su`** (không có trong `MENU`), vào từ nút "Xem tất cả" cạnh dải 7 ngày.
+- ⚠️ **Màu:** ví ruby + ô ngày dùng token hồng `award-*`; **nút phải dùng tím** — `UI_DESIGN.md` §63
+  cấm hồng trên phần tử bấm được.
+- ⚠️ **Bài học kiểm thử:** DB có người dùng THẬT đang học (70 dòng `review_log` hôm nay) ⇒ script
+  CDP **đừng assert số tuyệt đối** cho streak. Lần chạy đầu đỏ 2 ca chỉ vì tôi giả định "hôm nay
+  chưa học"; đã đổi sang assert tương đối (`streakSau === streakTruoc + 3`).
 
 ### M14 vừa xong (2026-09-23)
 - ⚠️ **ĐÃ MẤT DỮ LIỆU THẬT:** xoá chủ đề cũ ⇒ `review_log` về 0 dòng, streak về 0, mất lịch sử
