@@ -259,6 +259,8 @@ export default function PlayerPage() {
           ...(dangChoPhep ? { dangChoPhep } : {}),
           // Ôn chủ đề: dựng lại cả dạng đã đạt trong chu kỳ, nếu không thì từ mastered ra 0 màn
           ...(topicId ? { boQuaDaDat: true } : {}),
+          // M18 — mỗi dạng bài xáo thứ tự từ riêng, để không đoán trước được từ kế tiếp
+          rng: Math.random,
         })
         if (!coBaiTinhDiem(man)) continue
 

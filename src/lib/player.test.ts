@@ -588,3 +588,61 @@ describe('catTheoGioiHan (giới hạn số từ mỗi lượt)', () => {
     expect(catTheoGioiHan(phien, 12, 10)).toEqual([])
   })
 })
+
+describe('xepBai — xáo thứ tự từ theo từng dạng (M18)', () => {
+  const NAM = ['a', 'b', 'c', 'd', 'e']
+  /** LCG có hạt giống ⇒ ngẫu nhiên nhưng tái lập được. */
+  const lcg = (hat: number) => {
+    let s = hat >>> 0
+    return () => {
+      s = (Math.imul(s, 1664525) + 1013904223) >>> 0
+      return s / 2 ** 32
+    }
+  }
+  const idCua = (m: Man): string[] =>
+    'vocab_id' in m ? [m.vocab_id] : 'vocab_ids' in m ? m.vocab_ids : [m.vocab_a]
+  /** Thứ tự từ trong từng dạng 1-từ, theo đúng thứ tự màn. */
+  const thuTuTheoDang = (man: Man[]) => {
+    const kq: Record<string, string[]> = {}
+    for (const m of man) if ('vocab_id' in m) (kq[m.loai] ??= []).push(m.vocab_id)
+    return kq
+  }
+
+  it('XR1 — có rng: mỗi dạng vẫn đủ 5 từ, nhưng thứ tự KHÔNG giống nhau ở mọi dạng', () => {
+    const { man } = xepBai({ tu: NAM.map((id) => tu(id)), baiTap: BO(NAM), rng: lcg(7) })
+    const theoDang = Object.values(thuTuTheoDang(man))
+    expect(theoDang.length).toBe(5) // flashcard, grammar, selection, audio, fast_decision
+    for (const ds of theoDang) expect([...ds].sort()).toEqual(NAM)
+    expect(new Set(theoDang.map((ds) => ds.join(''))).size).toBeGreaterThan(1)
+  })
+
+  it('XR2 — không truyền rng ⇒ giữ nguyên thứ tự cũ ở mọi dạng', () => {
+    const { man } = xepBai({ tu: NAM.map((id) => tu(id)), baiTap: BO(NAM) })
+    for (const ds of Object.values(thuTuTheoDang(man))) expect(ds).toEqual(NAM)
+  })
+
+  it('XR3 — 300 lần: không bao giờ 2 màn liền nhau cùng 1 từ ở ranh giới giữa 2 dạng', () => {
+    for (let hat = 1; hat <= 300; hat++) {
+      const { man } = xepBai({ tu: NAM.map((id) => tu(id)), baiTap: BO(NAM), rng: lcg(hat) })
+      for (let i = 1; i < man.length; i++) {
+        const truoc = man[i - 1]!
+        const sau = man[i]!
+        // Màn nhiều từ (ghép cặp, chấm AI) hiện mọi từ cùng lúc — không có "từ đầu/cuối"
+        if (truoc.loai === sau.loai || 'vocab_ids' in truoc || 'vocab_ids' in sau) continue
+        expect(idCua(sau)[0], `hạt ${hat}: ${truoc.loai} → ${sau.loai}`).not.toBe(idCua(truoc).at(-1))
+      }
+    }
+  })
+
+  it('XR4 — có rng: mỗi từ có ĐÚNG 1 màn tính điểm mang cờ bài cuối', () => {
+    for (let hat = 1; hat <= 50; hat++) {
+      const { man } = xepBai({ tu: NAM.map((id) => tu(id)), baiTap: BO(NAM), rng: lcg(hat) })
+      const dem: Record<string, number> = {}
+      for (const m of man) {
+        if ('la_bai_cuoi_cua_tu' in m && m.la_bai_cuoi_cua_tu) dem[m.vocab_id] = (dem[m.vocab_id] ?? 0) + 1
+        if ('la_bai_cuoi' in m) for (const [id, cuoi] of Object.entries(m.la_bai_cuoi)) if (cuoi) dem[id] = (dem[id] ?? 0) + 1
+      }
+      expect(dem).toEqual(Object.fromEntries(NAM.map((id) => [id, 1])))
+    }
+  })
+})

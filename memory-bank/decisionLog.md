@@ -792,3 +792,18 @@ màn bài tập) ⇒ test X1 + X2 canh cả 2 phía; X5 canh cả 8 màn còn g�
 bằng số: âm lệch lúc tô màu < 0,5ms; tới lúc chuyển màn 608ms / 1011ms; nhận đúng âm qua tần số.
 Đạt 19/19 ngay lần đầu; T4/T5 (0 âm khi tắt) cho thấy bộ đo phân biệt được có/không có âm.
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-28] MB-39 — M18: Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo từng dạng
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Ghép cặp: **hàng thẳng nhau**, mỗi hàng cao theo ô dài nhất — 1 lưới chung `grid-flow-col` | 2 cột flex độc lập ⇒ nghĩa dài làm cột phải dài hơn, hàng lệch dần. Mockup chỉ vẽ nghĩa 1 dòng nên không lộ |
+| **Q2** | **Chống lặp ở ranh giới**: từ đầu dạng mới trùng từ màn ngay trước ⇒ đẩy xuống cuối dạng | Tránh gặp 1 từ 2 màn liền nhau (dễ đoán, nhàm) |
+| **Q3** | **Giữ thứ tự DẠNG bài** (THU_TU_MAN, M4a), chỉ xáo thứ tự TỪ trong mỗi dạng | Thứ tự dạng dễ → khó là chủ đích sư phạm; SPECIFICATION §4 không quy định thứ tự từ trong 1 dạng |
+
+`rng` là tham số **tuỳ chọn** của `xepBai` (đúng khuôn `xaoTron` — tiêm từ ngoài để test) ⇒ ~20 ca test
+`xepBai` cũ không phải sửa. Màn nhiều từ (ghép cặp, chấm AI) hiện mọi từ cùng lúc nên KHÔNG ràng buộc ranh giới.
+
+**Bằng chứng:** `npm test` **384/384** · build xanh · lint 0 lỗi · **CDP 12/12** trên trang kiểm thử tạm (không
+đăng nhập ⇒ 0 ghi DB). Cùng bộ đo chạy trên layout cũ chỉ đạt **5/12** ⇒ bộ đo phân biệt được đúng/sai.
+Test XR3 được chứng minh đỏ khi tạm tắt luật chống lặp.
+**Trạng thái:** ✅ Đã áp dụng.

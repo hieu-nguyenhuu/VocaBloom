@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-27** (kết thúc M17 — âm thanh phản hồi + cài đặt âm thanh)
+> Cập nhật lần cuối: **2026-09-28** (kết thúc M18 — Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng)
 
 ## Trạng thái hiện tại
 
@@ -32,9 +32,19 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M15 (Lịch sử học + ruby vá chuỗi) — ✅ XONG 2026-09-24.**
 **M16 (Chọn giao diện Sáng / Tối / Hệ thống) — ✅ XONG 2026-09-24.**
 **M17 (Âm thanh phản hồi + cài đặt âm thanh) — ✅ XONG 2026-09-27.**
+**M18 (Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng) — ✅ XONG 2026-09-28.**
 
-> ⚠️ **M15, M16, M17 CHƯA commit / CHƯA deploy** (người dùng tự commit). `npm run seed:test` vẫn hỏng
+> ⚠️ **M15, M16, M17, M18 CHƯA commit / CHƯA deploy** (người dùng tự commit). `npm run seed:test` vẫn hỏng
 > từ trước — chưa sửa.
+
+### M18 vừa xong (2026-09-28) — MB-39
+- **Ghép cặp:** 2 cột nay là **1 lưới chung** `grid-flow-col` + `gridTemplateRows: repeat(N, auto)` ⇒
+  hàng i của 2 cột cao bằng nhau ⇒ 2 cột luôn bằng đáy, hàng thẳng. Thứ tự DOM vẫn trái rồi phải
+  (Tab không nhảy). `min-w-0 break-words` chữa luôn lỗi cũ: từ tiếng Anh dài tràn ô trên Mobile.
+- **Xáo từ:** `xepBai()` có tham số tuỳ chọn `rng` — có thì MỖI DẠNG xáo thứ tự từ riêng; không truyền thì
+  giữ thứ tự cũ (test cũ khỏi sửa). `PlayerPage` truyền `Math.random`. **Thứ tự DẠNG giữ nguyên.**
+- Chống lặp ranh giới: từ đầu dạng mới trùng từ của màn ngay trước ⇒ đẩy xuống cuối. Màn nhiều từ
+  (ghép cặp, chấm AI) không tính "từ cuối" (`idCuoiCua` trả `null`).
 
 ### M17 vừa xong (2026-09-27) — MB-38
 - **7 âm, tổng hợp bằng Web Audio** (0 file âm thanh, 0 package): `dung` · `sai` · `dung_goi_y` ·

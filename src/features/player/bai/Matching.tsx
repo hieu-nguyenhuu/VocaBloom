@@ -55,34 +55,36 @@ export default function Matching({ dsTu, onXong }: Props) {
           {daGhep.size}/{dsTu.length} đã ghép
         </span>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-[14px]">
-          {trai.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              lang={v.lang}
-              disabled={daGhep.has(v.id)}
-              onClick={() => setChonTrai(v.id)}
-              className={`${daGhep.has(v.id) ? O_XONG : chonTrai === v.id ? O_CHON : O_TRUNG_TINH} font-han text-17`}
-            >
-              {v.word}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-col gap-[14px]">
-          {phai.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              disabled={daGhep.has(v.id)}
-              onClick={() => chamPhai(v)}
-              className={`${daGhep.has(v.id) ? O_XONG : saiTam === v.id ? O_SAI : O_TRUNG_TINH} text-15`}
-            >
-              {v.meaning_vi}
-            </button>
-          ))}
-        </div>
+      {/* M18 — 1 lưới CHUNG xếp theo cột: hàng i của 2 cột cao bằng nhau (theo ô dài hơn) ⇒ 2 cột luôn
+          dài bằng nhau, các hàng thẳng nhau dù nghĩa dài xuống nhiều dòng. `grid-flow-col` giữ thứ tự
+          DOM = hết cột trái rồi mới tới cột phải ⇒ phím Tab không nhảy qua lại. */}
+      <div
+        className="grid grid-flow-col grid-cols-2 gap-x-4 gap-y-[14px]"
+        style={{ gridTemplateRows: `repeat(${dsTu.length}, auto)` }}
+      >
+        {trai.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            lang={v.lang}
+            disabled={daGhep.has(v.id)}
+            onClick={() => setChonTrai(v.id)}
+            className={`${daGhep.has(v.id) ? O_XONG : chonTrai === v.id ? O_CHON : O_TRUNG_TINH} min-w-0 break-words font-han text-17`}
+          >
+            {v.word}
+          </button>
+        ))}
+        {phai.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            disabled={daGhep.has(v.id)}
+            onClick={() => chamPhai(v)}
+            className={`${daGhep.has(v.id) ? O_XONG : saiTam === v.id ? O_SAI : O_TRUNG_TINH} min-w-0 break-words text-15`}
+          >
+            {v.meaning_vi}
+          </button>
+        ))}
       </div>
     </div>
   )

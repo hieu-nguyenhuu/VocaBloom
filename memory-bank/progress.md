@@ -37,6 +37,14 @@
 - [x] **M15 — Lịch sử học + ruby vá chuỗi** (2026-09-24).
 - [x] **M16 — Chọn giao diện Sáng / Tối / Hệ thống** (2026-09-24).
 - [x] **M17 — Âm thanh phản hồi + cài đặt âm thanh** (2026-09-27).
+- [x] **M18 — Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng** (2026-09-28).
+
+### ✅ M18 — Ghép cặp + xáo thứ tự từ (XONG 2026-09-28)
+- [x] `xepBai({ rng })` + `xaoChoDang` + `idCuoiCua` — **4 ca TDD** XR1–XR4 (XR3 chạy 300 hạt giống; đã
+      chứng minh XR3 đỏ khi tắt luật chống lặp ranh giới).
+- [x] `PlayerPage` truyền `rng: Math.random` · `Matching.tsx` 1 lưới chung `grid-flow-col`.
+- [x] `npm test` **384/384** · build xanh · lint 0 lỗi · **CDP 12/12** (PC 1280 + Mobile 390, nghĩa dài):
+      lệch đỉnh/đáy ô cùng hàng 0px. Layout cũ chỉ đạt 5/12 trên cùng bộ đo (Mobile lệch 120px, từ dài tràn ô).
 
 ### ✅ M17 — Âm thanh phản hồi (XONG 2026-09-27)
 - [x] `src/lib/amThanhCore.ts` thuần (**16 ca TDD**): danh mục 7 âm · đọc/ghi cài đặt (rác ⇒ mặc định,

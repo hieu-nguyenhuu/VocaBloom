@@ -162,6 +162,8 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 11. **Âm phản hồi (M17) gọi `phatAmThanh()` NGAY dòng chấm trong component màn bài tập**, không đặt
     ở `PlayerPage.traLoi` (hàm đó chạy khi chuyển màn, trễ 600/1000ms). Thêm màn bài tập mới ⇒ nhớ gắn
     âm + thêm tên file vào test X5 (`amThanhCore.test.ts`). Âm dùng Web Audio, **không** qua `phatAm()` (TTS).
+12. **Thứ tự từ trong mỗi dạng bài được XÁO riêng (M18)** qua `xepBai({ rng })`; thứ tự DẠNG thì cố định.
+    Thêm nhánh dạng mới trong `xepBai` ⇒ duyệt qua `xao(...)`, đừng duyệt thẳng `tu`/`baiTap`.
 
 ## 8. Chuẩn code & an toàn
 

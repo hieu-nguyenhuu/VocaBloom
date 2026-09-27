@@ -126,11 +126,13 @@ export function xepBai(dv: {
   dangChoPhep?: DangBai[]
   /** Ôn theo chủ đề (M7) là LUYỆN TẬP, không phải chu kỳ SRS ⇒ dựng lại cả dạng đã đạt trong chu kỳ. */
   boQuaDaDat?: boolean
+  /** M18 — có rng ⇒ mỗi dạng bài xáo thứ tự từ riêng (không truyền ⇒ giữ thứ tự `tu`, cho test cũ). */
+  rng?: () => number
 }): {
   man: Man[]
   thieu: { vocab_id: string; type: DangBai }[]
 } {
-  const { tu, baiTap, dangChoPhep, boQuaDaDat } = dv
+  const { tu, baiTap, dangChoPhep, boQuaDaDat, rng } = dv
   const stage = tu[0]?.stage ?? 'new'
   const tinhDiem = new Set(boBaiCua(stage))
   const choPhep = (d: DangBai) =>
@@ -140,6 +142,10 @@ export function xepBai(dv: {
   const idsSession = new Set(tu.map((t) => t.vocab_id))
   const daDatCua = (id: string) =>
     boQuaDaDat ? [] : (tu.find((t) => t.vocab_id === id)?.cycle_completed_exercises ?? [])
+
+  // Thứ tự DẠNG giữ nguyên (THU_TU_MAN); chỉ thứ tự TỪ trong mỗi dạng được xáo
+  const xao = <T extends { vocab_id: string }>(ds: readonly T[]): readonly T[] =>
+    rng ? xaoChoDang(ds, rng, idCuoiCua(man.at(-1))) : ds
 
   for (const dang of THU_TU_MAN) {
     if (!choPhep(dang)) continue
@@ -152,8 +158,7 @@ export function xepBai(dv: {
       // Xếp theo RECORD: 1 record = 1 màn, dùng cho cả A (vocab_id) và B (payload.blank_b_vocab_id).
       // Nhờ vậy câu chỉ xuất hiện 1 lần dù A, B hay cả 2 cùng trong session (§4.4).
       const daPhucVu = new Set<string>()
-      for (const b of baiTap) {
-        if (b.type !== dang) continue
+      for (const b of xao(baiTap.filter((x) => x.type === dang))) {
         const p = b.payload as PayloadDialog
         const vocab_b = (p.blank_b_vocab_id as string | undefined) ?? null
         const lienQuan = [b.vocab_id, vocab_b].filter((id): id is string => id !== null && idsSession.has(id))
@@ -176,7 +181,7 @@ export function xepBai(dv: {
 
     if (dang === 'make_sentence' || dang === 'trans_sentence' || dang === 'complete_situation') {
       const idsNhom: string[] = []
-      for (const t of tu) {
+      for (const t of xao(tu)) {
         if (daDatCua(t.vocab_id).includes(dang)) continue
         // make_sentence không cần record (§6.4); 2 dạng còn lại thiếu record thì bỏ + báo
         const b = baiTap.find((x) => x.vocab_id === t.vocab_id && x.type === dang)
@@ -196,7 +201,7 @@ export function xepBai(dv: {
       continue
     }
 
-    for (const t of tu) {
+    for (const t of xao(tu)) {
       if (tinhDiem.has(dang) && daDatCua(t.vocab_id).includes(dang)) continue
       if (dang === 'flashcard') {
         man.push({ loai: 'flashcard', vocab_id: t.vocab_id })
@@ -256,6 +261,22 @@ export function xepBai(dv: {
 }
 
 // ── Random có tiêm rng (để test) ────────────────────────────────────────────
+
+/** M18 — xáo từ cho 1 dạng; từ đầu trùng từ của màn ngay trước thì đẩy xuống cuối (Q2). */
+function xaoChoDang<T extends { vocab_id: string }>(ds: readonly T[], rng: () => number, idTruoc: string | null): T[] {
+  const kq = xaoTron(ds, rng)
+  if (kq.length > 1 && kq[0]!.vocab_id === idTruoc) kq.push(kq.shift()!)
+  return kq
+}
+
+/**
+ * Từ của màn ngay trước, để tránh lặp ở ranh giới. Màn NHIỀU từ (ghép cặp, chấm AI) hiện mọi từ
+ * cùng lúc, không có "từ cuối" ⇒ `null`, không ràng buộc.
+ */
+function idCuoiCua(m: Man | undefined): string | null {
+  if (!m || 'vocab_ids' in m) return null
+  return 'vocab_id' in m ? m.vocab_id : m.vocab_a
+}
 
 /** Fisher–Yates, không đổi mảng gốc. */
 export function xaoTron<T>(ds: readonly T[], rng: () => number): T[] {
