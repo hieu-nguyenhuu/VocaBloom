@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-24** (kết thúc M16 — chọn giao diện Sáng/Tối/Hệ thống)
+> Cập nhật lần cuối: **2026-09-27** (kết thúc M17 — âm thanh phản hồi + cài đặt âm thanh)
 
 ## Trạng thái hiện tại
 
@@ -31,6 +31,27 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M14 (Tách nhật ký học khỏi từ vựng) — ✅ XONG 2026-09-23.**
 **M15 (Lịch sử học + ruby vá chuỗi) — ✅ XONG 2026-09-24.**
 **M16 (Chọn giao diện Sáng / Tối / Hệ thống) — ✅ XONG 2026-09-24.**
+**M17 (Âm thanh phản hồi + cài đặt âm thanh) — ✅ XONG 2026-09-27.**
+
+> ⚠️ **M15, M16, M17 CHƯA commit / CHƯA deploy** (người dùng tự commit). `npm run seed:test` vẫn hỏng
+> từ trước — chưa sửa.
+
+### M17 vừa xong (2026-09-27) — MB-38
+- **7 âm, tổng hợp bằng Web Audio** (0 file âm thanh, 0 package): `dung` · `sai` · `dung_goi_y` ·
+  `hoan_thanh` · `va_ngay` · `ghep_cap` · `lat_the` (mặc định TẮT). **KHÔNG nhạc nền, KHÔNG âm lên giai
+  đoạn, KHÔNG âm nhận ruby** — người dùng đã chốt bỏ.
+- ⭐ **Âm đúng/sai phát NGAY Ở DÒNG CHẤM trong từng màn bài tập**, KHÔNG ở `PlayerPage.traLoi`
+  (hàm đó chạy lúc CHUYỂN màn, trễ 600/1000ms, và đè lên tiếng đọc từ kế tiếp). Test X2 canh khoảng
+  chờ `? 600 : 1000`, X5 canh cả 8 màn đều có `phatAmThanh(`.
+- Tổng kết phát **đúng 1 âm** (`hoan_thanh`, ref guard chống StrictMode).
+- Cài đặt: nhóm **"Âm thanh"** ở cột phải màn Cài đặt: công tắc tổng + thanh trượt âm lượng + công
+  tắc từng âm + nút nghe thử (nghe thử **bỏ qua** công tắc). **localStorage** khoá `vb-am-thanh`,
+  theo thiết bị. Tắt âm nào thì âm đó im, **không có âm thay thế**.
+- Refactor nhỏ: công tắc tách thành `src/components/CongTac.tsx`; hằng số lớp kiểu của màn Cài đặt
+  chuyển sang `src/features/settings/kieu.ts`.
+- ⭐ **Cách kiểm thử âm không đụng DB:** trang kiểm thử tạm (HTML + tsx ở gốc) gắn thẳng các màn bài
+  tập, **không đăng nhập** ⇒ RLS chặn mọi lệnh ghi; bọc `createOscillator`/`createBufferSource` để
+  đếm và ghi thời điểm từng âm. Đo xong phải xoá 2 file tạm.
 
 ### M16 vừa xong (2026-09-24)
 - Nhóm **"Giao diện"** ở đầu màn Cài đặt, 3 nút Sáng / Tối / Hệ thống. Lưu **localStorage** theo từng

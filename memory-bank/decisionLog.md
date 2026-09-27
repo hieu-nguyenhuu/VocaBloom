@@ -769,3 +769,26 @@ thì **Supabase không giữ được phiên đăng nhập** ⇒ bị đưa về
 giới hạn có từ trước, không thuộc M16; đã đổi assertion sang đo đúng thứ M16 cam kết.
 **Trạng thái:** ✅ Đã áp dụng.
 
+
+### [2026-09-27] MB-38 — M17: Âm thanh phản hồi + cài đặt âm thanh
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | **7 âm**: `dung` · `sai` · `dung_goi_y` · `hoan_thanh` · `va_ngay` · `ghep_cap` · `lat_the` | Người dùng duyệt từ trang nghe thử. **Bỏ** nhạc nền Dashboard, âm lên giai đoạn, âm nhận ruby |
+| **Q2** | Tổng hợp bằng **Web Audio API**, 0 file âm thanh, 0 package | `ponytail` — không tải thêm byte nào, không lo bản quyền |
+| **Q3** | ⭐ Âm đúng/sai phát **ở dòng chấm trong từng màn bài tập**, không ở `PlayerPage.traLoi` | Người dùng yêu cầu "phát đúng lúc nhìn thấy xanh đỏ". `traLoi` chạy lúc chuyển màn (trễ 600/1000ms) ⇒ âm lệch màu và đè lên tiếng đọc từ kế tiếp |
+| **Q4** | Kênh riêng, **không đụng `phatAm()`** của TTS | TTS tự cắt tiếng cũ khi đọc từ mới; âm phản hồi không được cắt/bị cắt |
+| **Q5** | Cài đặt lưu **localStorage** theo thiết bị (khoá `vb-am-thanh`), áp ngay, không cần nút Lưu | Cùng lý do M16: điện thoại ở nơi công cộng muốn tắt, máy bàn vẫn bật |
+| **Q6** | Tổng kết phát **đúng 1 âm** (`hoan_thanh`) | Người dùng chốt: "chỉ cần 1 âm báo hiệu" |
+| **Q7** | Tắt âm nào thì âm đó **im**, không rơi về âm khác (vd. tắt `dung_goi_y` không phát `dung` thay) | Người dùng chọn công tắc đơn giản, dễ đoán |
+| **Q8** | `lat_the` mặc định **TẮT** | Lật thẻ là thao tác lặp dày, kêu mỗi lần dễ gây mệt |
+| **Q10** | Mọi lỗi âm thanh **nuốt im lặng** | Không để tiếng "ting" làm hỏng bài đang làm |
+| **Q11** | Nút nghe thử **bỏ qua** công tắc | Để nghe trước rồi mới quyết định bật |
+
+**Chống lệch:** độ dài âm (`amThanhCore.ts`) phải ngắn hơn khoảng chờ chuyển màn (`? 600 : 1000` ở 4
+màn bài tập) ⇒ test X1 + X2 canh cả 2 phía; X5 canh cả 8 màn còn gọi `phatAmThanh(`.
+
+**Bằng chứng:** `npm test` **380/380** · build xanh · lint 0 lỗi · **CDP 19/19** trên trang kiểm thử tạm
+(không đăng nhập ⇒ 0 lệnh ghi DB, tuân §9.7), bọc `createOscillator`/`createBufferSource` để đếm âm
+bằng số: âm lệch lúc tô màu < 0,5ms; tới lúc chuyển màn 608ms / 1011ms; nhận đúng âm qua tần số.
+Đạt 19/19 ngay lần đầu; T4/T5 (0 âm khi tắt) cho thấy bộ đo phân biệt được có/không có âm.
+**Trạng thái:** ✅ Đã áp dụng.

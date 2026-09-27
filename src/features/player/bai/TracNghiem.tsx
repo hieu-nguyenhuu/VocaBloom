@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { Icon } from '../../../components/icons.tsx'
 import { xaoTron, type VocabDb } from '../../../lib/player.ts'
 import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
@@ -80,6 +82,8 @@ export default function TracNghiem({
     if (daChon === null || daGui.current) return
     daGui.current = true
     const dung = daChon === dapAn
+    // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
+    phatAmThanh(amKhiCham(dung, soGoiY > 0))
     const t = setTimeout(() => onTraLoiRef.current(dung, soGoiY > 0), dung ? 600 : 1000)
     return () => clearTimeout(t)
   }, [daChon, dapAn, soGoiY])

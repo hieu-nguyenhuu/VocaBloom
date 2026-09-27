@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { useDungPhim } from '../dungPhim.ts'
 import { chamArrange, xaoTron, type PayloadSapXep, type VocabDb } from '../../../lib/player.ts'
 
@@ -47,6 +49,8 @@ export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }
     if (kq !== null || khay.length === 0) return
     const dung = chamArrange(khay.map((i) => xao[i]!.text), payload.tokens)
     setKq(dung)
+    // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
+    phatAmThanh(amKhiCham(dung, soGoiY > 0))
     setTimeout(() => onTraLoi(dung, soGoiY > 0), dung ? 600 : 1000)
   }
 

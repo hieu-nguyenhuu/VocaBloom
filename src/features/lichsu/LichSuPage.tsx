@@ -14,6 +14,7 @@ import {
   type ViRuby,
 } from '../../lib/lichSu.ts'
 import { supabase } from '../../lib/supabase.ts'
+import { phatAmThanh } from '../../lib/amThanh.ts'
 import KhungTrang from '../shell/KhungTrang.tsx'
 
 /**
@@ -115,6 +116,8 @@ export default function LichSuPage() {
     // `raise exception` trong hàm SQL đã là tiếng Việt và đúng nguyên nhân ⇒ hiện nguyên văn
     // (cùng cách `dichLoiImport` xử lý lỗi của `import_topic`).
     if (error) return setLoi(error.message)
+    // M17 — chỉ phát khi server đã vá THÀNH CÔNG, không phát lúc bấm
+    phatAmThanh('va_ngay')
     setDangVa(null)
     await Promise.all([napThang(dangVa.ngay.slice(0, 7)), napVi()])
   }

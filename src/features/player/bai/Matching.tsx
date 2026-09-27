@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { chamMatching, xaoTron, type VocabDb } from '../../../lib/player.ts'
 
 /**
@@ -30,11 +31,14 @@ export default function Matching({ dsTu, onXong }: Props) {
     const luotMoi = [...luot, { trai: chonTrai, phai: v.meaning_vi }]
     setLuot(luotMoi)
     if (dapAn[chonTrai] === v.meaning_vi) {
+      // M17 — tiếng "tách" rất ngắn cho mỗi cặp đúng; cặp sai dùng âm "sai" chung
+      phatAmThanh('ghep_cap')
       const moi = new Set(daGhep).add(chonTrai)
       setDaGhep(moi)
       setChonTrai(null)
       if (moi.size === dsTu.length) onXong(chamMatching(luotMoi, dapAn))
     } else {
+      phatAmThanh('sai')
       setSaiTam(v.id)
       setTimeout(() => {
         setSaiTam(null)

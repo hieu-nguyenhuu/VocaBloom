@@ -10,6 +10,7 @@ import {
   type TongKet,
 } from '../../lib/player.ts'
 import { supabase } from '../../lib/supabase.ts'
+import { phatAmThanh } from '../../lib/amThanh.ts'
 
 /**
  * Tổng kết phiên ôn tập (mockup 12, SPECIFICATION §4.6, UI_DESIGN §8.8). Route /on-tap/tong-ket, ngoài shell.
@@ -33,6 +34,15 @@ export default function TongKetPage() {
   // Ref guard: StrictMode gọi effect 2 lần (bài học MB-20/1). RPC vốn idempotent (tính lại cả
   // ngày rồi upsert) nên gọi đôi không sai số liệu, nhưng không có lý do gì để gọi thừa.
   const daChot = useRef(false)
+  const daPhatAm = useRef(false)
+
+  // M17 — âm DUY NHẤT của màn này (người dùng chốt: Tổng kết chỉ cần 1 âm báo hiệu).
+  // Ref guard: StrictMode gọi effect 2 lần (MB-20/1).
+  useEffect(() => {
+    if (daPhatAm.current) return
+    daPhatAm.current = true
+    phatAmThanh('hoan_thanh')
+  }, [])
 
   // M14 — chốt nhật ký ngày. CỐ Ý tách khỏi effect nạp dữ liệu và KHÔNG chặn màn khi lỗi:
   // người vừa học xong không đáng bị chặn bởi một thao tác thống kê chạy nền.

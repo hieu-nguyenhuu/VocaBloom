@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { oGoiY, soKhopDapAn, tachChoTrong, xaoTron, type PayloadDialog, type VocabDb } from '../../../lib/player.ts'
 import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
 
@@ -48,6 +50,9 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
   function chot(a: string, b: string) {
     const ket = { a: soKhopDapAn(a, dapAnA, lang), b: dapAnB ? soKhopDapAn(b, dapAnB, lang) : false }
     setKq(ket)
+    // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
+    // Đúng CẢ 2 chỗ mới là đúng — cùng điều kiện với khoảng chờ ngay dưới để âm và nhịp chuyển màn khớp nhau
+    phatAmThanh(amKhiCham(ket.a && ket.b, soGoiY > 0))
     setTimeout(() => onTraLoi(ket, soGoiY > 0), ket.a && ket.b ? 600 : 1000)
   }
 

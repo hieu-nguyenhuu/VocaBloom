@@ -1,144 +1,154 @@
-# DESIGN.md — M16: Chọn giao diện Sáng / Tối / Hệ thống
+# DESIGN.md — M17: Âm thanh phản hồi + cài đặt âm thanh riêng
 
 > Kiến trúc + kế hoạch của RIÊNG task này.
-> Ngày lập: 2026-09-24 · Trạng thái: **CHỜ DUYỆT**
+> Ngày lập: 2026-09-27 · Sửa lần 3 theo phản hồi người dùng · Trạng thái: **CHỜ DUYỆT**
 >
-> ℹ️ Ghi đè bản M15 — nội dung M15 đã lưu đầy đủ ở `decisionLog.md` MB-35.
+> ℹ️ Ghi đè bản M16 — nội dung M16 đã lưu đầy đủ ở `decisionLog.md` MB-37.
+> Âm thanh đã được nghe thử và chọn tại: https://claude.ai/artifact/KjhHGwwJW3NVknLcT9AmdB
 
 ---
 
-## 1. Yêu cầu
+## 1. Yêu cầu (người dùng chốt 2026-09-27)
 
-Màn Cài đặt có lựa chọn giao diện tường minh: **Sáng / Tối / Hệ thống**.
+1. Làm các âm nhóm *Nên có* + *Tuỳ chọn* trên trang nghe thử, **TRỪ 3 âm người dùng bỏ**:
+   - *Lên giai đoạn* — làm phần đúng/sai quá phức tạp;
+   - *Thành thạo* và *Nhận ruby* — màn Tổng kết **chỉ cần 1 âm** báo hiệu là đủ.
+2. Âm đúng/sai phát **đúng lúc thấy màu xanh/đỏ**.
+3. Màn Cài đặt có **nhóm "Âm thanh" riêng**, bật/tắt **từng âm**.
+4. **KHÔNG** có nhạc nền ở Dashboard.
 
-## 2. Phần CSS đã có sẵn từ M0 — KHÔNG phải viết lại
+## 2. Danh mục 7 âm
 
-MB-08 (2026-09-06) đã viết `tokens.css` đủ **3 nhánh** chính vì lường trước ngày này:
+| Mã | Tên | Nhóm | Mặc định | Dài | Phát ở đâu |
+|---|---|---|---|---|---|
+| `dung` | Trả lời đúng | Khi trả lời | Bật | 300ms | Lúc chấm, cùng lúc tô xanh |
+| `sai` | Trả lời sai | Khi trả lời | Bật | 360ms | Lúc chấm, cùng lúc tô đỏ |
+| `dung_goi_y` | Đúng nhưng đã dùng gợi ý | Khi trả lời | Bật | 220ms | Lúc chấm |
+| `hoan_thanh` | Hoàn thành lượt ôn | Màn Tổng kết | Bật | 900ms | Khi màn Tổng kết hiện ra — **âm duy nhất của màn này** |
+| `va_ngay` | Vá ngày bằng ruby | Phần thưởng | Bật | 370ms | Màn Lịch sử, sau khi vá thành công |
+| `ghep_cap` | Ghép đúng 1 cặp | Tương tác nhỏ | Bật | 60ms | Mỗi cặp đúng ở Matching |
+| `lat_the` | Lật flashcard | Tương tác nhỏ | **Tắt** | 160ms | Lúc lật thẻ |
 
-| Nhánh | Selector | Khi nào khớp |
-|---|---|---|
-| 1 · Sáng | `:root` | mặc định |
-| 2 · Tối theo hệ điều hành | `@media (prefers-color-scheme: dark) :root:not([data-theme="light"])` | OS tối **và** không ép sáng |
-| 3 · Tối ép thủ công | `:root[data-theme="dark"]` | ép tối |
-
-`tokens.test.ts` đã canh 2 nhánh tối phủ đúng cùng bộ token. ⇒ Task này chỉ cần **đặt hoặc gỡ
-thuộc tính `data-theme` trên `<html>`**:
-
-| Lựa chọn | `data-theme` |
-|---|---|
-| Sáng | `"light"` (chặn nhánh 2 dù OS đang tối) |
-| Tối | `"dark"` (kích hoạt nhánh 3) |
-| Hệ thống | **gỡ bỏ** ⇒ nhánh 2 tự theo OS, kể cả khi OS đổi giữa chừng — không cần JS lắng nghe |
+Công thức tổng hợp (nốt, dạng sóng, đường bao) **chép nguyên từ trang nghe thử** đã duyệt.
 
 ## 3. Quyết định
 
-| Mã | Nội dung | Ghi chú |
+| Mã | Nội dung | Lý do |
 |---|---|---|
-| **Q1** | Lưu ở **`localStorage`**, theo từng thiết bị | Người dùng chốt. Máy bàn sáng, điện thoại tối — độc lập |
-| **Q2** | Điều khiển dạng **3 nút liền nhau** (segmented) | Người dùng chốt. **Kiểu điều khiển MỚI**, chưa có trong mockup nào — xem §5 |
-| **Q3** | Áp theme bằng **script inline trong `index.html`**, chạy TRƯỚC khi trang vẽ | Nếu để React áp sau khi mount thì mỗi lần tải trang sẽ **nháy trắng rồi mới tối**. Đây là lý do chính để chọn localStorage thay vì DB |
-| **Q4** | ⭐ Bổ sung **`color-scheme`** vào cả 3 nhánh của `tokens.css` | **Lỗi tiềm ẩn phát hiện khi khảo sát** — xem §4 |
-| **Q5** | Giá trị localStorage lạ / không đọc được ⇒ rơi về **Hệ thống** | `localStorage` có thể ném lỗi (trình duyệt ẩn danh, chặn cookie) ⇒ bọc `try/catch`, đừng để cả app trắng trang vì 1 cài đặt giao diện |
-| **Q6** | Có **test chống lệch** giữa script inline và `giaoDien.ts` | Xem §6 — lần thứ 5 dự án dùng mẫu này |
+| **Q1** | ⭐ Âm đúng/sai phát **NGAY TẠI dòng code chấm bài** trong mỗi màn bài tập, **KHÔNG** trong `traLoi` của Player | Người dùng chốt. Xem §4 |
+| **Q2** | **Bỏ âm "Lên giai đoạn"** | Người dùng chốt. Nhờ vậy âm đúng/sai không cần biết gì về điểm SRS |
+| **Q3** | Tổng hợp bằng **Web Audio API**, 0 file âm thanh, 0 package | Đã nghe và duyệt trên trang thử |
+| **Q4** | **Kênh riêng**, không đụng `phatAm()` | `phatAm()` tự cắt tiếng đọc cũ khi đọc từ mới. Âm phản hồi đi đường riêng nên không cắt tiếng đọc và không bị nó cắt |
+| **Q5** | Lưu **localStorage** theo từng thiết bị, khoá `vb-am-thanh` | Giống M16/Q1 |
+| **Q6** | Công tắc tổng + âm lượng + công tắc **từng âm**. Tắt công tắc tổng thì công tắc con **giữ nguyên giá trị**, chỉ mờ đi | Người dùng yêu cầu bật/tắt từng âm |
+| **Q7** | ⭐ **Tắt âm nào thì âm đó im — không có âm thay thế** | Mỗi công tắc điều khiển đúng một âm, không có luật ngầm. Bản trước đề xuất "lùi về âm cơ bản" — bỏ, vì người dùng muốn đơn giản |
+| **Q8** | Màn Tổng kết phát **đúng 1 âm** `hoan_thanh`. Bỏ `thanh_thao` và `nhan_ruby` | Người dùng chốt. Hệ quả tốt: màn Tổng kết **không cần** đọc thêm số ruby trước/sau, không cần dò từ thành thạo, không cần hàm phát nối tiếp |
+| **Q9** | Âm **không bao giờ là tín hiệu duy nhất** | Màu xanh/đỏ giữ nguyên — người dùng có thể đang tắt tiếng |
+| **Q10** | Mọi lỗi âm thanh **nuốt im lặng** (`try/catch`) | Không để 1 tiếng "ting" làm hỏng bài đang làm |
+| **Q11** | Nút **nghe thử** cạnh từng công tắc, **vẫn phát được khi âm đó đang tắt** | Nghe rồi mới quyết định bật. Tái dùng pattern nút loa của hàng chọn giọng (M6c) |
 
-## 4. ⭐ Lỗi tiềm ẩn: chưa khai `color-scheme`
+## 4. ⭐ Vì sao phát ngay tại dòng chấm bài (Q1)
 
-Grep toàn bộ `src/styles/*.css` và `index.html`: **không có `color-scheme` ở đâu cả.**
-
-Hệ quả: các phần tử **gốc của trình duyệt** không biết trang đang sáng hay tối, nên tự vẽ theo mặc định:
-- popup của `<select>` chọn giọng đọc ở màn Cài đặt (M6c),
-- thanh cuộn, ô nhập, checkbox gốc.
-
-**Hiện chưa lộ** vì theme luôn khớp OS. Nhưng ngay khi **ép Tối trên máy đang để Sáng**, popup chọn giọng
-sẽ bật ra **nền trắng giữa trang tối**. Tính năng này sẽ làm lỗi đó lộ ra, nên phải sửa cùng lúc:
-
-```css
-:root                                      { color-scheme: light; }   /* nhánh 1 */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light'])          { color-scheme: dark; }    /* nhánh 2 */
-}
-:root[data-theme='dark']                   { color-scheme: dark; }    /* nhánh 3 */
-```
-
-## 5. UI — điều khiển MỚI, cần bạn duyệt
-
-Thêm 1 hàng vào nhóm **đầu tiên** của màn Cài đặt, theo đúng khung `HANG` sẵn có:
-
-```
-┌──────────────────────────────────────────────────┐
-│ Giao diện             ┌──────┬──────┬──────────┐ │
-│                       │ Sáng │ Tối  │ Hệ thống │ │
-│                       └──────┴──────┴──────────┘ │
-└──────────────────────────────────────────────────┘
-```
-
-- Khung ngoài: `rounded-10 bg-surface-sunken p-1`.
-- Nút đang chọn: **nền tím `bg-accent` + chữ trắng** — tím vì đây là phần tử bấm được
-  (UI_DESIGN §63 cấm hồng trên nút; Color Consistency Lock: tím = mọi hành động chính).
-- Nút chưa chọn: nền trong, chữ `text-content-nav`.
-- **Chỉ dùng token Lớp 2 đã có** — không thêm token màu mới.
-- Accessibility: `role="radiogroup"` + mỗi nút `role="radio"` + `aria-checked`.
-- **Đổi là áp ngay**, không cần bấm "Lưu" — khác các ô khoá API (M6a/Q3), vì đổi theme thấy kết quả
-  tức thì và đổi lại được ngay, không có gì để "lỡ tay".
-
-## 6. Thiết kế kỹ thuật
-
-### 6.1 `src/lib/giaoDien.ts` — hàm thuần (TDD)
+Các màn bài tập **chấm NGAY** khi bạn chọn, nhưng **chờ rồi mới báo** cho Player:
 
 ```ts
-export type CheDo = 'sang' | 'toi' | 'he_thong'
-export const KHOA_LUU = 'vb-giao-dien'
-
-/** Đọc giá trị thô từ localStorage; rác / null ⇒ 'he_thong' (Q5). */
-export function docCheDo(raw: string | null): CheDo
-
-/** Giá trị gán cho `data-theme`; `null` nghĩa là GỠ thuộc tính (để CSS theo OS). */
-export function thuocTinhTheme(cheDo: CheDo): 'light' | 'dark' | null
+// TracNghiem.tsx:83 — y hệt ở DienTu, SapXep, HoiThoai
+const dung = daChon === dapAn                              // ← chấm + tô xanh/đỏ NGAY
+setTimeout(() => onTraLoi(dung, ...), dung ? 600 : 1000)  // ← báo Player SAU 600/1000ms
 ```
 
-### 6.2 `index.html` — script inline trước khi vẽ (Q3)
+Nếu gắn âm ở `traLoi` của Player, âm sẽ phát **đúng lúc chuyển màn** và đè lên tiếng phát âm của từ
+kế tiếp. Nên âm phát **ngay dòng đầu**:
 
-```html
-<script>
-  // M16 — áp theme TRƯỚC khi trang vẽ để không nháy. Logic phải khớp src/lib/giaoDien.ts
-  // (có test chống lệch). try/catch vì localStorage có thể ném lỗi ở chế độ ẩn danh.
-  try {
-    var c = localStorage.getItem('vb-giao-dien')
-    if (c === 'sang') document.documentElement.dataset.theme = 'light'
-    else if (c === 'toi') document.documentElement.dataset.theme = 'dark'
-  } catch (e) {}
-</script>
+```ts
+const dung = daChon === dapAn
+phatAmThanh(amKhiCham(dung, soGoiY > 0))                   // ← MỚI: cùng khoảnh khắc với màu
+setTimeout(() => onTraLoi(dung, ...), dung ? 600 : 1000)
 ```
 
-### 6.3 Test chống lệch (Q6)
+Vì đã bỏ âm "Lên giai đoạn", màn bài tập **tự đủ thông tin** (đúng/sai + có dùng gợi ý không) —
+**không cần callback mới lên Player, không đụng `PlayerPage`, không đụng SRS**.
 
-Script inline **buộc phải** lặp lại khoá `vb-giao-dien` và phép ánh xạ `sang→light`, `toi→dark` — nó chạy
-trước khi JS của app tải nên không import được `giaoDien.ts`. Cùng một sự thật ở 2 nơi ⇒ test đọc
-`index.html` rồi so khớp với `KHOA_LUU` và `thuocTinhTheme`. Đổi khoá ở một nơi mà quên nơi kia thì theme
-đã chọn **âm thầm mất** mỗi lần tải lại trang — đúng loại lỗi không ai để ý cho tới khi bị hỏi.
+## 5. Gắn âm vào từng màn
 
-## 7. PLAN — 7 task
+| Màn | Âm | Thời điểm |
+|---|---|---|
+| `TracNghiem` (Selection, Audio, Mô tả, Chọn câu) | `dung` / `sai` / `dung_goi_y` | Lúc chọn đáp án |
+| `DienTu` (Translate, Listen Fill, Trans Collocation) | như trên | Lúc bấm Kiểm tra |
+| `SapXep` | như trên | Lúc bấm Kiểm tra |
+| `HoiThoai` (2 chỗ trống) | đúng cả 2 ⇒ `dung` / `dung_goi_y`; có chỗ sai ⇒ `sai` | Lúc bấm Kiểm tra / chọn đủ 2 chip |
+| `FastDecision` | như trên; **hết 4 giây ⇒ `sai`** | Lúc chọn / hết giờ |
+| `Matching` | cặp đúng ⇒ `ghep_cap`; cặp sai ⇒ `sai` | Lúc nối từng cặp |
+| `ChamAI` (stage 3) | theo verdict của thẻ phản hồi | Lúc thẻ phản hồi hiện ra |
+| `Flashcard` | `lat_the` | Lúc lật (Good / Hard / Again **không** có âm) |
+| `TongKetPage` | `hoan_thanh` (Q8) | Khi màn hiện ra, 1 lần (ref guard chống StrictMode gọi đôi — MB-20/1) |
+| `LichSuPage` | `va_ngay` | Sau khi RPC `va_ngay` thành công |
+
+**Mở khoá âm thanh của trình duyệt:** âm chỉ phát sau khi người dùng chạm vào trang. Âm phản hồi luôn
+bắt nguồn từ một cú bấm/phím nên luôn phát được. Màn Tổng kết là điều hướng trong cùng trang nên dùng lại
+`AudioContext` đã mở; **tải lại trang ngay ở Tổng kết** thì sẽ không có tiếng — im lặng, chấp nhận được.
+
+## 6. UI — nhóm "Âm thanh" ở màn Cài đặt (**cần bạn duyệt**)
+
+Mockup 17/18 không có nhóm này. Ghép từ **đúng các mảnh đã có** trên màn Cài đặt:
+
+```
+ÂM THANH
+┌──────────────────────────────────────────────────┐
+│ Âm thanh                                   [●━━] │  ← công tắc tổng (dùng lại switch "Cảnh báo")
+├──────────────────────────────────────────────────┤
+│ Âm lượng           ━━━━━━━━●━━━━━━━  60%         │  ← <input type="range"> gốc, accent tím — MỚI
+└──────────────────────────────────────────────────┘
+  Khi trả lời
+┌──────────────────────────────────────────────────┐
+│ Trả lời đúng                       🔊   [●━━]    │  ← nút loa = pattern nghe thử giọng (M6c)
+│ Trả lời sai                        🔊   [●━━]    │
+│ Đúng nhưng đã dùng gợi ý           🔊   [●━━]    │
+└──────────────────────────────────────────────────┘
+  Màn Tổng kết · Phần thưởng · Tương tác nhỏ      (cùng khuôn — tổng 7 hàng)
+```
+
+- Mỗi hàng dùng khung `HANG` sẵn có. Switch của hàng "Cảnh báo hàng đợi" được **tách thành component
+  `CongTac`** để dùng lại 8 lần (1 tổng + 7 âm) thay vì chép markup 8 lần.
+- Thanh trượt âm lượng là **thành phần mới duy nhất** — dùng `<input type="range">` gốc với `accent-color` tím.
+- Màu: nút, công tắc, thanh trượt đều **tím** (phần tử bấm được — UI_DESIGN §63). Không thêm token mới.
+- Đổi là áp ngay, không cần bấm Lưu (cùng lý do M16).
+
+## 7. Kiến trúc module
+
+| File | Loại | Nội dung |
+|---|---|---|
+| `src/lib/amThanhCore.ts` | **Thuần** | Danh mục 7 âm (mã, tên, nhóm, mặc định, độ dài) · `docCaiDatAmThanh(raw)` · `amKhiCham(dung, goiY)` · `duocPhat(ma, caiDat)` |
+| `src/lib/amThanh.ts` | Web Audio | `AudioContext` dùng chung · công thức 7 âm · `phatAmThanh(ma)` (tôn trọng cài đặt) · `ngheThu(ma)` (bỏ qua công tắc) · lỗi nuốt im lặng |
+| `src/components/CongTac.tsx` | UI | Switch tách ra từ hàng "Cảnh báo" |
+| `src/features/settings/CaiDatAmThanh.tsx` | UI | Nhóm "Âm thanh" |
+
+## 8. PLAN — 9 task
 
 | # | Nội dung | Loại |
 |---|---|---|
-| T1 | RED+GREEN `giaoDien.ts` — 5 ca: đọc 3 giá trị hợp lệ · rác/`null` ⇒ `he_thong` · `thuocTinhTheme` đủ 3 nhánh | TDD |
-| T2 | Test chống lệch: đọc `index.html`, khẳng định chứa `KHOA_LUU` và đúng cặp `'sang'→'light'`, `'toi'→'dark'` | TDD |
-| T3 | `tokens.css`: thêm `color-scheme` vào 3 nhánh + 1 ca trong `tokens.test.ts` canh cả 3 nhánh đều có | TDD |
-| T4 | `index.html`: script inline trước khi vẽ | Diff patch |
-| T5 | `CaiDatPage.tsx`: hàng "Giao diện" + 3 nút segmented, đổi là ghi localStorage + áp ngay | UI |
-| T6 | build · lint · `npm test` | Kiểm |
-| T7 | **Kiểm thật CDP**, ép OS **sáng** rồi: chọn Tối ⇒ `data-theme="dark"` + nền đổi màu · **tải lại trang ⇒ vẫn tối, không nháy** · chọn Hệ thống ⇒ gỡ thuộc tính · ép OS tối + chọn Sáng ⇒ vẫn sáng · `color-scheme` của `<html>` khớp theme · localStorage bị chặn ⇒ app vẫn chạy | Kiểm thật |
+| T1 | RED+GREEN `docCaiDatAmThanh` — chưa có ⇒ mặc định · JSON hỏng ⇒ mặc định · thiếu âm ⇒ tự điền mặc định · âm lượng ngoài 0–100 ⇒ kẹp · `lat_the` mặc định tắt | TDD |
+| T2 | RED+GREEN `amKhiCham` + `duocPhat` — công tắc tổng tắt ⇒ không âm nào được phát · tắt 1 âm ⇒ đúng âm đó im, **không có âm thay thế** | TDD |
+| T3 | **Test chống lệch**: `dung`, `dung_goi_y` ngắn hơn 600ms, `sai` ngắn hơn 1000ms; **và** đọc 4 file màn bài tập khẳng định vẫn chờ đúng `600 : 1000` — ai đổi khoảng chờ mà quên âm thanh thì test đỏ | TDD |
+| T4 | `amThanh.ts` — chép công thức từ trang nghe thử | Code |
+| T5 | Tách `CongTac.tsx`, dùng lại ở hàng "Cảnh báo" (giao diện không đổi) | Refactor |
+| T6 | `CaiDatAmThanh.tsx` + gắn vào màn Cài đặt | UI |
+| T7 | Gắn âm vào 8 màn bài tập + `TongKetPage` + `LichSuPage` | Code |
+| T8 | build · lint · `npm test` | Kiểm |
+| T9 | **Kiểm thật CDP**, đo bằng số chứ không bằng tai: bọc `AudioContext` để **đếm và ghi thời điểm từng âm** ⇒ trả lời đúng ⇒ đúng 1 âm, phát **cùng lúc** ô chuyển xanh và **trước** khi chuyển màn · trả lời sai ⇒ `sai` · tắt âm `dung` ⇒ 0 âm · tắt công tắc tổng ⇒ 0 âm dù âm con đang bật · tải lại trang giữ nguyên cài đặt · Flashcard mặc định không có tiếng · vào Tổng kết ⇒ **đúng 1 âm** | Kiểm thật |
 
-## 8. Tiêu chí nghiệm thu
+## 9. Tiêu chí nghiệm thu
 
-- [ ] Chọn Sáng / Tối có hiệu lực **ngay**, ngược với OS vẫn đúng.
-- [ ] Chọn Hệ thống ⇒ đi theo OS, **kể cả khi OS đổi** mà không tải lại trang.
-- [ ] Tải lại trang giữ nguyên lựa chọn và **không nháy màu**.
-- [ ] Ép Tối trên OS Sáng ⇒ popup `<select>` chọn giọng cũng tối (nhờ `color-scheme`).
-- [ ] `localStorage` bị chặn ⇒ app không vỡ, rơi về Hệ thống.
+- [ ] Trả lời xong nghe **đúng 1 âm**, cùng khoảnh khắc thấy màu xanh/đỏ.
+- [ ] Âm phản hồi **không đè** tiếng phát âm của từ kế tiếp.
+- [ ] Bật/tắt từng âm có hiệu lực ngay, tải lại trang vẫn giữ. Tắt âm nào thì đúng âm đó im.
+- [ ] Công tắc tổng tắt ⇒ im hoàn toàn; bật lại ⇒ các âm con trở về đúng trạng thái trước đó.
+- [ ] Không có nhạc nền ở bất kỳ đâu.
 - [ ] `npm test` · build · lint 0 lỗi.
 
-## 9. Ngoài phạm vi
+## 10. Ngoài phạm vi
 
-- Không đồng bộ lựa chọn giữa các thiết bị (Q1 đã chốt theo từng thiết bị).
-- Không thêm theme thứ 3 (chỉ Sáng / Tối).
+- Âm "Lên giai đoạn", "Thành thạo", "Nhận ruby" (người dùng bỏ).
+- Nhạc nền (người dùng chốt không làm).
+- Đồng bộ cài đặt âm thanh giữa các thiết bị.
+- Âm cho Good / Hard / Again của Flashcard, âm cho nút bấm thông thường.

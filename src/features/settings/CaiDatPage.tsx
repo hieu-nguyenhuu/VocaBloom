@@ -6,6 +6,9 @@ import { GIONG_EN, GIONG_ZH, NHAN_GIONG, type MaNgonNgu } from '../../lib/ttsCor
 import { Icon } from '../../components/icons.tsx'
 import KhungTrang from '../shell/KhungTrang.tsx'
 import ChonGiaoDien from './ChonGiaoDien.tsx'
+import CaiDatAmThanh from './CaiDatAmThanh.tsx'
+import { GIA_TRI, HANG, NHAN, NUT_NHO } from './kieu.ts'
+import CongTac from '../../components/CongTac.tsx'
 
 /**
  * Màn Cài đặt (mockup 17 PC / 18 Mobile · SPECIFICATION §11). Ghi NGAY khi đổi — mockup không có
@@ -15,11 +18,6 @@ import ChonGiaoDien from './ChonGiaoDien.tsx'
  * trường (MB-22/Q1) ⇒ sau khi nhập, có thể XOÁ `VITE_OPENROUTER_*` khỏi `.env.local` để khoá không
  * còn bị Vite nhúng vào bundle.
  */
-const HANG =
-  'flex items-center justify-between gap-3 rounded-10 border border-border-card bg-surface-card px-4 py-3'
-const NHAN = 'text-14 text-content-nav'
-const GIA_TRI = 'text-14 font-semibold text-content-primary'
-const NUT_NHO = 'h-7 w-7 rounded-8 bg-border-card text-15 font-bold text-content-nav'
 
 function Nhom({ ten, children }: { ten: string; children: ReactNode }) {
   return (
@@ -339,27 +337,23 @@ export default function CaiDatPage() {
           </Nhom>
         </div>
 
+        <div className="flex flex-col gap-7">
+          {/* M17 — lưu theo từng thiết bị (localStorage), không qua bảng settings */}
+          <Nhom ten="Âm thanh">
+            <CaiDatAmThanh />
+          </Nhom>
+
         <Nhom ten="Thông báo">
           <div className={HANG}>
             <span className={NHAN}>Cảnh báo hàng đợi cạn</span>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={cd.low_queue_alert_enabled}
-              aria-label="Cảnh báo hàng đợi cạn"
-              onClick={() => void ghi('low_queue_alert_enabled', !cd.low_queue_alert_enabled)}
-              className={`relative h-5 w-9 shrink-0 rounded-pill transition-colors ${
-                cd.low_queue_alert_enabled ? 'bg-accent' : 'bg-border-subtle'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 h-4 w-4 rounded-pill bg-white transition-all ${
-                  cd.low_queue_alert_enabled ? 'right-0.5' : 'left-0.5'
-                }`}
-              />
-            </button>
+            <CongTac
+              bat={cd.low_queue_alert_enabled}
+              nhan="Cảnh báo hàng đợi cạn"
+              onDoi={(v) => void ghi('low_queue_alert_enabled', v)}
+            />
           </div>
         </Nhom>
+        </div>
       </div>
     </KhungTrang>
   )

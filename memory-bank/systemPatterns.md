@@ -159,6 +159,9 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 8. **Import theo thứ tự:** insert `vocab` trước → map `temp_id → uuid` → mới insert `exercises`/`dialogue`. KHÔNG tra cứu theo `word` (sẽ dính bản ghi cũ). Trùng từ = **luôn thêm mới**, chỉ cảnh báo không chặn.
 9. **AI response** parse JSON thuần; fail → strip code-fence parse lại 1 lần → vẫn fail thì không cộng điểm cho từ đó, hiện nút "Chấm lại" và GIỮ NGUYÊN câu đã nhập.
 10. **Trạng thái rỗng / loading / lỗi là bắt buộc** cho mọi view có dữ liệu (skeleton đúng shape layout, không spinner chung chung).
+11. **Âm phản hồi (M17) gọi `phatAmThanh()` NGAY dòng chấm trong component màn bài tập**, không đặt
+    ở `PlayerPage.traLoi` (hàm đó chạy khi chuyển màn, trễ 600/1000ms). Thêm màn bài tập mới ⇒ nhớ gắn
+    âm + thêm tên file vào test X5 (`amThanhCore.test.ts`). Âm dùng Web Audio, **không** qua `phatAm()` (TTS).
 
 ## 8. Chuẩn code & an toàn
 

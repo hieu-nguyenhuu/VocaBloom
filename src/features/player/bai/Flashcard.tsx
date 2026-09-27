@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
 import type { VocabDb } from '../../../lib/player.ts'
 
 /**
@@ -16,13 +17,22 @@ const PHIM_NUT = { 1: 'again', 2: 'hard', 3: 'good' } as const
 export default function Flashcard({ vocab, hienPhienAm, onChon }: Props) {
   const [lat, setLat] = useState(false)
 
+  /** M17 — chặn lật lại thẻ ĐÃ lật: bấm vào thẻ đã mở không được kêu thêm lần nữa. */
+  function latThe() {
+    if (lat) return
+    setLat(true)
+    phatAmThanh('lat_the')
+  }
+
   useEffect(() => {
     const xuLy = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null
       if (e.isComposing || el?.tagName === 'INPUT' || el?.tagName === 'TEXTAREA') return
       if (!lat && (e.code === 'Space' || e.key === 'Enter')) {
         e.preventDefault()
+        // Điều kiện `!lat` ngay trên đã chặn lật lại ⇒ gọi thẳng, khỏi đưa `latThe` vào deps
         setLat(true)
+        phatAmThanh('lat_the')
         return
       }
       if (lat && (e.key === '1' || e.key === '2' || e.key === '3')) {
@@ -37,7 +47,7 @@ export default function Flashcard({ vocab, hienPhienAm, onChon }: Props) {
     <div className="flex flex-col gap-7">
       <button
         type="button"
-        onClick={() => setLat(true)}
+        onClick={latThe}
         className="rounded-24 border border-border-card bg-surface-card px-7 py-14 text-center"
       >
         {!lat ? (

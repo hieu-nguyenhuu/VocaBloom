@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { Icon } from '../../../components/icons.tsx'
 import { gioiHanNhap, soKhopDapAn, type VocabDb } from '../../../lib/player.ts'
 import { phatAm } from '../../../lib/tts.ts'
@@ -47,6 +49,8 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
     if (kq !== null || !giaTri.trim()) return
     const dung = soKhopDapAn(giaTri, dapAn, vocab.lang)
     setKq(dung)
+    // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
+    phatAmThanh(amKhiCham(dung, soGoiY > 0))
     setTimeout(() => onTraLoi(dung, soGoiY > 0), dung ? 600 : 1000)
   }
 

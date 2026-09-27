@@ -36,6 +36,20 @@
 - [x] **M14 — Tách nhật ký học khỏi từ vựng (streak không mất khi xoá từ)** (2026-09-23).
 - [x] **M15 — Lịch sử học + ruby vá chuỗi** (2026-09-24).
 - [x] **M16 — Chọn giao diện Sáng / Tối / Hệ thống** (2026-09-24).
+- [x] **M17 — Âm thanh phản hồi + cài đặt âm thanh** (2026-09-27).
+
+### ✅ M17 — Âm thanh phản hồi (XONG 2026-09-27)
+- [x] `src/lib/amThanhCore.ts` thuần (**16 ca TDD**): danh mục 7 âm · đọc/ghi cài đặt (rác ⇒ mặc định,
+      kẹp âm lượng 0–100, tự điền âm thiếu) · `amKhiCham` · `duocPhat` + **X-amthanh chống lệch**
+      (độ dài âm < khoảng chờ chuyển màn 600/1000ms; cả 8 màn có gắn âm; tính thuần).
+- [x] `src/lib/amThanh.ts` — Web Audio, công thức chép nguyên từ trang nghe thử đã duyệt; mọi lỗi nuốt
+      im lặng; kênh riêng, không đụng `phatAm()` của TTS.
+- [x] Gắn âm vào 8 màn bài tập (ngay dòng chấm) + Tổng kết (1 âm) + Lịch sử (vá ngày thành công).
+- [x] Nhóm "Âm thanh" ở màn Cài đặt (`CaiDatAmThanh.tsx`) · tách `CongTac.tsx` + `settings/kieu.ts`.
+- [x] `npm test` **380/380** · build xanh · lint **0 lỗi** (8 cảnh báo đều có từ trước M17) ·
+      **CDP 19/19**. Đo được: âm lệch lúc ô tô xanh/đỏ **< 0,5ms**, tới lúc chuyển màn 608ms (đúng) / 1011ms (sai);
+      tắt âm con / tắt tổng ⇒ 0 âm; Flashcard mặc định im; Tổng kết đúng 1 âm dù StrictMode; tải lại
+      giữ cài đặt; nghe thử vẫn kêu khi tắt tổng. **0 lệnh ghi DB** (chạy không đăng nhập).
 
 ### ✅ M16 — Chọn giao diện (XONG 2026-09-24)
 - [x] `src/lib/giaoDien.ts` thuần (9 ca TDD): `docCheDo` · `thuocTinhTheme` · `DS_CHE_DO` + **X-giaodien

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { chonNghiaFastDecision, type PayloadFastDecision, type VocabDb } from '../../../lib/player.ts'
 
 /**
@@ -36,6 +38,8 @@ export default function FastDecision({ vocab, payload, hienPhienAm, onTraLoi }: 
     if (daTraLoiRef.current) return
     daTraLoiRef.current = true
     setDaTraLoi(true)
+    // M17 — hết 4 giây cũng đi qua đây với dung=false ⇒ 1 chỗ gắn là phủ cả bấm lẫn hết giờ
+    phatAmThanh(amKhiCham(dung, false))
     onTraLoiRef.current(dung, false)
   }
 

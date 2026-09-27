@@ -1,4 +1,7 @@
-import type { KetQuaCham, Verdict } from '../../../lib/aiCore.ts'
+import { useEffect, useRef } from 'react'
+import { dungTuVerdict, type KetQuaCham, type Verdict } from '../../../lib/aiCore.ts'
+import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import type { VocabDb } from '../../../lib/player.ts'
 
 /**
@@ -26,6 +29,20 @@ const KIEU: Record<Verdict, { nhan: string; vien: string; nen: string; badge: st
 const NUT = 'rounded-14 py-[17px] text-16 font-semibold'
 
 export default function ChamAI({ trangThai, loi, ds, chiSo, onTiep, onChamLai }: Props) {
+  // M17 — phát âm khi 1 thẻ phản hồi HIỆN RA (hook phải đứng trước các `return` sớm bên dưới).
+  const vd = trangThai === 'xong' ? ds[chiSo]?.kq?.verdict : undefined
+  const daPhat = useRef<number | null>(null)
+  useEffect(() => {
+    // Đang chấm / lỗi ⇒ quên thẻ đã phát, để sau "Chấm lại" thẻ đầu tiên vẫn có âm
+    if (!vd) {
+      daPhat.current = null
+      return
+    }
+    if (daPhat.current === chiSo) return // StrictMode gọi effect 2 lần (MB-20/1)
+    daPhat.current = chiSo
+    phatAmThanh(amKhiCham(dungTuVerdict(vd), false))
+  }, [chiSo, vd])
+
   if (trangThai === 'dang_cham') {
     return (
       <div className="flex flex-col gap-[18px]">
