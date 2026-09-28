@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-09-22**
+> Cập nhật lần cuối: **2026-09-28** (M19)
 
 ## ✅ Đã xong
 
@@ -38,6 +38,19 @@
 - [x] **M16 — Chọn giao diện Sáng / Tối / Hệ thống** (2026-09-24).
 - [x] **M17 — Âm thanh phản hồi + cài đặt âm thanh** (2026-09-27).
 - [x] **M18 — Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng** (2026-09-28).
+- [x] **M19 — Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức** (2026-09-28).
+
+### ✅ M19 — Pinyin mặt sau · trạng thái rỗng/loading/lỗi · Đăng xuất (XONG 2026-09-28)
+- [x] Flashcard: mặt sau luôn hiện pinyin (nút 拼 chỉ còn điều khiển mặt trước).
+- [x] `src/lib/loi.ts` `dichLoiTai` — **6 ca TDD** L1–L6 (đã chứng minh L1/L2 đỏ khi phá code).
+- [x] `auth.ts` +`kiemTraMatKhau` +`dichLoiXacMinh` — **6 ca TDD**; 2 hàm cũ không đổi.
+- [x] `components/TrangThai.tsx` (`KhungRong` · `KhungLoi` · `BangLoi`) áp cho 7 màn: Dashboard · Chọn chủ đề ·
+      Từ vựng · Cài đặt · Lịch sử · Tổng kết · Thông báo. Vá 4 lỗi thật (2 kẹt skeleton, "0 ruby" giả, ngõ cụt Tổng kết).
+- [x] Nhóm "Tài khoản" ở Cài đặt: email + Đăng xuất (`local`) + Đăng xuất mọi thiết bị (nhập mật khẩu, `global`).
+      `HopXacNhan` +prop tuỳ chọn `nhanDangChay`. Màn Đăng nhập hiện `state.thongBao`.
+- [x] Vá race react-router 8 ↔ `RequireAuth` bằng cờ `auth/dangXuat.ts` (MB-40/Q5).
+- [x] `npm test` **396/396** · build xanh · lint 0 lỗi (9 cảnh báo, 1 mới cùng kiểu cũ) · **CDP 36/36 + 2/2 hồi quy**.
+- [ ] Kiểm ca "Đăng xuất mọi thiết bị" THÀNH CÔNG — chờ người dùng (đá phiên thật trên máy khác).
 
 ### ✅ M18 — Ghép cặp + xáo thứ tự từ (XONG 2026-09-28)
 - [x] `xepBai({ rng })` + `xaoChoDang` + `idCuoiCua` — **4 ca TDD** XR1–XR4 (XR3 chạy 300 hạt giống; đã
@@ -375,4 +388,4 @@
 | ~~Kết nối Supabase~~ | ✅ Đã gỡ chặn 2026-09-06 — project khôi phục, `check:db` xanh |
 | ~~RLS / migration bảo mật~~ | ✅ Đã gỡ chặn 2026-09-09 — chốt Phương án A (MB-10), đã triển khai xong |
 | ~~Mọi UI đọc DB~~ | ✅ Đã gỡ chặn 2026-09-16 — màn Đăng nhập + `RequireAuth` xong |
-| Màn chọn topic, nút Đăng xuất, các empty/loading/error state | 🟡 Chưa có mockup, cần duyệt layout trước khi code |
+| ~~Màn chọn topic, nút Đăng xuất, các empty/loading/error state~~ | ✅ Xong (M7 + M19) |

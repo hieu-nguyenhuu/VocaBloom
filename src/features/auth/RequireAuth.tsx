@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { supabase } from '../../lib/supabase.ts'
+import { dangDangXuatChuDong } from './dangXuat.ts'
 
 type TrangThai = 'dang_kiem' | 'co' | 'khong'
 
@@ -29,6 +30,8 @@ export default function RequireAuth() {
 
   if (tt === 'dang_kiem') return null
   if (tt === 'khong') {
+    // M19 — đăng xuất chủ động: màn Cài đặt tự điều hướng kèm `thongBao` (xem dangXuat.ts)
+    if (dangDangXuatChuDong()) return null
     return <Navigate to="/dang-nhap" replace state={{ from: location.pathname }} />
   }
   return <Outlet />

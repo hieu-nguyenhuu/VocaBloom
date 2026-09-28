@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Icon } from '../../components/icons.tsx'
 import HopXacNhan from '../../components/HopXacNhan.tsx'
+import { BangLoi, KhungLoi } from '../../components/TrangThai.tsx'
 import { homNayVN } from '../../lib/player.ts'
 import {
   canTroVa,
@@ -122,18 +123,40 @@ export default function LichSuPage() {
     await Promise.all([napThang(dangVa.ngay.slice(0, 7)), napVi()])
   }
 
+  /** M19 — thử lại ĐÚNG phần còn thiếu (ví + các tháng chưa tải được). */
+  function napLai() {
+    setLoi(null)
+    if (!vi) void napVi()
+    for (const t of thangs) if (!duLieu[t]) void napThang(t)
+  }
+
   const rubyCon = vi?.con ?? 0
+  // Lỗi khi CHƯA có ví hoặc tháng đầu ⇒ không có gì đáng tin để hiện (tránh "0 ruby" giả)
+  const loiTai = loi !== null && (vi === null || !duLieu[thangs[0]!])
+
+  if (loiTai) {
+    return (
+      <KhungTrang rong={960}>
+        <h1 className="mb-5 font-display text-22 font-bold text-content-primary md:text-24">Lịch sử học</h1>
+        <KhungLoi tieuDe="Chưa tải được lịch sử học" loi={loi} onThuLai={napLai} phu={{ nhan: 'Về Dashboard', toi: '/' }} />
+      </KhungTrang>
+    )
+  }
 
   return (
     <KhungTrang rong={960}>
       <div className="mb-5 flex items-center justify-between gap-3">
         <h1 className="font-display text-22 font-bold text-content-primary md:text-24">Lịch sử học</h1>
         {/* Ví ruby — HỒNG, cố ý KHÔNG bấm được (UI_DESIGN §63) */}
-        <div className="flex items-center gap-1.5 rounded-pill bg-award-bg px-3 py-1.5">
-          <Icon ten="ruby" size={16} className="text-award-icon" />
-          <span className="text-14 font-bold text-award-text">{rubyCon}</span>
-          <span className="text-13 text-award-text/80">ruby</span>
-        </div>
+        {vi ? (
+          <div className="flex items-center gap-1.5 rounded-pill bg-award-bg px-3 py-1.5">
+            <Icon ten="ruby" size={16} className="text-award-icon" />
+            <span className="text-14 font-bold text-award-text">{rubyCon}</span>
+            <span className="text-13 text-award-text/80">ruby</span>
+          </div>
+        ) : (
+          <div className="h-8 w-24 animate-pulse rounded-pill bg-surface-sunken" />
+        )}
       </div>
 
       <p className="mb-5 text-13 leading-relaxed text-content-muted">
@@ -142,9 +165,12 @@ export default function LichSuPage() {
       </p>
 
       {loi && (
-        <div role="alert" className="mb-4 rounded-14 border border-danger bg-danger-bg p-4 text-13 text-danger-text">
-          {loi}
-        </div>
+        <BangLoi
+          loi={loi}
+          onDong={() => setLoi(null)}
+          onThuLai={thangs.some((t) => !duLieu[t]) ? napLai : undefined}
+          className="mb-4"
+        />
       )}
 
       <div className="flex flex-col gap-6">
@@ -159,14 +185,22 @@ export default function LichSuPage() {
                     {t}
                   </div>
                 ))}
-                {luoi.map((o, i) => (
-                  <ONgay
-                    key={o.ngay ?? `dem-${i}`}
-                    o={o}
-                    chan={canTroVa(o, rubyCon)}
-                    onChon={() => setDangVa(o)}
-                  />
-                ))}
+                {duLieu[thang]
+                  ? luoi.map((o, i) => (
+                      <ONgay
+                        key={o.ngay ?? `dem-${i}`}
+                        o={o}
+                        chan={canTroVa(o, rubyCon)}
+                        onChon={() => setDangVa(o)}
+                      />
+                    ))
+                  : // M19 — skeleton đúng hình ô ngày (vòng 26px + số), thay cho lịch trống giả
+                    Array.from({ length: 35 }, (_, i) => (
+                      <div key={i} className="flex flex-col items-center gap-1 py-1">
+                        <span className="h-[26px] w-[26px] animate-pulse rounded-pill bg-surface-sunken" />
+                        <span className="h-2.5 w-3 animate-pulse rounded-8 bg-surface-sunken" />
+                      </div>
+                    ))}
               </div>
             </section>
           )

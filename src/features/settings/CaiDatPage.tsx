@@ -9,6 +9,8 @@ import ChonGiaoDien from './ChonGiaoDien.tsx'
 import CaiDatAmThanh from './CaiDatAmThanh.tsx'
 import { GIA_TRI, HANG, NHAN, NUT_NHO } from './kieu.ts'
 import CongTac from '../../components/CongTac.tsx'
+import { BangLoi, KhungLoi } from '../../components/TrangThai.tsx'
+import NhomTaiKhoan from './NhomTaiKhoan.tsx'
 
 /**
  * Màn Cài đặt (mockup 17 PC / 18 Mobile · SPECIFICATION §11). Ghi NGAY khi đổi — mockup không có
@@ -148,11 +150,23 @@ export default function CaiDatPage() {
     return (
       <KhungTrang rong={960}>
         <h1 className="mb-6 font-display text-22 font-bold text-content-primary md:text-24">Cài đặt</h1>
-        <div className="flex flex-col gap-4">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-10 bg-surface-sunken" />
-          ))}
-        </div>
+        {/* M19 — lỗi tải lần đầu từng làm màn kẹt skeleton vĩnh viễn (banner lỗi chỉ nằm ở nhánh có `cd`) */}
+        {loi ? (
+          <KhungLoi
+            tieuDe="Chưa tải được cài đặt"
+            loi={loi}
+            onThuLai={() => {
+              setLoi(null)
+              void nap()
+            }}
+          />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-24 animate-pulse rounded-10 bg-surface-sunken" />
+            ))}
+          </div>
+        )}
       </KhungTrang>
     )
   }
@@ -164,14 +178,7 @@ export default function CaiDatPage() {
         {daLuu && <span className="text-12 font-semibold text-success-text">Đã lưu</span>}
       </div>
 
-      {loi && (
-        <div role="alert" className="mb-4 flex items-center justify-between gap-3 rounded-14 border border-danger bg-danger-bg px-4 py-3 text-13 text-danger-text">
-          <span>Không lưu được: {loi}</span>
-          <button type="button" onClick={() => void nap()} className="shrink-0 rounded-10 bg-accent px-3 py-1.5 text-13 font-semibold text-white">
-            Thử lại
-          </button>
-        </div>
-      )}
+      {loi && <BangLoi tienTo="Không lưu được" loi={loi} onThuLai={() => void nap()} className="mb-4" />}
 
       <div className="flex flex-col gap-7 md:grid md:grid-cols-[1.2fr_1fr] md:items-start md:gap-8">
         <div className="flex flex-col gap-7">
@@ -352,6 +359,11 @@ export default function CaiDatPage() {
               onDoi={(v) => void ghi('low_queue_alert_enabled', v)}
             />
           </div>
+        </Nhom>
+
+        {/* M19 — đăng xuất máy này / mọi thiết bị (DESIGN.md §C) */}
+        <Nhom ten="Tài khoản">
+          <NhomTaiKhoan />
         </Nhom>
         </div>
       </div>

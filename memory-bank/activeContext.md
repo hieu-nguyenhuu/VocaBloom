@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-28** (kết thúc M18 — Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng)
+> Cập nhật lần cuối: **2026-09-28** (kết thúc M19 — Pinyin mặt sau Flashcard · trạng thái rỗng/loading/lỗi · Đăng xuất)
 
 ## Trạng thái hiện tại
 
@@ -33,9 +33,32 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M16 (Chọn giao diện Sáng / Tối / Hệ thống) — ✅ XONG 2026-09-24.**
 **M17 (Âm thanh phản hồi + cài đặt âm thanh) — ✅ XONG 2026-09-27.**
 **M18 (Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng) — ✅ XONG 2026-09-28.**
+**M19 (Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức) — ✅ XONG 2026-09-28.**
 
-> ⚠️ **M15, M16, M17, M18 CHƯA commit / CHƯA deploy** (người dùng tự commit). `npm run seed:test` vẫn hỏng
-> từ trước — chưa sửa.
+> ⚠️ M15–M18 **đã commit** (git log 28/09: `add ruby` · `add giao diện day night` · `add am thanh` · `fix ui`).
+> **M19 CHƯA commit** (người dùng tự commit). `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+
+### M19 vừa xong (2026-09-28) — MB-40
+- **Flashcard:** mặt sau LUÔN hiện pinyin; nút 拼 chỉ điều khiển mặt trước.
+- **`src/components/TrangThai.tsx`** — `KhungRong` (icon hạt giống + CTA) · `KhungLoi` (tải lần đầu hỏng: Thử lại +
+  lối thoát) · `BangLoi` (lỗi thao tác, banner đỏ cũ). Prop `gon` cho cột hẹp/panel. **Mọi màn dữ liệu mới về sau dùng
+  3 component này**, đừng tự vẽ banner đỏ + `error.message` trần.
+- **`src/lib/loi.ts` `dichLoiTai(unknown)`** — chỉ dịch mạng / hết phiên / 42501; lỗi `raise exception` tiếng Việt
+  trả NGUYÊN VĂN. Nhận cả chuỗi vì state các màn đang giữ `error.message`.
+- **4 lỗi thật đã vá:** Cài đặt & Từ vựng kẹt skeleton vĩnh viễn khi tải lần đầu lỗi · Lịch sử hiện "0 ruby" giả lúc
+  đang tải · Tổng kết lỗi = ngõ cụt. Từ vựng nay tách `loiChuDe`/`loiTu` (tải) khỏi `loi` (thao tác).
+- **Đăng xuất** (nhóm "Tài khoản" cuối màn Cài đặt, hiện email): máy này = `signOut({ scope: 'local' })` TƯỜNG MINH
+  (mặc định supabase-js là `global`!) · mọi thiết bị = nhập lại mật khẩu → `signInWithPassword` xác minh → `global`.
+  Máy khác thoát **chậm nhất 60′** (`jwt_exp = 3600` — `global` chỉ thu hồi refresh token). Đổi `jwt_exp` ⇒ sửa
+  `PHUT_HET_HAN_PHIEN` trong `HopDangXuatMoiNoi.tsx`.
+- ⭐ **Bẫy react-router 8 (đã đo):** location đổi trong `startTransition` ⇒ sau `signOut`, `<Navigate>` của `RequireAuth`
+  render với location CŨ và **ghi đè** `navigate(..., { state })` của mình. Chữa bằng cờ `auth/dangXuat.ts`
+  (`batDauDangXuat()` TRƯỚC signOut; `RequireAuth` thấy cờ ⇒ `null`; `DangNhap` hạ cờ khi mount). Ai thêm lối
+  đăng xuất mới phải bật cờ này.
+- ⚠️ **CHƯA kiểm** ca "Đăng xuất mọi thiết bị" THÀNH CÔNG (sẽ đá phiên thật trên máy khác) — chờ người dùng.
+- ⭐ **Cách kiểm thử trạng thái không đụng DB:** lỗi = `Network.setBlockedURLs(['*/rest/v1/*'])` (đếm được 0 lệnh ghi);
+  rỗng = `Fetch.enable` + `fulfillRequest` body `[]` CHỈ cho GET/HEAD; skeleton = `Fetch` hoãn `continueRequest` 3s.
+  Khi đếm request trong CDP nhớ loại preflight `OPTIONS` (lần đầu tôi báo FAIL oan vì đếm cả nó).
 
 ### M18 vừa xong (2026-09-28) — MB-39
 - **Ghép cặp:** 2 cột nay là **1 lưới chung** `grid-flow-col` + `gridTemplateRows: repeat(N, auto)` ⇒
@@ -439,9 +462,8 @@ app vẫn gọi AI thành công. **Đừng đặt lại 2 biến `VITE_` này** 
 1. ~~🔴 Bộ 6 icon giai đoạn cây~~ ✅ **ĐÃ CHỐT 2026-09-16 (MB-19, Phương án A)** — `IconCay` trong
    `icons.tsx`. Gate gỡ. Còn việc nhỏ cho người dùng: cập nhật cảnh báo lỗi thời ở `CLAUDE.md`,
    `UI_DESIGN.md` §10.4 và comment đầu 2 file HTML (file người dùng sở hữu).
-2. **🟡 Màn hình chưa có mockup khác:** màn chọn topic để "Ôn theo chủ đề", các trạng thái
-   rỗng/loading/lỗi của Dashboard/Từ vựng, **nút Đăng xuất** (dự kiến đặt ở màn Cài đặt M6).
-   Phải trình bày & chờ duyệt trước khi tự dựng layout. (Màn kết quả Import đã duyệt & xong.)
+2. ~~🟡 Màn hình chưa có mockup khác~~ ✅ **ĐÃ XONG** — chọn topic (M7), trạng thái rỗng/loading/lỗi +
+   nút Đăng xuất (M19, layout duyệt ở DESIGN.md M19). Màn mới chưa có mockup về sau vẫn phải trình bày & chờ duyệt.
 3. ~~🟡 Skill `vocab-csv-to-import` nằm ở `import_csv_vocab/`~~ ✅ **ĐÃ CHUYỂN 2026-09-23** sang
    `.claude/skills/vocabCsv2Json/` — Claude Code tự nạp được (đã xác nhận tên camelCase vẫn hợp lệ).
    Skill có 2 chế độ: mặc định chỉ sinh JSON · `--import` thì nạp thẳng qua connector Supabase.

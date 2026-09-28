@@ -3,7 +3,7 @@
  * Câu chữ hiện cho người dùng được assert nguyên văn: đây là "giao diện" của hàm.
  */
 import { describe, expect, it } from 'vitest'
-import { dichLoiDangNhap, kiemTraFormDangNhap } from './auth.ts'
+import { dichLoiDangNhap, dichLoiXacMinh, kiemTraFormDangNhap, kiemTraMatKhau } from './auth.ts'
 
 describe('kiemTraFormDangNhap', () => {
   it('email rỗng → báo nhập email', () => {
@@ -47,5 +47,32 @@ describe('X-auth — giữ tính thuần (như X1c của srs.ts)', () => {
     const { readFileSync } = await import('node:fs')
     const src = readFileSync('src/lib/auth.ts', 'utf8')
     expect(src).not.toMatch(/^\s*import\s/m)
+  })
+})
+
+describe('kiemTraMatKhau (M19 — đăng xuất mọi thiết bị)', () => {
+  it('rỗng → báo nhập, không gọi mạng', () => {
+    expect(kiemTraMatKhau('')).toEqual({ ok: false, loi: 'Nhập mật khẩu nhé.' })
+  })
+  it('KHÔNG trim — mật khẩu được phép chứa khoảng trắng', () => {
+    expect(kiemTraMatKhau(' ')).toEqual({ ok: true })
+  })
+})
+
+describe('dichLoiXacMinh', () => {
+  it('sai → nói thẳng "mật khẩu" (email đã biết, khác dichLoiDangNhap)', () => {
+    expect(dichLoiXacMinh({ message: 'Invalid login credentials', status: 400 })).toBe('Mật khẩu chưa đúng. Thử lại nhé.')
+  })
+  it('429 → báo đợi (dùng chung câu của đăng nhập)', () => {
+    expect(dichLoiXacMinh({ message: 'Request rate limit reached', status: 429 })).toBe(
+      'Thử quá nhiều lần rồi, đợi vài phút rồi thử lại nhé.',
+    )
+  })
+  it('mất mạng → báo kiểm tra mạng', () => {
+    expect(dichLoiXacMinh({ message: 'Failed to fetch' })).toBe('Không kết nối được. Kiểm tra mạng rồi thử lại nhé.')
+  })
+  it('lạ / null → câu chung', () => {
+    expect(dichLoiXacMinh({ message: 'boom', status: 500 })).toBe('Chưa xác minh được mật khẩu. Thử lại sau nhé.')
+    expect(dichLoiXacMinh(null)).toBe('Chưa xác minh được mật khẩu. Thử lại sau nhé.')
   })
 })

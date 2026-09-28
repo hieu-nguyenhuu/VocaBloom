@@ -9,12 +9,22 @@ type Props = {
   tieuDe: string
   noiDung: string
   nhanXacNhan?: string
+  /** M19 — nhãn nút khi đang chạy; mặc định giữ nguyên 'Đang xoá…' cho các chỗ gọi cũ. */
+  nhanDangChay?: string
   dangChay?: boolean
   onDong: () => void
   onXacNhan: () => void
 }
 
-export default function HopXacNhan({ tieuDe, noiDung, nhanXacNhan = 'Xoá', dangChay, onDong, onXacNhan }: Props) {
+export default function HopXacNhan({
+  tieuDe,
+  noiDung,
+  nhanXacNhan = 'Xoá',
+  nhanDangChay = 'Đang xoá…',
+  dangChay,
+  onDong,
+  onXacNhan,
+}: Props) {
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -45,7 +55,7 @@ export default function HopXacNhan({ tieuDe, noiDung, nhanXacNhan = 'Xoá', dang
             onClick={onXacNhan}
             className="flex-1 rounded-12 bg-danger py-3 text-14 font-semibold text-white disabled:opacity-60"
           >
-            {dangChay ? 'Đang xoá…' : nhanXacNhan}
+            {dangChay ? nhanDangChay : nhanXacNhan}
           </button>
         </div>
       </div>

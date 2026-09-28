@@ -10,6 +10,7 @@ import { THU_TU_STAGE } from '../../lib/dashboard.ts'
 import type { Stage } from '../../lib/srs.ts'
 import FormSuaTu from './FormSuaTu.tsx'
 import HopXacNhan from '../../components/HopXacNhan.tsx'
+import { BangLoi, KhungLoi, KhungRong } from '../../components/TrangThai.tsx'
 
 /**
  * Quản lý từ vựng & chủ đề (M8) — mockup 13/14 PC, 13/14/15 Mobile.
@@ -44,6 +45,9 @@ export default function TuVungPage() {
   const [nguPhap, setNguPhap] = useState<MucNguPhap[]>([])
   const [moNguPhap, setMoNguPhap] = useState<number | null>(null)
   const [loi, setLoi] = useState<string | null>(null)
+  // M19 — lỗi TẢI tách khỏi lỗi THAO TÁC: tải lần đầu hỏng thì phải có Thử lại, không kẹt skeleton
+  const [loiChuDe, setLoiChuDe] = useState<string | null>(null)
+  const [loiTu, setLoiTu] = useState<string | null>(null)
   const [dangSua, setDangSua] = useState<DongTu | null>(null)
   const [xacNhan, setXacNhan] = useState<XacNhan | null>(null)
   const [dangChay, setDangChay] = useState(false)
@@ -55,7 +59,8 @@ export default function TuVungPage() {
       supabase.from('word_state').select('vocab_id, stage, next_review_date'),
     ])
     const e = tRes.error ?? lRes.error ?? wRes.error
-    if (e) return setLoi(e.message)
+    if (e) return setLoiChuDe(e.message)
+    setLoiChuDe(null)
     setChuDe(
       tomTatChuDe({
         topics: (tRes.data ?? []) as { id: string; name: string; description: string | null }[],
@@ -68,6 +73,7 @@ export default function TuVungPage() {
 
   const napTu = useCallback(async (id: string) => {
     setTu(null)
+    setLoiTu(null)
     setMoNguPhap(null)
     // M12b — ngữ pháp chủ đề chỉ có nghĩa khi đang xem 1 chủ đề cụ thể
     if (id === TAT_CA) setNguPhap([])
@@ -80,7 +86,7 @@ export default function TuVungPage() {
     let cauTruy = supabase.from('vocab').select('*').order('word')
     if (id !== TAT_CA) {
       const lk = await supabase.from('vocab_topics').select('vocab_id').eq('topic_id', id)
-      if (lk.error) return setLoi(lk.error.message)
+      if (lk.error) return setLoiTu(lk.error.message)
       const ids = (lk.data ?? []).map((r) => r.vocab_id as string)
       if (ids.length === 0) return setTu([])
       cauTruy = cauTruy.in('id', ids)
@@ -89,8 +95,8 @@ export default function TuVungPage() {
       cauTruy,
       supabase.from('word_state').select('vocab_id, stage'),
     ])
-    if (vRes.error) return setLoi(vRes.error.message)
-    if (wRes.error) return setLoi(wRes.error.message)
+    if (vRes.error) return setLoiTu(vRes.error.message)
+    if (wRes.error) return setLoiTu(wRes.error.message)
     const stageCua = new Map((wRes.data ?? []).map((r) => [r.vocab_id as string, r.stage as Stage]))
     // `exactOptionalPropertyTypes`: chỉ gắn khoá `stage` khi THỰC SỰ có, không gán undefined
     setTu(
@@ -188,14 +194,7 @@ export default function TuVungPage() {
         <h1 className="font-display text-22 font-bold text-content-primary md:text-24">Từ vựng</h1>
       </div>
 
-      {loi && (
-        <div role="alert" className="mx-[22px] mb-3 flex items-start justify-between gap-3 rounded-14 border border-danger bg-danger-bg px-4 py-3 text-13 text-danger-text md:mx-8">
-          <span>{loi}</span>
-          <button type="button" onClick={() => setLoi(null)} className="shrink-0 font-semibold">
-            Đóng
-          </button>
-        </div>
-      )}
+      {loi && <BangLoi loi={loi} onDong={() => setLoi(null)} className="mx-[22px] mb-3 md:mx-8" />}
 
       <div className="flex flex-1 border-t border-border-card">
         {/* Cột chủ đề — Mobile ẩn khi đã vào 1 chủ đề */}
@@ -214,9 +213,28 @@ export default function TuVungPage() {
             </Link>
           )}
           {!chuDe
-            ? [0, 1, 2].map((i) => <div key={i} className="h-[70px] animate-pulse rounded-14 bg-surface-sunken" />)
+            ? loiChuDe
+              ? (
+                  <KhungLoi
+                    gon
+                    tieuDe="Chưa tải được chủ đề"
+                    loi={loiChuDe}
+                    onThuLai={() => {
+                      setLoiChuDe(null)
+                      void napChuDe()
+                    }}
+                  />
+                )
+              : [0, 1, 2].map((i) => <div key={i} className="h-[70px] animate-pulse rounded-14 bg-surface-sunken" />)
             : chuDe.length === 0
-              ? <p className="text-14 text-content-muted">Chưa có chủ đề nào — hãy import bộ từ đầu tiên.</p>
+              ? (
+                  <KhungRong
+                    gon
+                    tieuDe="Chưa có chủ đề nào"
+                    moTa="Import bộ từ đầu tiên để bắt đầu gieo hạt nhé."
+                    hanhDong={{ nhan: 'Đi tới Import', toi: '/import' }}
+                  />
+                )
               : chuDe.map((c) => {
                   const chon = c.id === topicId
                   return (
@@ -375,15 +393,38 @@ export default function TuVungPage() {
 
               <div className="max-w-[640px]">
                 {!tu ? (
-                  [0, 1, 2].map((i) => <div key={i} className="mb-2 h-14 animate-pulse rounded-10 bg-surface-sunken" />)
+                  loiTu ? (
+                    <KhungLoi
+                      gon
+                      tieuDe="Chưa tải được từ vựng"
+                      loi={loiTu}
+                      onThuLai={() => {
+                        if (topicId) void napTu(topicId)
+                      }}
+                    />
+                  ) : (
+                    [0, 1, 2].map((i) => <div key={i} className="mb-2 h-14 animate-pulse rounded-10 bg-surface-sunken" />)
+                  )
                 ) : dsHien.length === 0 ? (
-                  <p className="text-14 text-content-muted">
-                    {tu.length === 0
-                      ? laTatCa
-                        ? 'Chưa có từ vựng nào.'
-                        : 'Chủ đề này chưa có từ nào.'
-                      : 'Không tìm thấy từ nào khớp.'}
-                  </p>
+                  tu.length === 0 ? (
+                    <p className="text-14 text-content-muted">
+                      {laTatCa ? 'Chưa có từ vựng nào.' : 'Chủ đề này chưa có từ nào.'}
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <p className="text-14 text-content-muted">Không tìm thấy từ nào khớp.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTuKhoa('')
+                          setLocStage(TAT_CA)
+                        }}
+                        className="text-13 font-semibold text-accent"
+                      >
+                        Bỏ lọc
+                      </button>
+                    </div>
+                  )
                 ) : (
                   dsHien.map((t) => (
                     <div key={t.id} className="flex items-center justify-between gap-3 border-b border-border-card py-3 md:py-3.5">

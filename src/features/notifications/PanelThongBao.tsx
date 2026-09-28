@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Icon } from '../../components/icons.tsx'
 import HopXacNhan from '../../components/HopXacNhan.tsx'
+import { BangLoi, KhungRong } from '../../components/TrangThai.tsx'
 import { supabase } from '../../lib/supabase.ts'
 import { demDaDoc, demChuaDoc, thoiGianTuongDoi, type TinDb } from '../../lib/thongBao.ts'
 
@@ -103,12 +104,24 @@ export default function PanelThongBao({ dang, onDong, onDoiSoChuaDoc }: Props) {
 
       <div className="max-h-[360px] overflow-y-auto">
         {loi && (
-          <p role="alert" className="p-3 text-13 text-danger-text">
-            Không tải được thông báo: {loi}
-          </p>
+          <BangLoi
+            loi={loi}
+            onThuLai={() => {
+              setLoi(null)
+              void nap()
+            }}
+            className="m-3"
+          />
         )}
         {!loi && ds === null && <div className="m-3 h-16 animate-pulse rounded-10 bg-surface-sunken" />}
-        {!loi && ds?.length === 0 && <p className="p-3 text-13 text-content-muted">Chưa có thông báo nào.</p>}
+        {!loi && ds?.length === 0 && (
+          <KhungRong
+            gon
+            icon={<Icon ten="thong-bao" size={24} />}
+            tieuDe="Chưa có thông báo nào"
+            moTa="Khi hàng đợi từ mới sắp cạn, VocaBloom sẽ nhắc bạn ở đây."
+          />
+        )}
         {ds?.map((t) => (
           <button
             key={t.id}

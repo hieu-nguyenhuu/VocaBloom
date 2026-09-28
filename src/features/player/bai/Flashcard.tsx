@@ -9,6 +9,8 @@ import type { VocabDb } from '../../../lib/player.ts'
  * M10 (người dùng báo 19/09): Space để lật, phím 1/2/3 chọn Again/Hard/Good, mặt sau thêm câu ví dụ.
  * Phím tắt đăng ký NGAY TRONG component để tự gỡ khi rời màn, và bỏ qua khi con trỏ đang ở ô nhập
  * hoặc đang gõ IME.
+ *
+ * M19: mặt sau LUÔN hiện pinyin; nút 拼 chỉ điều khiển mặt trước.
  */
 type Props = { vocab: VocabDb; hienPhienAm: boolean; onChon: (nut: 'good' | 'hard' | 'again') => void }
 
@@ -64,9 +66,7 @@ export default function Flashcard({ vocab, hienPhienAm, onChon }: Props) {
               {vocab.word}
             </div>
             <div className="mt-2 text-28 font-semibold text-content-primary">{vocab.meaning_vi}</div>
-            {hienPhienAm && vocab.pinyin && (
-              <div className="mt-1 text-14 text-content-muted">{vocab.pinyin}</div>
-            )}
+            {vocab.pinyin && <div className="mt-1 text-14 text-content-muted">{vocab.pinyin}</div>}
             {vocab.collocation && (
               <div className="mt-4 text-15 text-content-muted">
                 <span lang={vocab.lang} className="font-han">

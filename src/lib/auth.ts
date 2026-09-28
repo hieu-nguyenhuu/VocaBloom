@@ -31,3 +31,17 @@ export function dichLoiDangNhap(loi: LoiDangNhap): string {
     return 'Không kết nối được. Kiểm tra mạng rồi thử lại nhé.'
   return 'Có lỗi khi đăng nhập. Thử lại sau nhé.'
 }
+
+/** M19 — ô mật khẩu khi đăng xuất mọi thiết bị. Không trim: mật khẩu có thể chứa khoảng trắng. */
+export function kiemTraMatKhau(matKhau: string): KetQuaForm {
+  return matKhau ? { ok: true } : { ok: false, loi: 'Nhập mật khẩu nhé.' }
+}
+
+/** M19 — lỗi khi XÁC MINH mật khẩu: email đã biết (lấy từ phiên) nên được nói thẳng "mật khẩu". */
+export function dichLoiXacMinh(loi: LoiDangNhap): string {
+  const m = (loi?.message ?? '').toLowerCase()
+  if (m.includes('invalid login credentials')) return 'Mật khẩu chưa đúng. Thử lại nhé.'
+  if (loi?.status === 429 || m.includes('rate limit') || m.includes('fetch') || m.includes('network'))
+    return dichLoiDangNhap(loi)
+  return 'Chưa xác minh được mật khẩu. Thử lại sau nhé.'
+}

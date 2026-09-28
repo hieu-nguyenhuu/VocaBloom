@@ -807,3 +807,20 @@ bằng số: âm lệch lúc tô màu < 0,5ms; tới lúc chuyển màn 608ms / 
 đăng nhập ⇒ 0 ghi DB). Cùng bộ đo chạy trên layout cũ chỉ đạt **5/12** ⇒ bộ đo phân biệt được đúng/sai.
 Test XR3 được chứng minh đỏ khi tạm tắt luật chống lặp.
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-28] MB-40 — M19: Pinyin mặt sau Flashcard · trạng thái rỗng/loading/lỗi · Đăng xuất 2 mức
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Màu lỗi **giữ ĐỎ** (`danger-*`) cho `KhungLoi` + `BangLoi` | Người dùng chọn (tôi đề xuất vàng vì đỏ đang mang nghĩa "trả lời sai" — không được chọn) |
+| **Q2** | "Đăng xuất" = **chỉ máy này** (`scope: 'local'` tường minh); **thêm** "Đăng xuất mọi thiết bị" bắt **nhập lại mật khẩu** | Mặc định supabase-js là `global` ⇒ đăng xuất PC sẽ đá luôn điện thoại. Supabase không có API kiểm mật khẩu ⇒ xác minh bằng `signInWithPassword` (sai không đụng phiên đang có) |
+| **Q3** | Hiện email tài khoản trong nhóm "Tài khoản" | Người dùng chọn. Đọc từ `getSession` (0 request) |
+| **Q4** | UI nói thật "máy khác thoát **chậm nhất 60 phút**" | `global` chỉ thu hồi refresh token; access token đã cấp sống tới `jwt_exp = 3600` (đọc READ-ONLY qua Management API) |
+| **Q5** | Cờ **`auth/dangXuat.ts`** — `RequireAuth` nhường quyền điều hướng khi đăng xuất chủ động | Đo bằng CDP: react-router 8 đổi location trong `startTransition` ⇒ `<Navigate from=/cai-dat>` của RequireAuth ghi đè `navigate(state.thongBao)` (2 lần do StrictMode) ⇒ mất thông báo + đăng nhập lại về Cài đặt. **Lệch plan duy nhất** |
+| **Q6** | `dichLoiTai` chỉ dịch mạng / hết phiên / quyền; còn lại **nguyên văn** | Lỗi `raise exception` của `va_ngay`/`xoa_chu_de`/`import_topic` đã là tiếng Việt, đúng nguyên nhân |
+| **Q7** | Lỗi **tải** (`KhungLoi`, thay cả vùng) tách khỏi lỗi **thao tác** (`BangLoi`, banner) | Gộp chung là nguyên nhân Từ vựng/Cài đặt kẹt skeleton: banner hiện mà dữ liệu vẫn `null` mãi |
+| **Q8** | Đúng mật khẩu nhưng bước `global` rớt mạng ⇒ báo thẳng "máy này đã thoát, máy khác CHƯA" | auth-js xoá phiên cục bộ kể cả khi lỗi ⇒ không được báo thành công giả |
+
+**Bằng chứng:** `npm test` **396/396** · build xanh · lint 0 lỗi · **CDP 36/36** (lỗi: chặn `*/rest/v1/*` ⇒ 0 lệnh ghi;
+rỗng: `Fetch.fulfillRequest` `[]` chỉ cho GET/HEAD; logout gửi đúng `scope=local`; sai mật khẩu không gửi logout) +
+**2/2 hồi quy** phiên hết hạn tự nhiên vẫn giữ `from`. Chưa kiểm ca "mọi thiết bị" thành công (chờ người dùng).
+**Trạng thái:** ✅ Đã áp dụng.

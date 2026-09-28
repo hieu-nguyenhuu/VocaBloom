@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Icon, IconCay, type StageCay } from '../../components/icons.tsx'
+import { KhungLoi, KhungRong } from '../../components/TrangThai.tsx'
 import {
   dai7Ngay,
   demDenHan,
@@ -166,19 +167,14 @@ export default function DashboardPage() {
   if (loi) {
     return (
       <KhungTrang>
-        <div
-          role="alert"
-          className="flex items-center justify-between gap-3 rounded-14 border border-danger bg-danger-bg px-4 py-3 text-13 text-danger-text"
-        >
-          <span>Không tải được Dashboard: {loi}</span>
-          <button
-            type="button"
-            onClick={() => void nap()}
-            className="shrink-0 rounded-10 bg-accent px-3 py-1.5 text-13 font-semibold text-white"
-          >
-            Thử lại
-          </button>
-        </div>
+        <KhungLoi
+          tieuDe="Chưa tải được Dashboard"
+          loi={loi}
+          onThuLai={() => {
+            setLoi(null)
+            void nap()
+          }}
+        />
       </KhungTrang>
     )
   }
@@ -275,15 +271,11 @@ export default function DashboardPage() {
               </Link>
             </div>
           ) : (
-            <div className="rounded-14 border border-border-card bg-surface-card p-5 text-center">
-              <p className="text-14 text-content-muted">Chưa có từ nào — hãy import bộ từ đầu tiên.</p>
-              <Link
-                to="/import"
-                className="mt-3 inline-block rounded-10 bg-accent px-4 py-2.5 text-14 font-semibold text-white"
-              >
-                Import từ vựng
-              </Link>
-            </div>
+            <KhungRong
+              tieuDe="Khu vườn còn trống"
+              moTa="Import bộ từ đầu tiên để bắt đầu gieo hạt nhé."
+              hanhDong={{ nhan: 'Đi tới Import', toi: '/import' }}
+            />
           )}
         </div>
 

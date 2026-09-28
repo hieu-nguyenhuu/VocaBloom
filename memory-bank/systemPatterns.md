@@ -164,6 +164,13 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
     âm + thêm tên file vào test X5 (`amThanhCore.test.ts`). Âm dùng Web Audio, **không** qua `phatAm()` (TTS).
 12. **Thứ tự từ trong mỗi dạng bài được XÁO riêng (M18)** qua `xepBai({ rng })`; thứ tự DẠNG thì cố định.
     Thêm nhánh dạng mới trong `xepBai` ⇒ duyệt qua `xao(...)`, đừng duyệt thẳng `tu`/`baiTap`.
+13. **Trạng thái rỗng/lỗi dùng `src/components/TrangThai.tsx` (M19)** — `KhungLoi` khi TẢI lần đầu hỏng (thay cả vùng,
+    có Thử lại = `setLoi(null)` rồi gọi lại `nap()`), `BangLoi` khi THAO TÁC hỏng trên màn đã có dữ liệu, `KhungRong`
+    khi chưa có gì. Đừng dùng CHUNG 1 state `loi` cho tải lẫn thao tác — đó là nguồn gốc lỗi "kẹt skeleton vĩnh
+    viễn" ở Từ vựng/Cài đặt. Câu lỗi luôn qua `dichLoiTai` (`src/lib/loi.ts`), không in `error.message` trần.
+14. **Đăng xuất (M19):** luôn truyền `scope` TƯỜNG MINH (`local` = máy này; mặc định của supabase-js là `global`).
+    Gọi `batDauDangXuat()` (`features/auth/dangXuat.ts`) TRƯỚC `signOut` rồi tự `navigate('/dang-nhap', { state })` —
+    thiếu cờ thì `<Navigate>` của `RequireAuth` ghi đè state (react-router 8 đổi location trong `startTransition`).
 
 ## 8. Chuẩn code & an toàn
 

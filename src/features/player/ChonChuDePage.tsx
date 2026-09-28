@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { tomTatChuDe, type TomTatChuDe } from '../../lib/chuDe.ts'
 import { homNayVN } from '../../lib/player.ts'
 import { supabase } from '../../lib/supabase.ts'
+import { KhungLoi, KhungRong } from '../../components/TrangThai.tsx'
 import KhungTrang from '../shell/KhungTrang.tsx'
 
 /**
@@ -45,19 +46,15 @@ export default function ChonChuDePage() {
   if (loi) {
     return (
       <KhungTrang rong={960}>
-        <div
-          role="alert"
-          className="flex items-center justify-between gap-3 rounded-14 border border-danger bg-danger-bg px-4 py-3 text-13 text-danger-text"
-        >
-          <span>Không tải được danh sách chủ đề: {loi}</span>
-          <button
-            type="button"
-            onClick={() => void nap()}
-            className="shrink-0 rounded-10 bg-accent px-3 py-1.5 text-13 font-semibold text-white"
-          >
-            Thử lại
-          </button>
-        </div>
+        <KhungLoi
+          tieuDe="Chưa tải được danh sách chủ đề"
+          loi={loi}
+          onThuLai={() => {
+            setLoi(null)
+            void nap()
+          }}
+          phu={{ nhan: 'Về Dashboard', toi: '/' }}
+        />
       </KhungTrang>
     )
   }
@@ -77,7 +74,11 @@ export default function ChonChuDePage() {
           ))}
         </div>
       ) : ds.length === 0 ? (
-        <p className="text-14 text-content-muted">Chưa có chủ đề nào — hãy import bộ từ đầu tiên.</p>
+        <KhungRong
+          tieuDe="Chưa có chủ đề nào"
+          moTa="Import bộ từ đầu tiên để bắt đầu gieo hạt nhé."
+          hanhDong={{ nhan: 'Đi tới Import', toi: '/import' }}
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {ds.map((c) => (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Icon, IconCay } from '../../components/icons.tsx'
 import {
@@ -10,6 +10,7 @@ import {
   type TongKet,
 } from '../../lib/player.ts'
 import { supabase } from '../../lib/supabase.ts'
+import { KhungLoi } from '../../components/TrangThai.tsx'
 import { phatAmThanh } from '../../lib/amThanh.ts'
 
 /**
@@ -54,34 +55,48 @@ export default function TongKetPage() {
     })
   }, [])
 
-  useEffect(() => {
+  // M19 — tách thành hàm để "Thử lại" gọi lại được. Thử lại CHỈ nạp số liệu: không chốt nhật ký
+  // lại, không phát lại âm (2 effect trên có ref guard riêng).
+  const nap = useCallback(async () => {
     const homNay = homNayVN(new Date())
-    void (async () => {
-      const [logRes, dueRes, retryRes] = await Promise.all([
-        supabase
-          .from('review_log')
-          .select('vocab_id, points, stage_before, stage_after, is_correct, vocab(word)')
-          .gte('reviewed_at', `${homNay}T00:00:00+07:00`)
-          .order('reviewed_at'),
-        supabase.from('word_state').select('vocab_id').lte('next_review_date', homNay).neq('stage', 'mastered'),
-        supabase.from('daily_retry_queue').select('vocab_id').eq('queue_date', homNay),
-      ])
-      const e = logRes.error ?? dueRes.error ?? retryRes.error
-      if (e) return setLoi(e.message)
-      // supabase-js suy kiểu quan hệ vocab(word) thành mảng; thực tế là 1 object (FK n-1)
-      const rows = (logRes.data ?? []) as unknown as (DongLogDb & { vocab: { word: string } | null })[]
-      const tu = Object.fromEntries(rows.map((r) => [r.vocab_id, r.vocab?.word ?? '?']))
-      const tk = tongHopTongKet(rows)
-      const retryIds = [...new Set((retryRes.data ?? []).map((r) => r.vocab_id as string))]
-      const due = (dueRes.data ?? []).map((r) => r.vocab_id as string)
-      setDl({ tk, tu, conCho: demConCho(due, retryIds), soRetry: retryIds.length, homNay })
-    })()
+    const [logRes, dueRes, retryRes] = await Promise.all([
+      supabase
+        .from('review_log')
+        .select('vocab_id, points, stage_before, stage_after, is_correct, vocab(word)')
+        .gte('reviewed_at', `${homNay}T00:00:00+07:00`)
+        .order('reviewed_at'),
+      supabase.from('word_state').select('vocab_id').lte('next_review_date', homNay).neq('stage', 'mastered'),
+      supabase.from('daily_retry_queue').select('vocab_id').eq('queue_date', homNay),
+    ])
+    const e = logRes.error ?? dueRes.error ?? retryRes.error
+    if (e) return setLoi(e.message)
+    // supabase-js suy kiểu quan hệ vocab(word) thành mảng; thực tế là 1 object (FK n-1)
+    const rows = (logRes.data ?? []) as unknown as (DongLogDb & { vocab: { word: string } | null })[]
+    const tu = Object.fromEntries(rows.map((r) => [r.vocab_id, r.vocab?.word ?? '?']))
+    const tk = tongHopTongKet(rows)
+    const retryIds = [...new Set((retryRes.data ?? []).map((r) => r.vocab_id as string))]
+    const due = (dueRes.data ?? []).map((r) => r.vocab_id as string)
+    setDl({ tk, tu, conCho: demConCho(due, retryIds), soRetry: retryIds.length, homNay })
   }, [])
+
+  useEffect(() => {
+    void nap()
+  }, [nap])
 
   if (loi) {
     return (
       <main className="flex min-h-[100dvh] items-center justify-center bg-surface-page p-6">
-        <div role="alert" className="rounded-14 border border-danger bg-danger-bg p-4 text-13 text-danger-text">Không tải được tổng kết: {loi}</div>
+        <div className="w-full max-w-[480px]">
+          <KhungLoi
+            tieuDe="Chưa tải được tổng kết"
+            loi={loi}
+            onThuLai={() => {
+              setLoi(null)
+              void nap()
+            }}
+            phu={{ nhan: 'Về Dashboard', toi: '/' }}
+          />
+        </div>
       </main>
     )
   }
