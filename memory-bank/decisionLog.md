@@ -824,3 +824,22 @@ Test XR3 được chứng minh đỏ khi tạm tắt luật chống lặp.
 rỗng: `Fetch.fulfillRequest` `[]` chỉ cho GET/HEAD; logout gửi đúng `scope=local`; sai mật khẩu không gửi logout) +
 **2/2 hồi quy** phiên hết hạn tự nhiên vẫn giữ `from`. Chưa kiểm ca "mọi thiết bị" thành công (chờ người dùng).
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-30] MB-41 — M20: Hội thoại chủ đề ở màn Từ vựng
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Khối gấp/mở **cả khối**, mặc định **ĐÓNG** | Người dùng chốt. Hội thoại 9–10 câu mở sẵn đẩy danh sách từ xuống rất xa |
+| **Q2** | Nghĩa ẩn, có nút "Hiện nghĩa" | Người dùng đồng ý đề xuất — giống màn Hội thoại kết thúc (M7/Q4) |
+| **Q3** | Thêm icon **`chat`** (2 bong bóng chồng nhau, tự vẽ) | Người dùng chốt. Mockup không có |
+| **Q4** | **KHÔNG nút loa** — khối không phát âm thanh gì | Người dùng yêu cầu bỏ |
+| **Q5** | Phân biệt với khối Ngữ pháp: nền `surface-card` (ngữ pháp `surface-sunken`) · gấp cả khối (ngữ pháp gấp từng mục) · icon + mũi tên · bong bóng chat | Yêu cầu "khác 1 chút để không nhầm". Không dùng hue mới (Color Lock) |
+| **Q6** | Bong bóng A dùng `surface-sunken` thay `surface-card` của mockup 11 | Nền khối đã là `surface-card` ⇒ A trùng nền, mất bong bóng. Vẫn đúng UI_DESIGN §8.3 "be nhạt/đậm" |
+| **Q7** | ⭐ Tải hội thoại **riêng, không await**, state `{ id, content }` | **Lệch plan duy nhất.** Plan gộp vào `Promise.all`; đo `Network.setBlockedURLs` ⇒ danh sách từ kẹt skeleton vĩnh viễn |
+
+**Phát hiện + vá lỗi cũ (M12b):** `napTu` `await` `topic_grammar` trước khi tải từ ⇒ request ngữ pháp hỏng cũng
+treo danh sách từ. Người dùng cho sửa ⇒ **Q8:** ngữ pháp dùng cùng khuôn Q7 (state `nguPhapCua { id, muc }`, `nguPhap`
+dẫn xuất lúc render — tiện thể khử luôn race phản hồi muộn của chủ đề cũ). Đo lại: 0 từ + 3 skeleton → 10 từ, 0 skeleton.
+
+**Bằng chứng:** `npm test` **396/396** · build xanh · lint 0 lỗi · **CDP 14/14** (chỉ đọc, 0 ghi DB), PC 1280 + Mobile 390,
+Sáng/Tối. Lần chạy đầu 11/12: 1 ca đỏ do lỗi cú pháp của chính script (`a && b ?? -1` thiếu ngoặc), không phải lỗi app.
+**Trạng thái:** ✅ Đã áp dụng.

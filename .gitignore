@@ -11,3 +11,4 @@ coverage/
 # Log & cache
 *.log
 .DS_Store
+du-lieu-import/

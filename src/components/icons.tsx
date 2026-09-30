@@ -32,8 +32,16 @@ export type TenIcon =
   | 'tim'
   // Lịch sử học (M15) — viên ruby; mockup KHÔNG có icon này, tự vẽ cùng nét với bộ hiện có
   | 'ruby'
+  // Từ vựng (M20) — 2 bong bóng chồng nhau = hội thoại A/B; mockup KHÔNG có, tự vẽ cùng nét
+  | 'chat'
 
 const PATH: Record<TenIcon, ReactElement> = {
+  chat: (
+    <>
+      <path d="M15 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h1v3l3-3" />
+      <path d="M11 10h8a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v2.5L15 19h-4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Z" />
+    </>
+  ),
   ruby: (
     <>
       <path d="M8 4h8l3 5-7 11-7-11z" />

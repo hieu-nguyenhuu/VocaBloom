@@ -4,11 +4,13 @@ import { Icon, IconCay, type StageCay } from '../../components/icons.tsx'
 import { tomTatChuDe, type TomTatChuDe } from '../../lib/chuDe.ts'
 import { homNayVN } from '../../lib/player.ts'
 import { docNguPhap, type MucNguPhap } from '../../lib/nguPhap.ts'
+import { docHoiThoai } from '../../lib/hoiThoai.ts'
 import { supabase } from '../../lib/supabase.ts'
 import { locTheoStage, locTu, NHAN_STAGE, type DongTu, type FieldSua } from '../../lib/tuVung.ts'
 import { THU_TU_STAGE } from '../../lib/dashboard.ts'
 import type { Stage } from '../../lib/srs.ts'
 import FormSuaTu from './FormSuaTu.tsx'
+import HoiThoaiChuDe from './HoiThoaiChuDe.tsx'
 import HopXacNhan from '../../components/HopXacNhan.tsx'
 import { BangLoi, KhungLoi, KhungRong } from '../../components/TrangThai.tsx'
 
@@ -41,9 +43,11 @@ export default function TuVungPage() {
   const [oTim, setOTim] = useState({ id: '', val: '' })
   const [oTen, setOTen] = useState({ id: '', val: '' })
   const [locStage, setLocStage] = useState<Stage | 'tat-ca'>(TAT_CA)
-  /** M12b — ngữ pháp CỦA CHỦ ĐỀ (bảng `topic_grammar`); chế độ "tất cả" không có. */
-  const [nguPhap, setNguPhap] = useState<MucNguPhap[]>([])
+  /** M12b — ngữ pháp CỦA CHỦ ĐỀ (bảng `topic_grammar`) + chủ đề của nó; chế độ "tất cả" không có. */
+  const [nguPhapCua, setNguPhapCua] = useState<{ id: string; muc: MucNguPhap[] } | null>(null)
   const [moNguPhap, setMoNguPhap] = useState<number | null>(null)
+  /** M20 — `topic_dialogues.content` THÔ + chủ đề của nó; đổi sang dòng lúc render vì cần `tu` để tra chữ bôi đậm. */
+  const [hoiThoai, setHoiThoai] = useState<{ id: string; content: unknown } | null>(null)
   const [loi, setLoi] = useState<string | null>(null)
   // M19 — lỗi TẢI tách khỏi lỗi THAO TÁC: tải lần đầu hỏng thì phải có Thử lại, không kẹt skeleton
   const [loiChuDe, setLoiChuDe] = useState<string | null>(null)
@@ -75,11 +79,18 @@ export default function TuVungPage() {
     setTu(null)
     setLoiTu(null)
     setMoNguPhap(null)
-    // M12b — ngữ pháp chủ đề chỉ có nghĩa khi đang xem 1 chủ đề cụ thể
-    if (id === TAT_CA) setNguPhap([])
-    else {
-      const g = await supabase.from('topic_grammar').select('*').eq('topic_id', id).order('thu_tu')
-      setNguPhap(docNguPhap(g.data))
+    // Ngữ pháp (M12b) + hội thoại (M20) chỉ có nghĩa khi đang xem 1 chủ đề cụ thể.
+    // Cả 2 là khối PHỤ: tải riêng, KHÔNG await (đo thật: request hỏng ⇒ treo cả danh sách từ ở skeleton).
+    // Gắn `id` để phản hồi muộn của chủ đề cũ không hiện nhầm; lỗi/không có ⇒ khối ẩn im lặng.
+    if (id !== TAT_CA) {
+      void supabase.from('topic_grammar').select('*').eq('topic_id', id).order('thu_tu').then(
+        (g) => setNguPhapCua({ id, muc: docNguPhap(g.data) }),
+        () => setNguPhapCua(null),
+      )
+      void supabase.from('topic_dialogues').select('content').eq('topic_id', id).maybeSingle().then(
+        (h) => setHoiThoai({ id, content: (h.data as { content?: unknown } | null)?.content ?? null }),
+        () => setHoiThoai(null),
+      )
     }
     // Chế độ "tất cả": lấy toàn bộ vocab; ngược lại lọc theo liên kết của chủ đề.
     // 2 truy vấn vì PostgREST không có FK trực tiếp vocab_topics ↔ vocab (bài học M7).
@@ -187,6 +198,11 @@ export default function TuVungPage() {
 
   const dsHien = locTheoStage(locTu(tu ?? [], tuKhoa), locStage)
   const demStage = (s: Stage) => (tu ?? []).filter((t) => t.stage === s).length
+  const nguPhap = !laTatCa && nguPhapCua && nguPhapCua.id === topicId ? nguPhapCua.muc : []
+  const dongHoiThoai =
+    laTatCa || !tu || !hoiThoai || hoiThoai.id !== topicId
+      ? []
+      : docHoiThoai(hoiThoai.content, Object.fromEntries(tu.map((t) => [t.id, t.word])))
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
@@ -354,6 +370,11 @@ export default function TuVungPage() {
                     })}
                   </ul>
                 </section>
+              )}
+
+              {/* M20 — Hội thoại CỦA CHỦ ĐỀ: gấp cả khối, mặc định đóng; không có thì KHÔNG hiện */}
+              {dongHoiThoai.length > 0 && (
+                <HoiThoaiChuDe key={topicId} dong={dongHoiThoai} lang={tu?.[0]?.lang ?? 'zh'} />
               )}
 
               <div className={`${O_TIM} mb-4 max-w-[320px]`}>

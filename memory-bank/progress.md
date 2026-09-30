@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-09-28** (M19)
+> Cập nhật lần cuối: **2026-09-30** (M20 — Hội thoại chủ đề ở màn Từ vựng)
 
 ## ✅ Đã xong
 
@@ -39,6 +39,17 @@
 - [x] **M17 — Âm thanh phản hồi + cài đặt âm thanh** (2026-09-27).
 - [x] **M18 — Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng** (2026-09-28).
 - [x] **M19 — Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức** (2026-09-28).
+- [x] **Dữ liệu CSV H3** (2026-09-29) — 17 chủ đề · 205 từ · 1.723 bài qua `vocabCsv2Json --import`; 3 lớp validate 17/17, kiểm chứng SQL sạch. Còn: sinh audio TTS (205 từ).
+- [x] **M20 — Hội thoại chủ đề ở màn Từ vựng** (2026-09-30).
+
+### ✅ M20 — Hội thoại chủ đề ở màn Từ vựng (XONG 2026-09-30)
+- [x] Icon `chat` (tự vẽ) · component `HoiThoaiChuDe.tsx` · `TuVungPage` tải `topic_dialogues` riêng (không await).
+- [x] `npm test` **396/396** · build xanh · lint 0 lỗi (9 cảnh báo như cũ) · **CDP 14/14** (PC + Mobile × Sáng/Tối,
+      0 lệnh ghi DB): số bong bóng = số dòng DB · mặc định đóng · đổi chủ đề tự đóng · "Tất cả" không có khối ·
+      0 nút loa · chặn request hội thoại ⇒ khối ẩn, danh sách từ vẫn hiện.
+- [x] Vá lỗi tự gây trong lúc làm: `Promise.all` treo danh sách từ khi request hội thoại hỏng.
+- [x] Vá lỗi cũ M12b (người dùng cho phép): request `topic_grammar` hỏng từng làm danh sách từ kẹt skeleton ⇒ nay
+      tải riêng, đo lại 10 từ / 0 skeleton. Hồi quy M20 12/12 + 2 ca chặn request vẫn xanh.
 
 ### ✅ M19 — Pinyin mặt sau · trạng thái rỗng/loading/lỗi · Đăng xuất (XONG 2026-09-28)
 - [x] Flashcard: mặt sau luôn hiện pinyin (nút 拼 chỉ còn điều khiển mặt trước).

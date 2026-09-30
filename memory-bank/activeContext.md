@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-28** (kết thúc M19 — Pinyin mặt sau Flashcard · trạng thái rỗng/loading/lỗi · Đăng xuất)
+> Cập nhật lần cuối: **2026-09-30** (M20: khối "Hội thoại chủ đề" ở màn Từ vựng)
 
 ## Trạng thái hiện tại
 
@@ -34,9 +34,39 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M17 (Âm thanh phản hồi + cài đặt âm thanh) — ✅ XONG 2026-09-27.**
 **M18 (Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng) — ✅ XONG 2026-09-28.**
 **M19 (Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức) — ✅ XONG 2026-09-28.**
+**M20 (Hội thoại chủ đề ở màn Từ vựng) — ✅ XONG 2026-09-30.**
 
-> ⚠️ M15–M18 **đã commit** (git log 28/09: `add ruby` · `add giao diện day night` · `add am thanh` · `fix ui`).
-> **M19 CHƯA commit** (người dùng tự commit). `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+> ⚠️ M15–M19 **đã commit** (M19 = `237d08d add signout`). **M20 CHƯA commit** (người dùng tự commit).
+> `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+
+### M20 vừa xong (2026-09-30) — MB-41
+- Màn Từ vựng: khối **"Hội thoại chủ đề"** ngay DƯỚI khối "Ngữ pháp chủ đề", TRƯỚC ô tìm kiếm. Component
+  `src/features/vocab/HoiThoaiChuDe.tsx`; dùng lại `docHoiThoai`/`chiaDam` (M7), 0 logic mới.
+- Cố ý khác khối ngữ pháp: nền `surface-card` · gấp **CẢ khối** (mặc định ĐÓNG) · icon mới **`chat`** (tím) + "· N câu"
+  + mũi tên (`back` xoay ±90°) · bong bóng A trái (`surface-sunken`) / B phải (`surface-chat-b`) · từ vựng tím đậm ·
+  nút "Hiện nghĩa". **KHÔNG có nút loa** — người dùng chốt, đừng thêm lại.
+- `key={topicId}` ⇒ đổi chủ đề tự đóng khối. Chế độ "Tất cả" / không có hội thoại / tải lỗi ⇒ không có khối.
+- ⭐ **Khối PHỤ phải tải riêng, KHÔNG await trong đường tải chính** — đo thật: request hội thoại hỏng trong
+  `Promise.all` ⇒ danh sách từ kẹt skeleton vĩnh viễn. State gắn `{ id, content }` chống phản hồi muộn của chủ đề cũ.
+- ✅ **Lỗi CŨ M12b cũng đã vá (người dùng cho phép):** chặn `*topic_grammar*` từng làm danh sách từ kẹt skeleton
+  (`napTu` `await` ngữ pháp TRƯỚC khi tải từ). Nay ngữ pháp cùng khuôn với hội thoại: state `nguPhapCua { id, muc }`,
+  `nguPhap` là giá trị DẪN XUẤT lúc render. Đo lại: 0 từ + 3 skeleton → **10 từ, 0 skeleton**, chỉ khối ngữ pháp ẩn.
+
+### Nạp dữ liệu CSV H3 (2026-09-29) — skill `vocabCsv2Json --import`
+- **DB nay: 20 chủ đề · 240 từ.** Mẻ mới 17 chủ đề "3. …" · 205 từ · **1.723 bài** · 49 ngữ pháp CỦA TỪ (24%) ·
+  23 ngữ pháp CHỦ ĐỀ · 17 hội thoại. Kiểm chứng SQL: word_state 205/205, 0 temp_id sót, 34/34 bài 2 từ cùng chủ đề.
+- File JSON ở `du-lieu-import/csv-h3/import-01…17-*.json`. ⚠️ Cùng thư mục có 3 file CŨ `import-0X-topic-a/b/c.json`
+  (23/09, của phiên trước) — KHÔNG thuộc mẻ này, đừng import lại (sẽ ra chủ đề trùng).
+- **Import bằng `npm run import:file`** (đăng nhập + RPC `import_topic`, chịu RLS — luật §9.6), KHÔNG dán JSON qua
+  connector như skill gợi ý (connector bỏ qua RLS + phải dán ~900KB). ⇒ **CLI không tự sinh TTS**: 205/240 từ
+  `audio_url = null`, Player dùng Web Speech — bấm "Tạo audio còn thiếu" ở Cài đặt.
+- Hàng đợi 205 từ, `new_words_per_day = 5` ⇒ ~41 ngày mới kích hoạt hết.
+- 8 từ lặp giữa các khối CSV (迟到, 照顾, 习惯, 环境, 鼻子, 头发, 像, 经过) ⇒ mỗi chủ đề 1 bản ghi riêng (DEC-21).
+- ⭐ **Cách sinh dữ liệu lớn đã hiệu quả:** soạn dạng gọn (câu tách token `chữ:pinyin`) + script dựng JSON, và
+  **đối chiếu pinyin với `pypinyin`** (có sẵn trên máy) chỉ báo lệch âm/thanh thật (bỏ qua thanh nhẹ, 一/不, biến
+  điệu 3-3, 儿). Bắt được 2 câu "sai cố ý" lại có thể hiểu đúng (长 cháng/zhǎng) và 1 mô tả lộ đáp án. Script ở
+  scratchpad phiên này (không lưu repo). Lớp 1 validate chạy bằng `npx -y ajv-cli@5 --spec=draft2020` (máy không có
+  `jsonschema`).
 
 ### M19 vừa xong (2026-09-28) — MB-40
 - **Flashcard:** mặt sau LUÔN hiện pinyin; nút 拼 chỉ điều khiển mặt trước.

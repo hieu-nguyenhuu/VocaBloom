@@ -171,6 +171,10 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 14. **Đăng xuất (M19):** luôn truyền `scope` TƯỜNG MINH (`local` = máy này; mặc định của supabase-js là `global`).
     Gọi `batDauDangXuat()` (`features/auth/dangXuat.ts`) TRƯỚC `signOut` rồi tự `navigate('/dang-nhap', { state })` —
     thiếu cờ thì `<Navigate>` của `RequireAuth` ghi đè state (react-router 8 đổi location trong `startTransition`).
+15. **Khối PHỤ (M20) phải tải riêng, KHÔNG `await`/`Promise.all` chung với dữ liệu chính.** Đo thật: request phụ
+    hỏng ⇒ đường tải chính treo, màn kẹt skeleton vĩnh viễn. Khuôn: `void q.then(ok, () => set(null))` + state gắn
+    `{ id, ... }` và chỉ render khi `id` khớp route (chống phản hồi muộn). `TuVungPage.napTu` đã áp cho CẢ ngữ pháp
+    lẫn hội thoại (2026-09-30). Kiểm bằng `Network.setBlockedURLs(['*<bảng phụ>*'])` ⇒ danh sách chính phải vẫn hiện.
 
 ## 8. Chuẩn code & an toàn
 
