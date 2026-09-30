@@ -215,8 +215,10 @@ export function xuLyTraLoi(dv: {
   dang_due: boolean
   la_bai_cuoi_cua_tu: boolean
   hom_nay: string
+  /** M21 — dạng của stage mà từ THỰC SỰ có bài (tầng gọi tính từ record). Không truyền ⇒ cả bộ lý thuyết. */
+  dang_kha_dung?: readonly DangBai[]
 }): KetQuaTraLoi {
-  const { trang_thai, dang_bai, dung, dung_goi_y, dang_due, la_bai_cuoi_cua_tu, hom_nay } = dv
+  const { trang_thai, dang_bai, dung, dung_goi_y, dang_due, la_bai_cuoi_cua_tu, hom_nay, dang_kha_dung } = dv
   const stage_before = trang_thai.stage
 
   // §4.4 — Select/Fill Dialog ôn 2 từ cùng lúc, nhưng CHỈ từ đang due mới được tính
@@ -270,7 +272,10 @@ export function xuLyTraLoi(dv: {
       // nào cho lượt sau → từ KẸT vĩnh viễn (cycle chỉ reset khi lên stage). Mở lại bộ bài, giữ
       // cycle_points cộng dồn, retry CẢ BỘ (exercise_types null — ngữ nghĩa có sẵn ở schema §2).
       // Phát hiện khi kiểm thật M4a 2026-09-16 (test R2d).
-      const chuaDat = DANG_BAI_THEO_STAGE[stage_before].filter((x) => !daDat.includes(x))
+      // M21: chỉ xét dạng THỰC CÓ bài — thiếu record fill_dialog thì "hết bộ" không bao giờ đúng (复习).
+      const chuaDat = DANG_BAI_THEO_STAGE[stage_before].filter(
+        (x) => !daDat.includes(x) && (!dang_kha_dung || dang_kha_dung.includes(x)),
+      )
       if (chuaDat.length === 0) {
         daDat = []
         vao_retry_queue = { reason: 'below_threshold', exercise_types: null }

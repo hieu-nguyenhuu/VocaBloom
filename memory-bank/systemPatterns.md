@@ -175,6 +175,9 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
     hỏng ⇒ đường tải chính treo, màn kẹt skeleton vĩnh viễn. Khuôn: `void q.then(ok, () => set(null))` + state gắn
     `{ id, ... }` và chỉ render khi `id` khớp route (chống phản hồi muộn). `TuVungPage.napTu` đã áp cho CẢ ngữ pháp
     lẫn hội thoại (2026-09-30). Kiểm bằng `Network.setBlockedURLs(['*<bảng phụ>*'])` ⇒ danh sách chính phải vẫn hiện.
+16. **Bộ bài LÝ THUYẾT ≠ bộ bài THỰC CÓ (M21).** `DANG_BAI_THEO_STAGE` liệt kê cả `select_dialog`/`fill_dialog`, nhưng
+    200/240 từ không có record 2 dạng này. Mọi phép "đã đạt hết bộ chưa?" phải dùng `dangKhaDung(stage, dangCoRecord)`
+    (`player.ts`); `xuLyTraLoi` nhận nó qua `dang_kha_dung`. Quên ⇒ từ kẹt "Dashboard đếm đến hạn, Player không có bài".
 
 ## 8. Chuẩn code & an toàn
 

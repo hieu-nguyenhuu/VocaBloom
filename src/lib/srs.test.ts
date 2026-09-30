@@ -181,6 +181,28 @@ describe('Chưa đạt ngưỡng (§4.2)', () => {
     expect(kq.trang_thai_moi.next_review_date).toBe(tu().next_review_date)
   })
 
+  it('R2e — thiếu record fill_dialog: đạt hết bài THỰC CÓ mà thiếu điểm → mở lại + retry CẢ BỘ (复习 30/09)', () => {
+    const kq = xuLyTraLoi({
+      trang_thai: tu({ stage: 'stage2', cycle_points: 6, cycle_completed_exercises: ['select_sentence', 'arrange_words'] }),
+      dang_bai: 'trans_collocation', dung: true, dung_goi_y: true, dang_due: true, la_bai_cuoi_cua_tu: true,
+      hom_nay: HOM_NAY, dang_kha_dung: ['select_sentence', 'arrange_words', 'trans_collocation'],
+    })
+    expect(kq.trang_thai_moi.cycle_points).toBe(7)
+    expect(kq.trang_thai_moi.stage).toBe('stage2')
+    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual([])
+    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: null })
+  })
+
+  it('R2f — có dang_kha_dung mà còn bài THỰC CÓ chưa đạt → retry đúng dạng đó, bỏ dạng không có bài', () => {
+    const kq = xuLyTraLoi({
+      trang_thai: tu({ stage: 'stage2', cycle_points: 3, cycle_completed_exercises: ['select_sentence'] }),
+      dang_bai: 'trans_collocation', dung: true, dung_goi_y: false, dang_due: true, la_bai_cuoi_cua_tu: true,
+      hom_nay: HOM_NAY, dang_kha_dung: ['select_sentence', 'arrange_words', 'trans_collocation'],
+    })
+    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual(['select_sentence', 'trans_collocation'])
+    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: ['arrange_words'] })
+  })
+
   it('R2c — dùng gợi ý được 0 điểm nhưng VẪN tính là đã đạt (không retry)', () => {
     const kq = traLoi(tu(), 'selection', { dung: true, dung_goi_y: true })
     expect(kq.dong_review_log.points).toBe(0)

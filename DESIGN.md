@@ -1,217 +1,202 @@
-# DESIGN.md — M20: Hội thoại chủ đề ở màn Từ vựng
+# DESIGN.md — M21: Từ kẹt "đến hạn nhưng không có bài" (复习)
 
-> Kiến trúc + kế hoạch của RIÊNG task này (thay nội dung M19 đã xong, M19 đã ghi vào memory-bank MB-40).
-> Ngày lập: 2026-09-30 · Trạng thái: **✅ DESIGN + PLAN ĐÃ DUYỆT · ĐÃ XONG 2026-09-30** (xem §F)
-> Người dùng chốt: (1) mặc định ĐÓNG · (2) nghĩa ẩn + nút "Hiện nghĩa" · (3) thêm icon chat ·
-> (4) **BỎ nút loa** — khối này không phát âm thanh gì.
-> ⚠️ Mockup 13/14 (Từ vựng) **không có** khối hội thoại ⇒ layout dưới đây là ĐỀ XUẤT, ghép từ 2 pattern
-> đã có: khối "Ngữ pháp chủ đề" (M12b) + bong bóng chat của mockup 11 (Hội thoại kết thúc).
+> Kiến trúc của RIÊNG task này (thay nội dung M20 đã xong, M20 đã ghi vào memory-bank MB-41).
+> Ngày lập: 2026-09-30 · Trạng thái: **✅ DESIGN + PLAN ĐÃ DUYỆT · ĐÃ XONG 2026-09-30** (MB-42)
+> Người dùng chốt: phương án **(a)** — Player tự gỡ kẹt, KHÔNG sửa tay DB.
 
-## A. Yêu cầu
+## A. Nguyên nhân (đã đo trên DB thật, chỉ đọc)
 
-Ở màn Từ vựng, khi chọn 1 chủ đề: ngay DƯỚI khối "Ngữ pháp chủ đề" hiện khối **"Hội thoại chủ đề"**, gấp/mở được,
-nhìn khác khối ngữ pháp để không nhầm.
+复习 · `stage2` · due 30/09 · `cycle_points 7 < 9` · `cycle_completed_exercises = [select_sentence, arrange_words,
+trans_collocation]` · **không có record `fill_dialog`** · `daily_retry_queue` rỗng.
 
-## B. Dữ liệu (không đổi DB, không đổi logic)
+1. `srs.ts` `xuLyTraLoi` (bài cuối, chưa đủ ngưỡng): `chuaDat = ['fill_dialog']` ≠ rỗng ⇒ KHÔNG vào nhánh R2d
+   "mở lại bộ bài" ⇒ `daDat` giữ nguyên 3 dạng.
+2. `PlayerPage` `locRetryTheoRecord` lọc `fill_dialog` (từ không có record) ⇒ `null` ⇒ không ghi hàng retry.
+3. Lần sau `xepBai` bỏ 3 dạng đã đạt ⇒ chỉ còn flashcard ⇒ `coBaiTinhDiem = false` ⇒ `khong_co_tu`.
+4. Dashboard chỉ đếm theo `next_review_date` ⇒ vẫn hiện 1. Từ **kẹt vĩnh viễn** + bị cron phạt mỗi ngày.
 
-- Bảng `topic_dialogues` (SPEC §2 nhóm 7): **1 chủ đề ↔ tối đa 1 hội thoại**, `content.lines[]` =
-  `{speaker, text_zh, pinyin, text_vi, highlight_vocab_ids}`. Dữ liệu thật: 9–10 câu/chủ đề, vai A/B, câu ≤ 32 ký tự.
-- **Dùng lại nguyên** `docHoiThoai` + `chiaDam` (`src/lib/hoiThoai.ts`, 13 ca test từ M7), không viết logic mới.
-- Map `id → word` để bôi đậm lấy từ state `tu` **đã tải sẵn** của màn ⇒ chỉ thêm **1 truy vấn**
-  `topic_dialogues.select('content').eq('topic_id', id).maybeSingle()`, chạy cùng lúc với truy vấn ngữ pháp.
-- `lang` lấy từ từ đầu tiên của chủ đề (như `HoiThoaiKetThucPage`).
+Phạm vi: **200/240 từ** không có `select_dialog`/`fill_dialog` (bài hội thoại dùng chung 2 từ) ⇒ stage1/2/intensive
+có điểm tối đa **bằng đúng ngưỡng** — dùng gợi ý 1 lần là kẹt. Các dạng 1-từ khác (8 dạng) đủ 100% record.
 
-## C. Layout đề xuất — phân biệt với khối Ngữ pháp bằng 4 điểm
+**Gốc rễ:** R2d (M4a) hỏi "đã đạt hết bộ bài LÝ THUYẾT chưa?", đúng ra phải hỏi "đã đạt hết bài THỰC CÓ chưa?".
+`srs.ts` thuần nên không biết từ có record nào — tầng gọi phải truyền vào.
 
-| | Ngữ pháp chủ đề (đang có) | **Hội thoại chủ đề (mới)** |
-|---|---|---|
-| Nền khối | `surface-sunken` (be lõm) | **`surface-card`** (trắng/nổi) + viền `border-card` |
-| Cách gấp | Luôn mở khối, gấp **từng mục** (+/−) | Gấp/mở **cả khối** 1 lần, mặc định **ĐÓNG** |
-| Đầu khối | Chữ in hoa nhỏ, xám | Icon **bong bóng chat** (tím) + "Hội thoại chủ đề" + "· N câu" + mũi tên xoay ▾/▴ |
-| Nội dung | Thẻ trắng xếp dọc | **Bong bóng chat A trái / B phải** đúng kiểu mockup 11 (thu nhỏ cỡ chữ 15/12) |
+## B. Thiết kế — 2 lớp, cùng 1 định nghĩa "dạng khả dụng"
 
-Khi mở:
-```
-┌───────────────────────────────────────────────┐
-│ 💬 Hội thoại chủ đề · 9 câu         [Hiện nghĩa] ▴ │
-├───────────────────────────────────────────────┤
-│ ╭──────────────────╮                           │
-│ │ 你**迟到**了！      │  ← A: be nhạt (sunken)     │
-│ │ nǐ chídào le      │                           │
-│ ╰──────────────────╯                           │
-│                    ╭──────────────────────╮    │
-│                    │ 对不起，路上堵车        │ ← B: be đậm (chat-b) │
-│                    ╰──────────────────────╯    │
-└───────────────────────────────────────────────┘
-```
-- Từ vựng bôi **tím đậm** (`text-accent`) như mockup 11 (Color Lock: tím = highlight từ trong hội thoại).
-- Nút "Hiện nghĩa / Ẩn nghĩa" (giống màn Hội thoại kết thúc). **KHÔNG có nút loa** (người dùng chốt).
-- Nền khối là trắng nên bong bóng A đổi sang **be nhạt `surface-sunken`** (mockup 11 A = trắng trên nền trang,
-  ở đây trắng-trên-trắng sẽ mất bong bóng); B giữ `surface-chat-b`. Vẫn đúng UI_DESIGN §8.3 "be nhạt/đậm, không hue mới".
-- Khung bong bóng giới hạn `max-w-[640px]` cho thẳng với danh sách từ bên dưới.
-- **Không có hội thoại** ⇒ không hiện khối (y như ngữ pháp). Chế độ **"Tất cả từ vựng"** ⇒ không có khối.
-- Lỗi tải hội thoại ⇒ **ẩn khối im lặng** (khối phụ, giống cách ngữ pháp đang xử lý; không chặn danh sách từ).
-- Đổi chủ đề ⇒ khối tự **đóng lại** và tắt "Hiện nghĩa".
+### B1. Hàm thuần mới `dangKhaDung(stage, dangCoRecord)` — `src/lib/player.ts`
+Dạng tính điểm của stage mà từ **thực sự dựng được màn**: dạng không cần record (đọc từ `vocab`) luôn có;
+dạng cần record chỉ có khi có record. `trans_sentence`/`complete_situation` cũng tính là cần record
+(khớp đúng `xepBai` dòng 188 — hiện nằm ngoài `CAN_RECORD` nhưng `xepBai` vẫn bỏ màn khi thiếu).
 
-## D. Phạm vi file
+### B2. Phòng lỗi — `srs.ts` `xuLyTraLoi` nhận tham số TUỲ CHỌN `dang_kha_dung?: readonly DangBai[]`
+- `chuaDat` chỉ xét các dạng trong `dang_kha_dung` (không truyền ⇒ hành vi cũ, ~32 test cũ khỏi sửa).
+- `chuaDat` rỗng ⇒ đi đúng nhánh R2d có sẵn: `daDat = []` + retry **cả bộ** (`exercise_types: null`).
+- ⇒ Từ thiếu điểm vào `daily_retry_queue`, ôn lại ở **lượt riêng SAU** (giữ đúng DEC-06), không lặp ngay.
+- `srs.ts` vẫn 0 dòng `import` (test X1c canh) — chỉ nhận thêm 1 mảng.
+- `PlayerPage` truyền `dangKhaDung(stage, dangCoRecord.current[vocab_id] ?? [])`.
 
-| File | Thay đổi |
+### B3. Gỡ kẹt (phương án a) — hàm thuần `moLaiNeuHetBai(tu, dangCo)` — `src/lib/player.ts`
+- Từ ở stage ôn, **mọi dạng khả dụng đều đã nằm trong `cycle_completed_exercises`** ⇒ trả bản sao với
+  `cycle_completed_exercises = []` (giữ nguyên `cycle_points`). Ngược lại trả nguyên từ.
+- `napSession` áp cho từng từ của phiên **trước `xepBai`** (luồng hằng ngày + retry; topic đã `boQuaDaDat` nên bỏ qua),
+  và dispatch chính bản đã mở lại ⇒ lần trả lời đầu tiên tự ghi `daDat` mới xuống DB. **0 lệnh ghi DB lúc tải.**
+- Đây là lưới an toàn cho dữ liệu ĐÃ kẹt (复习) và mọi đường kẹt chưa biết; B2 chặn đường kẹt đã biết.
+
+### Không làm (YAGNI)
+- Không đổi ngưỡng/điểm tối đa theo số bài khả dụng (đổi luật SPEC §3.2 — cần quyết riêng).
+- Không đổi cách Dashboard đếm (sau B2+B3, từ due luôn có bài ⇒ 2 bên khớp).
+- Không sinh thêm record hội thoại cho 200 từ (việc của dữ liệu import, không phải app).
+
+## C. Edge case đã xét
+| Ca | Kết quả |
 |---|---|
-| `src/components/icons.tsx` | +1 icon `chat` (tự vẽ, stroke 1.8 round — mockup không có) |
-| `src/features/vocab/HoiThoaiChuDe.tsx` | **MỚI** — component trình bày khối (nhận `dong`, `lang`), tự giữ state mở/nghĩa |
-| `src/features/vocab/TuVungPage.tsx` | +1 state, +1 truy vấn trong `napTu`, đặt component ngay dưới khối ngữ pháp |
+| Thiếu `fill_dialog`, sai `arrange_words` ở bài cuối | `chuaDat = [arrange_words]` ⇒ retry đúng dạng đó (như cũ) |
+| Đủ record, dùng gợi ý, đạt hết | nhánh R2d cũ, không đổi |
+| Từ là **vai B** của bài hội thoại | `dungMapRecord` đã tính record qua `blank_b_vocab_id` ⇒ vẫn khả dụng |
+| Từ `new` (matching luôn có) · `stage3` · `intensive` | dùng chung 1 định nghĩa, không nhánh riêng |
+| Kẹt + đang có hàng retry | luồng retry cũng áp B3 ⇒ không dựng 0 màn |
+| Mở lại xong mà người dùng thoát ngay | DB chưa đổi ⇒ lần sau B3 lại mở lại, không mất gì |
 
-0 package · 0 migration · 0 hàm logic mới (TDD không bắt buộc — task UI thuần, logic đã có test).
-Kiểm chứng: `npm test` + build + lint + CDP chụp PC/Mobile × Sáng/Tối, đo đóng/mở, "Tất cả" không có khối.
+## D. Kiểm chứng dự kiến
+- TDD: `dangKhaDung` · `moLaiNeuHetBai` · `xuLyTraLoi` ca **R2e** (thiếu `fill_dialog` + gợi ý ⇒ mở lại + retry cả bộ)
+  — RED trước, rồi GREEN. Fixture theo shape THẬT của 复习.
+- `npm test` · `npm run build` · `npm run lint`.
+- Kiểm thật: bấm "Bắt đầu ôn tập" ⇒ 复习 hiện đủ 3 bài stage2 (đo bằng `data-so-tu-phien` + đếm màn, **không trả lời**
+  để không ghi DB thay người dùng).
 
-## E. PLAN (4 task, mỗi task 2–5 phút)
+## E. PLAN — 8 task (mỗi task 2–5 phút)
 
-### T1 — Icon `chat` (`src/components/icons.tsx`)
-Thêm vào union `TenIcon` (sau `'ruby'`):
+### T1 · RED — `src/lib/srs.test.ts` (chèn ngay sau ca R2d, dòng 182)
 ```ts
-  // Từ vựng (M20) — 2 bong bóng chồng nhau = hội thoại A/B; mockup KHÔNG có, tự vẽ cùng nét
-  | 'chat'
-```
-Thêm vào `PATH` (sau `ruby`):
-```tsx
-  chat: (
-    <>
-      <path d="M15 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h1v3l3-3" />
-      <path d="M11 10h8a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1v2.5L15 19h-4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2Z" />
-    </>
-  ),
-```
+  it('R2e — thiếu record fill_dialog: đạt hết bài THỰC CÓ mà thiếu điểm → mở lại + retry CẢ BỘ (复习 30/09)', () => {
+    const kq = xuLyTraLoi({
+      trang_thai: tu({ stage: 'stage2', cycle_points: 6, cycle_completed_exercises: ['select_sentence', 'arrange_words'] }),
+      dang_bai: 'trans_collocation', dung: true, dung_goi_y: true, dang_due: true, la_bai_cuoi_cua_tu: true,
+      hom_nay: HOM_NAY, dang_kha_dung: ['select_sentence', 'arrange_words', 'trans_collocation'],
+    })
+    expect(kq.trang_thai_moi.cycle_points).toBe(7)
+    expect(kq.trang_thai_moi.stage).toBe('stage2')
+    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual([])
+    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: null })
+  })
 
-### T2 — Component mới `src/features/vocab/HoiThoaiChuDe.tsx`
-```tsx
-import { useState } from 'react'
-import { Icon } from '../../components/icons.tsx'
-import { chiaDam, type DongHoiThoai } from '../../lib/hoiThoai.ts'
+  it('R2f — có dang_kha_dung mà còn bài THỰC CÓ chưa đạt → retry đúng dạng đó, bỏ dạng không có bài', () => {
+    const kq = xuLyTraLoi({
+      trang_thai: tu({ stage: 'stage2', cycle_points: 3, cycle_completed_exercises: ['select_sentence'] }),
+      dang_bai: 'trans_collocation', dung: true, dung_goi_y: false, dang_due: true, la_bai_cuoi_cua_tu: true,
+      hom_nay: HOM_NAY, dang_kha_dung: ['select_sentence', 'arrange_words', 'trans_collocation'],
+    })
+    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual(['select_sentence', 'trans_collocation'])
+    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: ['arrange_words'] })
+  })
+```
+Chạy `npx vitest run src/lib/srs.test.ts` ⇒ **R2e + R2f phải ĐỎ** (hiện `chuaDat` còn `fill_dialog`).
+
+### T2 · GREEN — `src/lib/srs.ts`
+- Chữ ký `xuLyTraLoi` thêm (sau `hom_nay: string`):
+  ```ts
+    /** M21 — dạng của stage mà từ THỰC SỰ có bài (tầng gọi tính từ record). Không truyền ⇒ cả bộ lý thuyết. */
+    dang_kha_dung?: readonly DangBai[]
+  ```
+- Destructure thêm `dang_kha_dung`. Dòng 273:
+  ```ts
+      const chuaDat = DANG_BAI_THEO_STAGE[stage_before].filter(
+        (x) => !daDat.includes(x) && (!dang_kha_dung || dang_kha_dung.includes(x)),
+      )
+  ```
+- Thêm 1 dòng vào comment R2d: `// M21: chỉ xét dạng THỰC CÓ bài — thiếu record fill_dialog thì "hết bộ" không bao giờ đúng (复习).`
+
+Chạy lại ⇒ `srs.test.ts` xanh toàn bộ (R2d cũ vẫn xanh vì không truyền tham số).
+
+### T3 · RED — `src/lib/player.test.ts`
+Thêm `dangKhaDung, moLaiNeuHetBai` vào import từ `./player.ts`; cuối file:
+```ts
+describe('dangKhaDung + moLaiNeuHetBai (M21 — từ kẹt vì thiếu record hội thoại)', () => {
+  const phucTap: TrangThaiTu = {
+    vocab_id: 'fx', stage: 'stage2', next_review_date: '2026-09-30', cycle_points: 7,
+    cycle_completed_exercises: ['select_sentence', 'arrange_words', 'trans_collocation'],
+    total_points: 17, last_reviewed_at: '2026-09-30',
+  }
+  const co: DangBai[] = ['selection', 'audio_recognition', 'fast_decision', 'select_on_describe',
+    'select_sentence', 'arrange_words', 'trans_sentence', 'complete_situation']
+  const baiTap = co.map((type, i) => ({ id: `b${i}`, vocab_id: 'fx', type, payload: {} }))
+
+  it('K1 — dạng không cần record luôn có; dạng cần record chỉ có khi có record', () => {
+    expect(dangKhaDung('stage2', [])).toEqual(['trans_collocation'])
+    expect(dangKhaDung('stage2', co)).toEqual(['select_sentence', 'arrange_words', 'trans_collocation'])
+    expect(dangKhaDung('stage3', ['trans_sentence'])).toEqual(['make_sentence', 'trans_sentence'])
+    expect(dangKhaDung('mastered', co)).toEqual([])
+  })
+  it('K2 — đạt hết bài THỰC CÓ ⇒ mở lại bộ bài, giữ cycle_points + field khác', () => {
+    const kq = moLaiNeuHetBai({ ...phucTap, vocab: { word: '复习' } }, co)
+    expect(kq.cycle_completed_exercises).toEqual([])
+    expect(kq.cycle_points).toBe(7)
+    expect(kq.vocab).toEqual({ word: '复习' })
+  })
+  it('K3 — còn bài thực có chưa đạt / mastered / chưa đạt gì ⇒ trả NGUYÊN object', () => {
+    const conBai = { ...phucTap, cycle_completed_exercises: ['select_sentence'] as DangBai[] }
+    expect(moLaiNeuHetBai(conBai, co)).toBe(conBai)
+    const master = { ...phucTap, stage: 'mastered' as const }
+    expect(moLaiNeuHetBai(master, co)).toBe(master)
+    const rong = { ...phucTap, cycle_completed_exercises: [] as DangBai[] }
+    expect(moLaiNeuHetBai(rong, co)).toBe(rong)
+  })
+  it('K4 — tái hiện lỗi: từ kẹt chỉ ra flashcard; mở lại thì có bài tính điểm', () => {
+    expect(coBaiTinhDiem(xepBai({ tu: [phucTap], baiTap }).man)).toBe(false)
+    expect(coBaiTinhDiem(xepBai({ tu: [moLaiNeuHetBai(phucTap, co)], baiTap }).man)).toBe(true)
+  })
+})
+```
+Chạy `npx vitest run src/lib/player.test.ts` ⇒ **ĐỎ** (2 hàm chưa tồn tại).
+
+### T4 · GREEN — `src/lib/player.ts` (ngay sau `locRetryTheoRecord`)
+```ts
+/** `xepBai` bỏ màn tự luận khi thiếu record (trừ make_sentence) dù 2 dạng này nằm ngoài CAN_RECORD. */
+const CAN_RECORD_TU_LUAN: ReadonlySet<DangBai> = new Set(['trans_sentence', 'complete_situation'])
 
 /**
- * M20 — Hội thoại CỦA CHỦ ĐỀ ở màn Từ vựng (khối tra cứu, không tính điểm, không phát âm).
- * Mockup 13/14 không có khối này — layout duyệt ở DESIGN.md M20: bong bóng A/B mượn mockup 11, cố ý
- * khác khối "Ngữ pháp chủ đề" (nền nổi · gấp CẢ khối · mặc định ĐÓNG · icon chat).
- * Cha đặt `key={topicId}` ⇒ đổi chủ đề là khối tự đóng + tắt nghĩa, không cần effect.
+ * M21 — dạng TÍNH ĐIỂM của stage mà từ THỰC SỰ dựng được màn. 200/240 từ không có record
+ * select_dialog/fill_dialog (bài hội thoại dùng chung 2 từ) ⇒ bộ bài lý thuyết ≠ bộ bài thực có.
  */
-export default function HoiThoaiChuDe({ dong, lang }: { dong: DongHoiThoai[]; lang: 'zh' | 'en' }) {
-  const [mo, setMo] = useState(false)
-  const [hienNghia, setHienNghia] = useState(false)
+export function dangKhaDung(stage: Stage, dangCoRecord: readonly DangBai[]): DangBai[] {
+  const co = new Set(dangCoRecord)
+  return boBaiCua(stage).filter((d) => co.has(d) || (!CAN_RECORD.has(d) && !CAN_RECORD_TU_LUAN.has(d)))
+}
 
-  return (
-    <section className="mb-4 max-w-[640px] rounded-14 border border-border-card bg-surface-card">
-      <button
-        type="button"
-        aria-expanded={mo}
-        onClick={() => setMo((v) => !v)}
-        className="flex w-full items-center gap-2.5 px-4 py-3 text-left"
-      >
-        <Icon ten="chat" size={18} className="shrink-0 text-accent" />
-        <span className="text-14 font-bold text-content-primary">Hội thoại chủ đề</span>
-        <span className="text-12 text-content-muted">· {dong.length} câu</span>
-        <Icon
-          ten="back"
-          size={16}
-          strokeWidth={2}
-          className={`ml-auto shrink-0 text-content-muted transition-transform ${mo ? 'rotate-90' : '-rotate-90'}`}
-        />
-      </button>
-      {mo && (
-        <div className="flex flex-col gap-2.5 border-t border-border-card px-4 py-4">
-          <button
-            type="button"
-            onClick={() => setHienNghia((v) => !v)}
-            aria-pressed={hienNghia}
-            className="self-end rounded-pill border border-border-card px-3 py-1.5 text-12 font-semibold text-content-nav"
-          >
-            {hienNghia ? 'Ẩn nghĩa' : 'Hiện nghĩa'}
-          </button>
-          {dong.map((d, i) => {
-            const trai = d.speaker !== 'B'
-            return (
-              <div
-                key={i}
-                className={`max-w-[82%] border px-3.5 py-2.5 ${
-                  trai
-                    ? 'self-start rounded-16 rounded-bl-[4px] border-border-card bg-surface-sunken'
-                    : 'self-end rounded-16 rounded-br-[4px] border-border-chat-b bg-surface-chat-b'
-                }`}
-              >
-                <p lang={lang} className="font-han text-15 text-content-primary">
-                  {chiaDam(d.text, d.tu_dam).map((p, j) =>
-                    p.dam ? <b key={j} className="font-bold text-accent">{p.text}</b> : <span key={j}>{p.text}</span>,
-                  )}
-                </p>
-                {d.pinyin && <div className="mt-0.5 text-12 text-content-muted">{d.pinyin}</div>}
-                {hienNghia && d.nghia && <div className="mt-1 text-13 text-content-nav">{d.nghia}</div>}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </section>
-  )
+/**
+ * M21 — lưới an toàn: từ đã đạt HẾT dạng thực có mà vẫn due (chưa đủ ngưỡng) thì `xepBai` chỉ còn
+ * flashcard ⇒ Player báo "không có từ" trong khi Dashboard đếm 1 (复习, 30/09). Mở lại bộ bài,
+ * giữ nguyên cycle_points. Chỉ đổi bản trong bộ nhớ — DB cập nhật khi trả lời bài đầu tiên.
+ */
+export function moLaiNeuHetBai<T extends TrangThaiTu>(tu: T, dangCoRecord: readonly DangBai[]): T {
+  const kd = dangKhaDung(tu.stage, dangCoRecord)
+  if (kd.length === 0 || tu.cycle_completed_exercises.length === 0) return tu
+  return kd.every((d) => tu.cycle_completed_exercises.includes(d)) ? { ...tu, cycle_completed_exercises: [] } : tu
 }
 ```
-(`back` path `M15 18l-6-6 6-6` chỉ sang trái ⇒ `-rotate-90` = ▾ đóng, `rotate-90` = ▴ mở; không cần icon mới.)
+Chạy lại ⇒ `player.test.ts` xanh.
 
-### T3 — Nạp dữ liệu trong `TuVungPage.tsx`
-- Import: `import { docHoiThoai } from '../../lib/hoiThoai.ts'` + `import HoiThoaiChuDe from './HoiThoaiChuDe.tsx'`.
-- State ngay dưới `moNguPhap`:
-```ts
-  /** M20 — `topic_dialogues.content` THÔ; đổi sang dòng lúc render vì cần `tu` để tra chữ bôi đậm. */
-  const [hoiThoai, setHoiThoai] = useState<unknown>(null)
-```
-- Trong `napTu`, thay khối `if (id === TAT_CA) … else { … }` bằng:
-```ts
-    if (id === TAT_CA) {
-      setNguPhap([])
-      setHoiThoai(null)
-    } else {
-      const [g, h] = await Promise.all([
-        supabase.from('topic_grammar').select('*').eq('topic_id', id).order('thu_tu'),
-        supabase.from('topic_dialogues').select('content').eq('topic_id', id).maybeSingle(),
-      ])
-      setNguPhap(docNguPhap(g.data))
-      // M20 — lỗi/không có ⇒ `null` ⇒ khối ẩn im lặng (khối phụ, không chặn danh sách từ)
-      setHoiThoai((h.data as { content?: unknown } | null)?.content ?? null)
-    }
-```
+### T5 · Nối dây — `src/features/player/PlayerPage.tsx`
+- Import thêm `dangKhaDung, moLaiNeuHetBai` từ `../../lib/player.ts`.
+- `napSession`, ngay sau khối `const baiTapPhien = ...` (dòng ~255):
+  ```ts
+        // M21 — từ đã đạt hết dạng THỰC CÓ mà vẫn due ⇒ mở lại bộ bài (topic đã boQuaDaDat nên bỏ qua)
+        const coRecordPhien = dungMapRecord(baiTapPhien)
+        const phienMo = topicId ? phien : phien.map((t) => moLaiNeuHetBai(t, coRecordPhien[t.vocab_id] ?? []))
+  ```
+  rồi đổi `xepBai({ tu: phienMo, ... })` · `dangCoRecord.current = coRecordPhien` ·
+  `trang_thai: Object.fromEntries(phienMo.map((t) => [t.vocab_id, t]))`.
+- `traLoi` (dòng 356) thêm vào đối số `xuLyTraLoi`:
+  `dang_kha_dung: dangKhaDung(trang_thai.stage, dangCoRecord.current[vocab_id] ?? [])`.
 
-### T4 — Render trong `TuVungPage.tsx`
-- Cạnh `dsHien`:
-```ts
-  const dongHoiThoai =
-    laTatCa || !tu || hoiThoai === null ? [] : docHoiThoai(hoiThoai, Object.fromEntries(tu.map((t) => [t.id, t.word])))
-```
-- Ngay sau `)}` đóng khối ngữ pháp, trước ô tìm kiếm:
-```tsx
-              {/* M20 — Hội thoại CỦA CHỦ ĐỀ: gấp cả khối, mặc định đóng; không có thì KHÔNG hiện */}
-              {dongHoiThoai.length > 0 && (
-                <HoiThoaiChuDe key={topicId} dong={dongHoiThoai} lang={tu?.[0]?.lang ?? 'zh'} />
-              )}
-```
+### T6 · Kiểm tĩnh
+`npm test` · `npm run build` · `npm run lint` — xanh, không thêm lỗi lint mới.
 
-### T5 — Kiểm chứng (không ghi DB — chỉ ĐỌC, tuân §9.7)
-1. `npm test` · `npm run build` · `npm run lint` xanh.
-2. CDP (dev server + Chrome headless, đăng nhập thật, **chỉ thao tác đọc/bấm gấp mở**):
-   - Chủ đề có hội thoại: khối hiện, `aria-expanded=false`, 0 bong bóng · bấm ⇒ số bong bóng = số dòng
-     `topic_dialogues` đọc thẳng PostgREST · có ≥1 `<b>` tím · "Hiện nghĩa" hiện nghĩa · **0 nút "Nghe"**.
-   - Khối hội thoại nằm SAU khối ngữ pháp trong DOM · đổi chủ đề ⇒ khối đóng lại.
-   - `/tu-vung/tat-ca` ⇒ không có khối.
-   - Chụp PC 1280 + Mobile 390 × Sáng/Tối để đối chiếu thị giác (bong bóng A tách khỏi nền trắng, dark 3 tầng).
-3. Tắt dev server + Chrome, cập nhật memory-bank.
+### T7 · Kiểm thật CHỈ ĐỌC (0 lệnh ghi DB)
+`npm run dev` nền + Chrome headless CDP, đăng nhập, mở `/on-tap`: khẳng định KHÔNG có màn "không có từ",
+`data-so-tu-phien = 1`, màn đầu là Flashcard 复习. **Không bấm trả lời** (tránh ghi `review_log` thay người dùng);
+đếm request `POST /rpc/luu_tra_loi` = 0. Xong tắt Chrome + dev server.
 
-## F. Kết quả (2026-09-30)
-
-- `npm test` **396/396** · build xanh · lint **0 lỗi** (9 cảnh báo — đúng bằng trước task) · **CDP 14/14** (PC 1280 +
-  Mobile 390, Sáng/Tối, chỉ ĐỌC — 0 lệnh ghi DB).
-- ⚠️ **Lệch plan duy nhất (T3):** plan gộp truy vấn hội thoại vào `Promise.all` với ngữ pháp. Đo thật bằng
-  `Network.setBlockedURLs(['*topic_dialogues*'])` ⇒ **danh sách từ kẹt skeleton vĩnh viễn** — trái cam kết "khối phụ
-  không chặn danh sách từ". Đã đổi sang tải **riêng, không await**, state gắn `{ id, content }` để phản hồi muộn của
-  chủ đề cũ không hiện nhầm. Khối ngữ pháp trả về nguyên như cũ.
-- ✅ **Lỗi CŨ M12b — đã vá theo yêu cầu người dùng:** cùng phép đo với `*topic_grammar*` từng làm danh sách từ kẹt
-  skeleton (`napTu` `await` ngữ pháp TRƯỚC khi tải từ). Nay ngữ pháp cũng tải riêng, state `nguPhapCua { id, muc }`.
-  Đo lại: **10 từ, 0 skeleton**, chỉ khối ngữ pháp ẩn · hồi quy M20 12/12 · chặn hội thoại 2/2.
-- Ca "chủ đề không có hội thoại" không có dữ liệu thật (20/20 chủ đề đều có) ⇒ phủ bằng ca chặn request (lỗi và
-  rỗng cùng đi về nhánh ẩn khối).
+### T8 · Ký ức
+`activeContext.md` + `progress.md` (M21) + `decisionLog.md` MB-42 + `systemPatterns.md` §7 thêm pattern
+"bộ bài lý thuyết ≠ bộ bài thực có". Cập nhật trạng thái DESIGN.md.

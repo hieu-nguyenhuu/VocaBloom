@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-30** (M20: khối "Hội thoại chủ đề" ở màn Từ vựng)
+> Cập nhật lần cuối: **2026-09-30** (M21: sửa từ kẹt "đến hạn nhưng không có bài")
 
 ## Trạng thái hiện tại
 
@@ -35,9 +35,36 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M18 (Ghép cặp 2 cột bằng nhau + xáo thứ tự từ theo dạng) — ✅ XONG 2026-09-28.**
 **M19 (Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức) — ✅ XONG 2026-09-28.**
 **M20 (Hội thoại chủ đề ở màn Từ vựng) — ✅ XONG 2026-09-30.**
+**M21 (Sửa từ kẹt "đến hạn nhưng Player không có bài") — ✅ XONG 2026-09-30.**
 
-> ⚠️ M15–M19 **đã commit** (M19 = `237d08d add signout`). **M20 CHƯA commit** (người dùng tự commit).
+> ⚠️ M20 đã commit (`8d96d2c add communication`). **M21 CHƯA commit** (người dùng tự commit).
 > `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+
+### M21 vừa xong (2026-09-30) — MB-42: từ kẹt "đến hạn nhưng không có bài"
+- `player.ts` +`dangKhaDung(stage, dangCoRecord)` (dạng tính điểm THỰC dựng được màn; `trans_sentence`/`complete_situation`
+  cũng cần record dù ngoài `CAN_RECORD`) + `moLaiNeuHetBai(tu, dangCo)` (đạt hết dạng thực có ⇒ `daDat = []` trong bộ nhớ).
+- `srs.ts` `xuLyTraLoi` +tham số TUỲ CHỌN `dang_kha_dung` ⇒ `chuaDat` chỉ xét dạng thực có; rỗng ⇒ nhánh R2d (mở lại + retry cả bộ).
+- `PlayerPage.napSession` áp `moLaiNeuHetBai` trước `xepBai` (trừ topic) và dispatch bản đã mở; `traLoi` truyền `dang_kha_dung`.
+  **Lúc nạp không ghi DB** — DB đổi khi trả lời bài đầu tiên.
+- Kiểm thật chỉ đọc: `/on-tap` ra Flashcard 复习, `data-so-tu-phien = 1`, 4 chấm (flashcard + 3 bài stage2), 0 lệnh ghi
+  (chỉ `rpc/vi_ruby` đọc); `word_state` 复习 không đổi. ⚠️ Cổng 5199 đang bị tiến trình KHÁC chiếm — dev dùng cổng khác.
+
+#### Chẩn đoán gốc (giữ để tra)
+- Từ kẹt: **复习** stage2, `cycle_points 7 < 9`, đã đạt đủ 3 dạng CÓ record (`select_sentence`·`arrange_words`·
+  `trans_collocation` — bài cuối dùng gợi ý nên chỉ +1), **không có record `fill_dialog`**, không có hàng retry.
+- Chuỗi lỗi: `srs.ts` tính `chuaDat = ['fill_dialog']` (≠ rỗng ⇒ KHÔNG mở lại bộ bài theo R2d) → `locRetryTheoRecord`
+  lọc mất vì từ không có record ⇒ `null` ⇒ không ghi retry → lần sau `xepBai` chỉ còn flashcard → `coBaiTinhDiem`
+  false → `khong_co_tu`. Dashboard không lọc theo bài khả dụng nên vẫn đếm 1. **Kẹt VĨNH VIỄN** + bị cron phạt mỗi ngày.
+- Phạm vi: **200/240 từ** không có `select_dialog`/`fill_dialog` ⇒ ở stage1/2/intensive điểm tối đa = đúng ngưỡng,
+  dùng gợi ý 1 lần là kẹt. Hiện 5 từ stage1 + 20 từ stage2/intensive nằm trong vùng nguy cơ; mới 1 từ kẹt thật.
+- R2d (M4a) chỉ phủ ca "đạt HẾT bộ bài lý thuyết", không phủ ca "đạt hết bài THỰC CÓ" — `srs.ts` không biết record.
+
+### Bộ từ "HSK4 giao tiếp" (2026-09-30) — CSV, CHƯA sinh JSON, CHƯA import
+- `du-lieu-import/hsk4-giao-tiep/hsk4-giao-tiep.csv` — **20 chủ đề · 438 từ · 40 ngữ pháp chủ đề**, soạn riêng cho
+  người dùng (Test Engineer xưởng điện tử; phỏng vấn Embedded/EE/Test). Ưu tiên văn cảnh hơn danh sách HSK4.
+- Đã tự kiểm: **0 trùng giữa các chủ đề · 0 trùng 232 từ zh đang có trong DB** (đọc DB 30/09). Cột `Nghia` đã điền
+  ⇒ skill dùng NGUYÊN VĂN làm `meaning_vi`. Import sau ngày 30/09 thì nên đối chiếu DB lại.
+- Bước tiếp (chờ người dùng duyệt nội dung): chạy skill `vocabCsv2Json` → import bằng `npm run import:file`.
 
 ### M20 vừa xong (2026-09-30) — MB-41
 - Màn Từ vựng: khối **"Hội thoại chủ đề"** ngay DƯỚI khối "Ngữ pháp chủ đề", TRƯỚC ô tìm kiếm. Component

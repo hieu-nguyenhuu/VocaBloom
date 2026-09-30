@@ -513,6 +513,29 @@ export function locRetryTheoRecord(retry: HangRetry | null, dangCoRecord: DangBa
   return con.length > 0 ? { ...retry, exercise_types: con } : null
 }
 
+/** `xepBai` bỏ màn tự luận khi thiếu record (trừ make_sentence) dù 2 dạng này nằm ngoài CAN_RECORD. */
+const CAN_RECORD_TU_LUAN: ReadonlySet<DangBai> = new Set(['trans_sentence', 'complete_situation'])
+
+/**
+ * M21 — dạng TÍNH ĐIỂM của stage mà từ THỰC SỰ dựng được màn. 200/240 từ không có record
+ * select_dialog/fill_dialog (bài hội thoại dùng chung 2 từ) ⇒ bộ bài lý thuyết ≠ bộ bài thực có.
+ */
+export function dangKhaDung(stage: Stage, dangCoRecord: readonly DangBai[]): DangBai[] {
+  const co = new Set(dangCoRecord)
+  return boBaiCua(stage).filter((d) => co.has(d) || (!CAN_RECORD.has(d) && !CAN_RECORD_TU_LUAN.has(d)))
+}
+
+/**
+ * M21 — lưới an toàn: từ đã đạt HẾT dạng thực có mà vẫn due (chưa đủ ngưỡng) thì `xepBai` chỉ còn
+ * flashcard ⇒ Player báo "không có từ" trong khi Dashboard đếm 1 (复习, 30/09). Mở lại bộ bài,
+ * giữ nguyên cycle_points. Chỉ đổi bản trong bộ nhớ — DB cập nhật khi trả lời bài đầu tiên.
+ */
+export function moLaiNeuHetBai<T extends TrangThaiTu>(tu: T, dangCoRecord: readonly DangBai[]): T {
+  const kd = dangKhaDung(tu.stage, dangCoRecord)
+  if (kd.length === 0 || tu.cycle_completed_exercises.length === 0) return tu
+  return kd.every((d) => tu.cycle_completed_exercises.includes(d)) ? { ...tu, cycle_completed_exercises: [] } : tu
+}
+
 /**
  * Dạng KHÔNG tính điểm nâng stage: flashcard (DEC-11) · grammar (chỉ để đọc) ·
  * 3 màn NHẬP tự luận (điểm ghi ở màn `cham_ai` đi kèm, không phải ở màn nhập).

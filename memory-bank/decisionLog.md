@@ -843,3 +843,21 @@ dẫn xuất lúc render — tiện thể khử luôn race phản hồi muộn c
 **Bằng chứng:** `npm test` **396/396** · build xanh · lint 0 lỗi · **CDP 14/14** (chỉ đọc, 0 ghi DB), PC 1280 + Mobile 390,
 Sáng/Tối. Lần chạy đầu 11/12: 1 ca đỏ do lỗi cú pháp của chính script (`a && b ?? -1` thiếu ngoặc), không phải lỗi app.
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-09-30] MB-42 — M21: từ kẹt "Dashboard đếm đến hạn, Player không có bài"
+**Hiện tượng:** Dashboard "1 từ đến hạn", bấm ôn ⇒ "Hôm nay không có từ nào cần ôn". Từ: 复习 (stage2, 7/9 điểm).
+**Gốc rễ:** R2d (MB-20) hỏi "đạt hết bộ bài LÝ THUYẾT chưa?" — 复习 không có record `fill_dialog` nên câu trả lời
+luôn "chưa" ⇒ không mở lại bộ bài; `locRetryTheoRecord` lại lọc mất `fill_dialog` ⇒ không có hàng retry ⇒ `xepBai`
+chỉ còn flashcard ⇒ `coBaiTinhDiem` false. Kẹt vĩnh viễn + cron phạt mỗi ngày. 200/240 từ có nguy cơ (dùng gợi ý 1 lần).
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | `xuLyTraLoi` nhận `dang_kha_dung?` TUỲ CHỌN; `chuaDat` chỉ xét dạng thực có | `srs.ts` thuần, không biết record ⇒ tầng gọi truyền vào. Không truyền ⇒ hành vi cũ, test cũ không sửa |
+| **Q2** | Hết dạng thực có mà thiếu điểm ⇒ **nhánh R2d có sẵn** (mở lại + retry cả bộ) | Giữ DEC-06: ôn lại ở lượt riêng sau, không lặp ngay |
+| **Q3** | Gỡ kẹt = phương án **(a)**: `moLaiNeuHetBai` lúc nạp phiên, chỉ đổi bản trong bộ nhớ | Người dùng chọn; không sửa tay DB; lưới an toàn cho mọi đường kẹt chưa biết |
+| **Q4** | `trans_sentence`/`complete_situation` tính là CẦN record trong `dangKhaDung` | Khớp `xepBai` (bỏ màn khi thiếu) dù 2 dạng này nằm ngoài `CAN_RECORD` |
+| **Q5** | KHÔNG đổi ngưỡng/điểm tối đa theo số bài thực có | Là luật SPEC §3.2 — cần quyết riêng nếu muốn |
+**Luật rút ra:** bộ bài LÝ THUYẾT (`DANG_BAI_THEO_STAGE`) ≠ bộ bài THỰC CÓ (theo record). Mọi phép "đã đạt hết chưa?" phải
+xét bộ thực có — bài hội thoại dùng chung 2 từ nên phần lớn từ thiếu.
+**Bằng chứng:** `npm test` **402/402** (R2e R2f K1–K4, đều ĐỎ trước) · build xanh · lint 0 lỗi · CDP chỉ đọc: `/on-tap` ra
+Flashcard 复习 + 4 chấm, 0 lệnh ghi, `word_state` không đổi.
+**Trạng thái:** ✅ Đã áp dụng.

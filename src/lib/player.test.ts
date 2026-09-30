@@ -27,6 +27,8 @@ import {
   tachChoTrong,
   catTheoGioiHan,
   oGoiY,
+  dangKhaDung,
+  moLaiNeuHetBai,
 } from './player.ts'
 import { boBaiCua, gomSession, type DangBai, type Stage, type TrangThaiTu } from './srs.ts'
 
@@ -644,5 +646,41 @@ describe('xepBai — xáo thứ tự từ theo từng dạng (M18)', () => {
       }
       expect(dem).toEqual(Object.fromEntries(NAM.map((id) => [id, 1])))
     }
+  })
+})
+
+describe('dangKhaDung + moLaiNeuHetBai (M21 — từ kẹt vì thiếu record hội thoại)', () => {
+  const phucTap: TrangThaiTu = {
+    vocab_id: 'fx', stage: 'stage2', next_review_date: '2026-09-30', cycle_points: 7,
+    cycle_completed_exercises: ['select_sentence', 'arrange_words', 'trans_collocation'],
+    total_points: 17, last_reviewed_at: '2026-09-30',
+  }
+  const co: DangBai[] = ['selection', 'audio_recognition', 'fast_decision', 'select_on_describe',
+    'select_sentence', 'arrange_words', 'trans_sentence', 'complete_situation']
+  const baiTap = co.map((type, i) => ({ id: `b${i}`, vocab_id: 'fx', type, payload: {} }))
+
+  it('K1 — dạng không cần record luôn có; dạng cần record chỉ có khi có record', () => {
+    expect(dangKhaDung('stage2', [])).toEqual(['trans_collocation'])
+    expect(dangKhaDung('stage2', co)).toEqual(['select_sentence', 'arrange_words', 'trans_collocation'])
+    expect(dangKhaDung('stage3', ['trans_sentence'])).toEqual(['make_sentence', 'trans_sentence'])
+    expect(dangKhaDung('mastered', co)).toEqual([])
+  })
+  it('K2 — đạt hết bài THỰC CÓ ⇒ mở lại bộ bài, giữ cycle_points + field khác', () => {
+    const kq = moLaiNeuHetBai({ ...phucTap, vocab: { word: '复习' } }, co)
+    expect(kq.cycle_completed_exercises).toEqual([])
+    expect(kq.cycle_points).toBe(7)
+    expect(kq.vocab).toEqual({ word: '复习' })
+  })
+  it('K3 — còn bài thực có chưa đạt / mastered / chưa đạt gì ⇒ trả NGUYÊN object', () => {
+    const conBai = { ...phucTap, cycle_completed_exercises: ['select_sentence'] as DangBai[] }
+    expect(moLaiNeuHetBai(conBai, co)).toBe(conBai)
+    const master = { ...phucTap, stage: 'mastered' as const }
+    expect(moLaiNeuHetBai(master, co)).toBe(master)
+    const rong = { ...phucTap, cycle_completed_exercises: [] as DangBai[] }
+    expect(moLaiNeuHetBai(rong, co)).toBe(rong)
+  })
+  it('K4 — tái hiện lỗi: từ kẹt chỉ ra flashcard; mở lại thì có bài tính điểm', () => {
+    expect(coBaiTinhDiem(xepBai({ tu: [phucTap], baiTap }).man)).toBe(false)
+    expect(coBaiTinhDiem(xepBai({ tu: [moLaiNeuHetBai(phucTap, co)], baiTap }).man)).toBe(true)
   })
 })

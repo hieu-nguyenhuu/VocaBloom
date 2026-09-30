@@ -13,6 +13,8 @@ import {
   type Man,
   type VocabDb,
   catTheoGioiHan,
+  dangKhaDung,
+  moLaiNeuHetBai,
 } from '../../lib/player.ts'
 import {
   boBaiCua,
@@ -253,8 +255,11 @@ export default function PlayerPage() {
           const idB = (b.payload as { blank_b_vocab_id?: string | null })['blank_b_vocab_id']
           return idsPhien.has(b.vocab_id) || (idB ? idsPhien.has(idB) : false)
         })
+        // M21 — từ đã đạt hết dạng THỰC CÓ mà vẫn due ⇒ mở lại bộ bài (topic đã boQuaDaDat nên bỏ qua)
+        const coRecordPhien = dungMapRecord(baiTapPhien)
+        const phienMo = topicId ? phien : phien.map((t) => moLaiNeuHetBai(t, coRecordPhien[t.vocab_id] ?? []))
         const { man } = xepBai({
-          tu: phien,
+          tu: phienMo,
           baiTap: baiTapPhien,
           ...(dangChoPhep ? { dangChoPhep } : {}),
           // Ôn chủ đề: dựng lại cả dạng đã đạt trong chu kỳ, nếu không thì từ mastered ra 0 màn
@@ -264,13 +269,13 @@ export default function PlayerPage() {
         })
         if (!coBaiTinhDiem(man)) continue
 
-        dangCoRecord.current = dungMapRecord(baiTapPhien)
+        dangCoRecord.current = coRecordPhien
         idRecord.current = Object.fromEntries(baiTapPhien.map((b) => [`${b.vocab_id}|${b.type}`, b.id]))
         setVocab((cu) => ({ ...cu, ...Object.fromEntries(dong.map((t) => [t.vocab_id, t.vocab])) }))
         await taiVocabTuB(baiTapPhien, idsPhien)
         setSoGoiY(0)
         if (topicId) for (const t of phien) daPhucVuTopic.current.add(t.vocab_id)
-        dispatch({ loai: 'nap', man, trang_thai: Object.fromEntries(phien.map((t) => [t.vocab_id, t])) })
+        dispatch({ loai: 'nap', man, trang_thai: Object.fromEntries(phienMo.map((t) => [t.vocab_id, t])) })
         return
       }
       return dispatch({ loai: 'khong_co_tu' })
@@ -353,7 +358,8 @@ export default function PlayerPage() {
         })
       }
 
-      const kq = xuLyTraLoi({ trang_thai, dang_bai, dung, dung_goi_y, dang_due: true, la_bai_cuoi_cua_tu: la_bai_cuoi, hom_nay: homNayVN(new Date()) })
+      const kq = xuLyTraLoi({ trang_thai, dang_bai, dung, dung_goi_y, dang_due: true, la_bai_cuoi_cua_tu: la_bai_cuoi, hom_nay: homNayVN(new Date()),
+        dang_kha_dung: dangKhaDung(trang_thai.stage, dangCoRecord.current[vocab_id] ?? []) })
       setSoGoiY(0)
       // Lọc dạng mà từ này KHÔNG có record, tránh hàng retry dựng 0 màn (M4b/Q4)
       const p_retry = locRetryTheoRecord(kq.vao_retry_queue as HangRetry | null, dangCoRecord.current[vocab_id] ?? [])

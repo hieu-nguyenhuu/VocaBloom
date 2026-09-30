@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-09-30** (M20 — Hội thoại chủ đề ở màn Từ vựng)
+> Cập nhật lần cuối: **2026-09-30** (M21 — Sửa từ kẹt "đến hạn nhưng không có bài")
 
 ## ✅ Đã xong
 
@@ -41,6 +41,13 @@
 - [x] **M19 — Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức** (2026-09-28).
 - [x] **Dữ liệu CSV H3** (2026-09-29) — 17 chủ đề · 205 từ · 1.723 bài qua `vocabCsv2Json --import`; 3 lớp validate 17/17, kiểm chứng SQL sạch. Còn: sinh audio TTS (205 từ).
 - [x] **M20 — Hội thoại chủ đề ở màn Từ vựng** (2026-09-30).
+- [x] **M21 — Sửa từ kẹt "Dashboard đếm đến hạn, Player không có bài"** (2026-09-30).
+
+### ✅ M21 — Từ kẹt vì thiếu record hội thoại (XONG 2026-09-30)
+- [x] Chẩn đoán DB chỉ đọc: 复习 stage2, 7/9 điểm, đạt đủ 3 dạng có bài, KHÔNG có `fill_dialog`, không hàng retry.
+      200/240 từ thiếu `select_dialog`/`fill_dialog` ⇒ stage1/2/intensive điểm tối đa = đúng ngưỡng.
+- [x] TDD: R2e + R2f (`srs.test.ts`) · K1–K4 (`player.test.ts`, K4 tái hiện lỗi) — đều chứng minh ĐỎ trước.
+- [x] `npm test` **402/402** · build xanh · lint 0 lỗi (9 cảnh báo cũ) · kiểm thật CDP chỉ đọc: 复习 hiện lại 4 khối bài, 0 lệnh ghi.
 
 ### ✅ M20 — Hội thoại chủ đề ở màn Từ vựng (XONG 2026-09-30)
 - [x] Icon `chat` (tự vẽ) · component `HoiThoaiChuDe.tsx` · `TuVungPage` tải `topic_dialogues` riêng (không await).
