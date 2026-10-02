@@ -164,7 +164,8 @@ export function xepBai(dv: {
         const lienQuan = [b.vocab_id, vocab_b].filter((id): id is string => id !== null && idsSession.has(id))
         if (lienQuan.length === 0) continue
         // Bỏ màn nếu MỌI từ liên quan đều đã đạt dạng này trong chu kỳ
-        const conPhaiLam = lienQuan.filter((id) => !daDatCua(id).includes(dang))
+        // M23/G2: từ đã được 1 màn CÙNG dạng phục vụ trong phiên này thì không cần màn thứ 2
+        const conPhaiLam = lienQuan.filter((id) => !daDatCua(id).includes(dang) && !daPhucVu.has(id))
         if (conPhaiLam.length === 0) {
           for (const id of lienQuan) daPhucVu.add(id)
           continue
@@ -305,13 +306,6 @@ export function chamMatching(
   const kq: Record<string, boolean> = {}
   for (const l of luot) if (!(l.trai in kq)) kq[l.trai] = dapAn[l.trai] === l.phai
   return kq
-}
-
-// ── Mastery ring (DEC-12 §12.2) ─────────────────────────────────────────────
-
-/** Mốc màu ring 0..5: 0–5 → 0, 6–11 → 1, 12–17 → 2, 18–23 → 3, 24–29 → 4, ≥30 → 5. */
-export function mocRing(total_points: number): number {
-  return total_points >= 30 ? 5 : Math.min(4, Math.max(0, Math.floor(total_points / 6)))
 }
 
 // ── M7: ôn theo chủ đề ──────────────────────────────────────────────────────

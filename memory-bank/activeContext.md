@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-09-30** (M21: sửa từ kẹt "đến hạn nhưng không có bài")
+> Cập nhật lần cuối: **2026-10-02** (M24: ngưỡng Mastered 30 → 36)
 
 ## Trạng thái hiện tại
 
@@ -36,9 +36,50 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M19 (Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức) — ✅ XONG 2026-09-28.**
 **M20 (Hội thoại chủ đề ở màn Từ vựng) — ✅ XONG 2026-09-30.**
 **M21 (Sửa từ kẹt "đến hạn nhưng Player không có bài") — ✅ XONG 2026-09-30.**
+**M22 (Màu Mastery ring theo stage) — ✅ XONG 2026-10-01.**
+**M23 (Bổ sung bài hội thoại cho mọi từ) — ✅ XONG 2026-10-01.**
+**M24 (Ngưỡng Mastered 30 → 36) — ✅ XONG 2026-10-02.**
 
-> ⚠️ M20 đã commit (`8d96d2c add communication`). **M21 CHƯA commit** (người dùng tự commit).
+> ⚠️ M21 đã commit (`0413b73 fix bug`). **M22 + M23 + M24 CHƯA commit** (người dùng tự commit).
 > `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+
+### M24 vừa xong (2026-10-02) — MB-45
+- `MASTER_THRESHOLD = 36` (= 4+8+12+12): đúng trọn vẹn ⇒ stage3 lên thẳng mastered; hụt (gợi ý / bỏ ngày) ⇒ intensive.
+  Người dùng chọn 36 thay cho đề xuất 42.
+- `Ring.tsx` import `MASTER_THRESHOLD` từ `srs.ts` ⇒ % = total/36, đầy đúng lúc mastered. SPEC §3.1/§3.3/§12.2 + UI_DESIGN sửa.
+- ~40 từ stage2/stage3 học dở thiếu điểm do dữ liệu cũ (trước M23) ⇒ GIỮ NGUYÊN, sẽ ôn thêm 1 vòng Nở hoa (người dùng chọn).
+  Riêng 复习 (26đ, stage3) vẫn có thể lên thẳng (26 + 12 = 38).
+
+### M23 vừa xong (2026-10-01) — MB-44: mỗi từ có đủ select_dialog + fill_dialog
+- **DB nay: 353 SD + 353 FD** (trước 40 + 40) · **678/678 từ** đủ cả 2 dạng · 650 từ ở đúng 1 bài/dạng, 28 từ (chủ đề lẻ)
+  ở 2 bài · 0 `blank_b` treo · 0 A=B · 0 cặp khác chủ đề · `word_state` md5 KHÔNG đổi (chỉ INSERT `exercises`).
+- **Skill `vocabCsv2Json` luật mới** (SKILL.md Bước 3 + payload-schemas §3.10 + checklist + SQL §7.2): mỗi từ ≥ 1 SD và
+  ≥ 1 FD (vai A/B), ⌈N/2⌉ bản ghi/dạng, vai A 1 lần/dạng, bạn cặp 2 dạng khác nhau. `validate_import.py` + builder HSK4
+  CẢNH BÁO phủ sóng.
+- **G1 `srs.ts`:** dạng đã có trong `cycle_completed_exercises` làm lại ⇒ 0 điểm (SPEC §3.2 bổ sung). **G2 `xepBai`:**
+  bỏ màn hội thoại nếu mọi từ liên quan đã có màn cùng dạng trong phiên. Test R2g · K5 · K6.
+- **Công cụ bổ sung (dùng lại được):** `npm run bo-sung:hoi-thoai -- <file…> [--dry-run]` (`scripts/bo-sung-hoi-thoai.mjs`,
+  logic thuần `src/lib/boSungHoiThoai.ts`, validator dùng chung `kiemPayload` export từ `importValidate.ts`) ·
+  `node scripts/chup-chu-de.mjs > du-lieu-import/bo-sung-hoi-thoai/chu-de-db.json` (snapshot DB) · builder
+  `du-lieu-import/bo-sung-hoi-thoai/dung_bo_sung.py [NN]` đọc `nguon/NN.txt` (01–20 nhóm "3.", 41–60 HSK4).
+- ⭐ **Bẫy pinyin đã gặp khi soạn 626 câu** (builder đã ép/chặn): `一 ___` (biến điệu theo đáp án — builder CHẶN, phải
+  ép `一{yí}`/`一{yì}`) · 空 kòng (有空) · 只 zhī (一只) · 了 liǎo (穿不了) · 还 huán (还你钱) · 过 guò (没过 = không qua) ·
+  好玩儿 hǎowánr · 奶奶 nǎinai · 妻子/男朋友 thanh nhẹ · tên riêng viết hoa (小王/西安/云南/美国/杭州…). 2 dòng đợt 1 đã
+  nạp sai `一` được VÁ theo id (PATCH đúng 1 dòng/câu).
+- Người dùng chốt văn phong (memory `dialog-exercise-style`): đúng level bộ từ, ít từ lạ, đời thường + công việc; câu gõ
+  có từ gần nghĩa cũng điền được ⇒ GIỮ NGUYÊN.
+
+
+### M22 vừa xong (2026-10-01) — MB-43
+- `Ring.tsx`: màu viền = màu **stage** (bảng `Record<StageCay, …>`), độ đầy vẫn `min(total_points,30)/30`. Áp cả
+  Dashboard "Vừa ôn gần đây" lẫn ring Player. `mocRing` + test đã XOÁ. SPEC §12.2 + UI_DESIGN đã sửa theo.
+- Lý do: 6 màu ring trùng 6 màu level ⇒ 复习 (stage3 · 26đ) ra màu intensive, người dùng tưởng lệch level.
+- Người dùng hỏi "đúng hết thì bỏ qua Nở hoa?" — ĐÚNG theo §3.1/3.3 (36 max ≥ 30 ⇒ stage3 lên thẳng mastered;
+  intensive là vòng ôn bù). Giữ nguyên; muốn bắt buộc qua intensive thì là task SRS riêng.
+- ⭐ **Âm phản hồi im trên iPhone = chế độ im lặng**, không phải bug: Web Audio (âm đúng/sai) câm theo công tắc
+  im lặng, `<audio>` (đọc từ) thì không — phát đọc từ xong âm đúng/sai mới kêu. Người dùng đã xác nhận. Nếu sau
+  này muốn kêu cả khi im lặng: `navigator.audioSession.type = 'playback'` (Safari ≥16.4).
+- CDP: 5199 vẫn bị tiến trình khác chiếm ⇒ dùng cổng 5288; `rpc/vi_ruby` là RPC ĐỌC, loại khỏi bộ đếm lệnh ghi.
 
 ### M21 vừa xong (2026-09-30) — MB-42: từ kẹt "đến hạn nhưng không có bài"
 - `player.ts` +`dangKhaDung(stage, dangCoRecord)` (dạng tính điểm THỰC dựng được màn; `trans_sentence`/`complete_situation`
@@ -59,12 +100,26 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
   dùng gợi ý 1 lần là kẹt. Hiện 5 từ stage1 + 20 từ stage2/intensive nằm trong vùng nguy cơ; mới 1 từ kẹt thật.
 - R2d (M4a) chỉ phủ ca "đạt HẾT bộ bài lý thuyết", không phủ ca "đạt hết bài THỰC CÓ" — `srs.ts` không biết record.
 
-### Bộ từ "HSK4 giao tiếp" (2026-09-30) — CSV, CHƯA sinh JSON, CHƯA import
+### Bộ từ "HSK4 giao tiếp" (2026-09-30) — ĐÃ IMPORT 20/20 vào DB
 - `du-lieu-import/hsk4-giao-tiep/hsk4-giao-tiep.csv` — **20 chủ đề · 438 từ · 40 ngữ pháp chủ đề**, soạn riêng cho
   người dùng (Test Engineer xưởng điện tử; phỏng vấn Embedded/EE/Test). Ưu tiên văn cảnh hơn danh sách HSK4.
-- Đã tự kiểm: **0 trùng giữa các chủ đề · 0 trùng 232 từ zh đang có trong DB** (đọc DB 30/09). Cột `Nghia` đã điền
-  ⇒ skill dùng NGUYÊN VĂN làm `meaning_vi`. Import sau ngày 30/09 thì nên đối chiếu DB lại.
-- Bước tiếp (chờ người dùng duyệt nội dung): chạy skill `vocabCsv2Json` → import bằng `npm run import:file`.
+  0 trùng giữa các chủ đề · 0 trùng 232 từ zh trong DB (đọc 30/09). Import muộn hơn thì đối chiếu DB lại.
+- **JSON:** `import-01…20-*.json` cùng thư mục — **3.609 bài · 65 ngữ pháp CỦA TỪ (15%) · 40 bài 2 từ · 200 câu
+  hội thoại**. 3 lớp validate **20/20**: ajv (schema) · `validate_import.py` · `npm run import:file -- --dry-run`
+  (validator app, 0 cảnh báo trùng DB). 0 mô tả lộ đáp án.
+- ⭐ **Cách sinh (giữ trong repo để sửa sau):** `nguon/NN.txt` (nguồn gọn: câu Trung TÁCH TỪ + nghĩa, cú pháp ghi ở
+  đầu `nguon/dung.py`) → `PYTHONIOENCODING=utf-8 python du-lieu-import/hsk4-giao-tiep/nguon/dung.py [NN]` dựng JSON.
+  **Pinyin sinh bằng pypinyin** + bảng ép `EP_TU` + luật tự viết: biến điệu 不/一 (KHÔNG biến điệu 3-3), A不A/V一V
+  thanh nhẹ, 一 thứ tự (第一/周一/一号/一楼) giữ yī, tên riêng viết hoa. Builder in **báo cáo đa âm** để rà tay; ép
+  từng token bằng `字{pinyin}`. Builder chặn: lệch thứ tự/số từ so với CSV, câu E thiếu từ, ___ ≠ 1, NP lệch CSV.
+- ⚠️ **Bẫy pypinyin đã gặp:** 大夫→dàfū (đúng dàifu), 电子→diànzi, 肚子→dǔzi, 调休/重测/长 sai âm, thanh nhẹ bị đọc
+  nặng (合同, 任务, 早上, 眼睛…), `tone_sandhi=True` biến điệu cả 3-3. Tất cả đã ép trong `EP_TU`.
+- **Đã import 30/09** bằng `npm run import:file` (qua RLS), theo thứ tự người dùng chọn: **05–14 (công việc) →
+  15–20 (đời sống) → 01–04 (tìm việc/phỏng vấn) cuối** ⇒ cron FIFO `order by added_at` sẽ kích hoạt đúng thứ tự đó.
+  Kiểm chứng SQL (chỉ đọc): 20 chủ đề · word_state 438/438 (đều `new`, chờ) · bài tập khớp từng file · NP chủ đề 40 ·
+  hội thoại 20 · 0 `blank_b_vocab_id` treo.
+- **DB nay: 40 chủ đề · 678 từ · hàng đợi 638** (~200 từ H3 cũ đứng TRƯỚC vì added_at sớm hơn). ~128 ngày nếu 5 từ/ngày.
+- ⚠️ **438 từ chưa có audio** (CLI không tự sinh TTS) — người dùng cần bấm "Tạo audio còn thiếu" ở Cài đặt.
 
 ### M20 vừa xong (2026-09-30) — MB-41
 - Màn Từ vựng: khối **"Hội thoại chủ đề"** ngay DƯỚI khối "Ngữ pháp chủ đề", TRƯỚC ô tìm kiếm. Component

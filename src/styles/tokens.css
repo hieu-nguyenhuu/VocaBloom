@@ -279,10 +279,10 @@
 
 /* ============================================================================
    === TẦNG C · MASTERY RING — BẤT BIẾN
-   6 mã gắn thẳng với Ý NGHĨA DỮ LIỆU (điểm số), không phải phong cách thị giác.
+   6 mã gắn thẳng với Ý NGHĨA DỮ LIỆU (giai đoạn cây), không phải phong cách thị giác.
    KHÔNG đi qua Lớp 1/2. KHÔNG đổi giữa light/dark — script đã xác nhận cả 6 mã
    xuất hiện với số lần bằng nhau tuyệt đối ở 2 mode.
-   Ring % = min(total_points, 30) / 30  (DEC-12, SPECIFICATION.md §12)
+   Ring: màu theo stage, % = min(total_points, 36) / 36 = MASTER_THRESHOLD  (DEC-12 + MB-43/45, SPECIFICATION.md §12)
    ========================================================================== */
 :root {
   --ring-0: #ef4444;

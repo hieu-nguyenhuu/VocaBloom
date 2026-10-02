@@ -146,8 +146,7 @@ const PATH: Record<TenIcon, ReactElement> = {
  * Bộ 6 icon giai đoạn cây — CHỐT 2026-09-16, Phương án A "Một thân cây trên nền đất" (MB-19).
  * Thay thế bản nháp trong 2 file HTML mockup; đây là bản chính thức, gate MB-03 đã gỡ.
  * Cùng đường đất `M5 20.5h14` + thân thẳng ở mọi hình để đọc ra "6 khoảnh khắc của 1 cái cây".
- * Màu: tô theo ngữ cảnh — hàng "Khu vườn" & Tổng kết dùng màu tượng trưng theo stage (ring-0..5),
- * ring Player dùng màu theo total_points thật (systemPatterns.md §7.5).
+ * Màu: tô theo stage (ring-0..5) ở mọi nơi — Khu vườn, Tổng kết, Mastery ring (MB-43).
  */
 export type StageCay = 'new' | 'stage1' | 'stage2' | 'stage3' | 'intensive' | 'mastered'
 

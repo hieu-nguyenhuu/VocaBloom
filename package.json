@@ -18,6 +18,7 @@
     "test:nhatky": "node scripts/test-nhat-ky.mjs",
     "test:import": "node scripts/test-import.mjs",
     "import:file": "node scripts/import-file.mjs",
+    "bo-sung:hoi-thoai": "node scripts/bo-sung-hoi-thoai.mjs",
     "test:player": "node scripts/test-player.mjs",
     "seed:test": "node scripts/seed-kiem-thu.mjs",
     "due:today": "node scripts/keo-den-han.mjs"

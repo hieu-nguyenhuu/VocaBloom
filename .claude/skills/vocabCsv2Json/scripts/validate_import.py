@@ -207,6 +207,18 @@ def validate_file(path):
         if missing_types:
             warnings.append(f"Từ '{v.get('word')}' (temp_id={tid}) thiếu dạng bài: {sorted(missing_types)}")
 
+    # --- M23: phủ sóng bài hội thoại (CẢNH BÁO — topic 1 từ không ghép được) ---
+    if len(vocab_list) >= 2:
+        for loai in ("select_dialog", "fill_dialog"):
+            co = set()
+            for e in exercises:
+                if e.get("type") == loai:
+                    co.add(e.get("vocab_temp_id"))
+                    co.add((e.get("payload") or {}).get("blank_b_vocab_id"))
+            thieu = [v.get("word") for v in vocab_list if v.get("temp_id") not in co]
+            if thieu:
+                warnings.append(f"{loai}: {len(thieu)}/{len(vocab_list)} từ chưa có (vai A hoặc B): {thieu}")
+
     return errors, warnings
 
 

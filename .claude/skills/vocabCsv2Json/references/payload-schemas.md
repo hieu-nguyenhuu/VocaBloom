@@ -137,7 +137,7 @@ Cấu trúc **giống hệt** `selection`:
 
 ### 3.10 `select_dialog` — CẦN 2 TỪ VỰNG, gắn vào từ "chính"
 
-Chỉ tạo khi tìm được **2 từ vựng trong cùng topic ghép tự nhiên vào 1 đoạn hội thoại ngắn**. Không bắt buộc mọi từ đều có bài này.
+Ghép **2 từ vựng trong cùng topic** vào 1 đoạn hội thoại ngắn tự nhiên. **Mỗi từ của topic nên có ≥ 1 bài này (vai A hoặc vai B)** — xem luật phủ sóng ở SKILL.md Bước 3 (M23). Áp dụng y hệt cho `fill_dialog`.
 
 | Field | Kiểu | Ghi chú |
 |---|---|---|
@@ -236,7 +236,8 @@ Mảng ở **gốc file**, ngang hàng `dialogue`. Đây là các mẫu ngữ ph
 - [ ] Không có field nào ngoài danh sách đã liệt kê ở mục 0 và mục 3 (không tự thêm field thừa như `id`, `difficulty`, `answer`...).
 - [ ] Mọi field phiên âm (`pinyin`, `collocation_pinyin` ở mục 0; `pinyin` trong `grammar`; `given_sentence_pinyin` trong `complete_situation`) đều có KEY xuất hiện trong object dù `lang="en"` (giá trị `null`, KHÔNG bỏ hẳn key).
 - [ ] `distractors` đúng số lượng bắt buộc: `selection`/`audio_recognition`=3, `select_on_describe`=3, `select_sentence`.wrong_sentences=3, `select_dialog`.distractors=2.
-- [ ] Mỗi từ vựng có đủ **8 dạng bài bắt buộc** (không tính `select_dialog`/`fill_dialog` — tùy chọn theo cặp): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation`.
+- [ ] Mỗi từ vựng có đủ **8 dạng bài bắt buộc** (không tính `select_dialog`/`fill_dialog` — 2 dạng này theo cặp, kiểm ở dòng dưới): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation`.
+- [ ] Mỗi từ vựng xuất hiện ≥ 1 lần trong `select_dialog` VÀ ≥ 1 lần trong `fill_dialog` (vai A qua `vocab_temp_id` hoặc vai B qua `blank_b_vocab_id`) — trừ topic chỉ có 1 từ. Vai A của 1 dạng chỉ 1 lần/từ.
 - [ ] **`grammar` (ngữ pháp CỦA TỪ) KHÔNG nằm trong 8 dạng bắt buộc** — chỉ gắn cho từ có điểm dễ dùng sai (M12). Rà lại: nếu ≥ 50% số từ trong file có `grammar` thì gần như chắc chắn đang gắn tràn lan.
 - [ ] Dòng CSV đánh dấu `ngữ pháp` đã vào mảng `grammar` ở gốc file (mục 4b), **không** lọt vào `vocab`.
 - [ ] Mảng `grammar` (nếu có): mỗi mục đủ `content_target`/`pinyin`(key)/`content_vi`; chủ đề không có ngữ pháp thì bỏ hẳn khoá.

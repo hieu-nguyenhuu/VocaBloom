@@ -15,7 +15,7 @@ Ghi các quyết định có ảnh hưởng kiến trúc. DEC-01→DEC-23 đã c
 | DEC-09 | **Không bao giờ tụt stage** (lapse tắt) | Tụt stage gây nản, đã có phạt điểm là đủ | §3.5 |
 | DEC-10 | Session **thuần 1 stage**, ~5 từ (không ép cứng), order `stage ASC, next_review_date ASC` | Trộn stage làm loạn nhịp độ khó | §4.1 |
 | DEC-11 | Flashcard Good/Hard/Again, **không tính điểm** nâng stage | Tự chấm không khách quan | §4.3 |
-| DEC-12 | 6 stage ↔ 6 giai đoạn cây; ring % = `min(total_points,30)/30`, 6 mốc màu cố định | Ẩn dụ trực quan gắn thẳng dữ liệu | §12 |
+| DEC-12 | 6 stage ↔ 6 giai đoạn cây; ring % = `min(total_points,36)/36` (MB-45, trước là 30), màu theo stage (MB-43) | Ẩn dụ trực quan gắn thẳng dữ liệu | §12 |
 | DEC-13 | Bổ sung `collocation_pinyin`, `collocation_meaning_vi`; `review_log` ghi `stage_before`/`stage_after` | Cần cho bài Trans Collocation + màn Tổng kết | §2 |
 | DEC-14 | AI chấm stage 3: batch **3 request/session** (1/dạng bài, 5 câu/request) | Giảm số call, vẫn giữ prompt riêng theo dạng | §7 |
 | DEC-15 | TTS gọi **1 lần/từ** sau Import → cache mp3 Storage; fallback Web Speech API | Không gọi TTS runtime, tiết kiệm & ổn định | §9 |
@@ -860,4 +860,52 @@ chỉ còn flashcard ⇒ `coBaiTinhDiem` false. Kẹt vĩnh viễn + cron phạt
 xét bộ thực có — bài hội thoại dùng chung 2 từ nên phần lớn từ thiếu.
 **Bằng chứng:** `npm test` **402/402** (R2e R2f K1–K4, đều ĐỎ trước) · build xanh · lint 0 lỗi · CDP chỉ đọc: `/on-tap` ra
 Flashcard 复习 + 4 chấm, 0 lệnh ghi, `word_state` không đổi.
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-10-01] MB-43 — M22: màu Mastery ring theo STAGE (sửa DEC-12 §12.2)
+**Hiện tượng:** người dùng báo "vòng kinh nghiệm của 复习 ở 'Vừa ôn gần đây' không khớp level". DB: 复习 stage3 · 26đ
+⇒ ring màu xanh nhạt (= màu intensive); 疼/告诉/脚 stage3 · 17đ ⇒ màu vàng (= màu stage2).
+**Gốc rễ:** không phải bug code — DEC-12 tô màu theo 6 mốc `total_points`, mà 6 màu đó TRÙNG 6 màu giai đoạn cây
+(chip Khu vườn, icon) ⇒ mắt đọc màu như level.
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Màu ring = màu `stage` (new→ring-0 … mastered→ring-5); độ đầy GIỮ `min(total_points,30)/30` | Người dùng chọn: màu = level, độ đầy = quãng đường tới Mastered |
+| **Q2** | Áp cho MỌI nơi dùng `Ring.tsx` (Dashboard + Player) | 1 component ⇒ 1 nghĩa màu |
+| **Q3** | Bị phạt ⇒ vòng ngắn lại, màu giữ (stage không tụt) | Thay luật cũ "lùi màu" |
+| **Q4** | Xoá `mocRing` + test (hết người dùng) | Ponytail — bảng `Record<StageCay, …>` trong `Ring.tsx`, TS bắt đủ 6 stage |
+| **Q5** | KHÔNG đổi luật: từ đủ 30đ sau stage3 lên thẳng mastered, bỏ qua intensive | Người dùng hỏi, giữ nguyên (§3.1/3.3) — intensive là vòng ôn bù |
+| **Q6** | Lỗi "âm phản hồi im trên điện thoại" — KHÔNG sửa | Do máy để chế độ im lặng (iOS: Web Audio câm theo công tắc; `<audio>` đọc từ thì không) |
+**Bằng chứng:** `npm test` **401/401** (−1 test `mocRing`) · build xanh · lint exit 0 (cảnh báo cũ) · CDP Dashboard
+PC + Mobile **19/19**: 8 ring đều `text-ring-3` `rgb(163,230,53)` khớp stage3 DB, % khớp `total_points`, 0 lệnh ghi.
+Tài liệu đã sửa: SPECIFICATION §12.2 · UI_DESIGN §6/§7/§8.1 · comment Ring/Dashboard/icons/ChonChuDe/TongKet/tokens.
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-10-01] MB-44 — M23: mỗi từ có đủ select_dialog + fill_dialog
+**Hiện tượng:** 518/678 từ không có bài hội thoại ⇒ điểm tối đa stage1 = 6, stage2/intensive = 9 = đúng ngưỡng; health
+lúc lên stage3 = 0,79 ⇒ gap bị cắt 70% dù đúng hết. Gốc: skill chỉ đòi "ít nhất 1 cặp/topic".
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Skill: MỖI từ ≥ 1 `select_dialog` + ≥ 1 `fill_dialog` (vai A/B), ⌈N/2⌉ bản ghi/dạng, vai A 1 lần/dạng | Người dùng yêu cầu — đảm bảo điểm tối đa từng từ |
+| **Q2** | Bạn cặp ở 2 dạng KHÁC nhau | Ôn đa dạng ngữ cảnh |
+| **Q3** | Bổ sung dữ liệu cũ bằng CLI riêng (chỉ INSERT `exercises`), không xoá/nạp lại chủ đề | Giữ tiến độ học |
+| **Q4** | Làm thử 1 chủ đề → người dùng duyệt văn phong → 2 đợt ("3." rồi HSK4) | Người dùng chọn |
+| **Q5** | G1: dạng đã đạt trong vòng làm lại ⇒ 0 điểm | Chủ đề lẻ từ ⇒ 1 từ ở 2 bài cùng dạng ⇒ cộng đôi |
+| **Q6** | G2: `xepBai` bỏ màn hội thoại nếu mọi từ liên quan đã có màn cùng dạng trong phiên | Không dựng màn thừa |
+| **Q7** | Builder đọc snapshot DB (`chup-chu-de.mjs`), không đọc file import gốc | 3 chủ đề DB đổi tên khác file |
+| **Q8** | Văn phong: đúng level bộ từ, ít từ lạ, đời thường + công việc; câu gõ có từ gần nghĩa giữ nguyên | Người dùng chốt sau chủ đề thử |
+**Bằng chứng:** DB 353 SD + 353 FD (từ 40 + 40) · SQL 678/678 từ đủ 2 dạng, 0 treo, 0 A=B, `word_state` md5 không đổi ·
+`npm test` 413/413 (R2g K5 K6 BS1–BS9 đều ĐỎ trước) · build xanh · CDP Player chủ đề: 0 lệnh ghi.
+**Tiếp theo:** ngưỡng mastered — người dùng chốt **36** (không phải 42), xem MB-45.
+**Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-10-02] MB-45 — M24: MASTER_THRESHOLD 30 → 36
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | `MASTER_THRESHOLD = 36` = điểm tối đa cả lộ trình 4+8+12+12 | Người dùng: đúng trọn vẹn ⇒ lên thẳng mastered, hụt dù 1 điểm ⇒ Nở hoa (đề xuất 42 trước đó bị thay) |
+| **Q2** | Ring % = `min(total, MASTER_THRESHOLD)/MASTER_THRESHOLD` — `Ring.tsx` IMPORT hằng từ `srs.ts` | Vòng đầy đúng lúc mastered, không còn số viết tay lệch nhau |
+| **Q3** | ~40 từ học dở (thiếu điểm do dữ liệu cũ trước M23) GIỮ NGUYÊN, không bù điểm | Người dùng chọn — ôn thêm 1 vòng Nở hoa, không ghi DB |
+**Tiền đề đã kiểm (DB chỉ đọc):** 678/678 từ đủ mọi bài cần record ⇒ từ mới đúng hết đạt đúng 36 · 0 từ intensive/mastered
+· cron SQL không dùng ngưỡng.
+**Bằng chứng:** `npm test` **414/414** (M1b + X1b ĐỎ trước) · build xanh · lint exit 0 · CDP Dashboard PC+Mobile 19/19
+(12đ → 33%, 4đ → 11%), 0 lệnh ghi. SPEC §3.1/§3.3/§12.2 + UI_DESIGN §6/§7 đã sửa.
 **Trạng thái:** ✅ Đã áp dụng.

@@ -24,8 +24,8 @@ import KhungTrang from '../shell/KhungTrang.tsx'
  * Dashboard (mockup 01 PC + Mobile). Tên "Helios" và dải 7 ngày hiện ở CẢ 2 breakpoint là
  * quyết định của người dùng ở Brainstorm M6b (mockup chỉ vẽ dải này ở Mobile).
  *
- * ⚠️ HAI NGUỒN MÀU TÁCH BẠCH (UI_DESIGN §8.1): chip "Khu vườn" tô theo STAGE (màu tượng trưng,
- * query `stage`), còn ring "Vừa ôn gần đây" tô theo `total_points` THẬT (query riêng) — không gộp.
+ * ⚠️ HAI QUERY TÁCH BẠCH (UI_DESIGN §8.1): chip "Khu vườn" đếm theo STAGE (query `stage`), còn ring
+ * "Vừa ôn gần đây" cùng màu stage nhưng độ đầy theo `total_points` THẬT (query riêng) — không gộp (MB-43).
  */
 const TINT: Record<StageCay, string> = {
   new: 'bg-danger-bg text-ring-0',

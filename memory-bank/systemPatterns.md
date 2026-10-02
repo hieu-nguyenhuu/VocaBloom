@@ -145,7 +145,7 @@ dạng CÓ ĐIỀU KIỆN — chỉ gắn khi từ dễ dùng sai); bảng `topi
 
 Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `exercise_type` = 17 giá trị.
 
-**Hằng số nghiệp vụ (gom 1 chỗ, không rải rác):** `MASTER_THRESHOLD = 30`; ngưỡng cycle 3/4 · 6/8 · 9/12; điểm mỗi bài 1 · 2 · 3 · 4; gap gốc 1 · 2 · 4 · 7 ngày; `gap_factor` 100% / 70% / 50% theo health; phạt −1…−5 theo stage (mastered miễn nhiễm); dùng gợi ý → điểm ×50% làm tròn xuống.
+**Hằng số nghiệp vụ (gom 1 chỗ, không rải rác):** `MASTER_THRESHOLD = 36` (MB-45; ring import đúng hằng này); ngưỡng cycle 3/4 · 6/8 · 9/12; điểm mỗi bài 1 · 2 · 3 · 4; gap gốc 1 · 2 · 4 · 7 ngày; `gap_factor` 100% / 70% / 50% theo health; phạt −1…−5 theo stage (mastered miễn nhiễm); dùng gợi ý → điểm ×50% làm tròn xuống.
 
 ## 7. Pattern nghiệp vụ dễ làm sai (ghi lại để khỏi vấp)
 
@@ -153,8 +153,8 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 2. **Select/Fill Dialog dùng chung 1 record cho 2 từ** — từ B tham chiếu qua `payload->>'blank_b_vocab_id'`. Query session phải OR cả 2 điều kiện để câu chỉ xuất hiện đúng 1 lần. CHỈ cộng điểm cho từ đang due.
 3. **Retry KHÔNG chạy ngay trong session** — dồn vào `daily_retry_queue`, chạy lượt riêng sau. Chỉ retry bài CHƯA đạt (đọc `cycle_completed_exercises`).
 4. **Tổng kết phiên query `review_log` cả ngày**, tuyệt đối không tích lũy state phía client (mất dữ liệu khi thoát app giữa chừng).
-5. **Dashboard "Khu vườn"**: hàng đếm 6 giai đoạn dùng màu tượng trưng theo stage; cụm ring cá nhân dùng màu theo `total_points` thật → **2 query khác nhau**, đừng dùng chung.
-6. **Ring** vẽ bằng SVG `stroke-dasharray` đúng tỉ lệ `min(total_points,30)/30` — KHÔNG conic-gradient, KHÔNG vòng luôn đầy. Grammar / Flashcard / Matching KHÔNG có ring.
+5. **Dashboard "Khu vườn"**: hàng đếm 6 giai đoạn và cụm ring cá nhân đều tô **màu theo stage** (MB-43); ring lấy độ đầy theo `total_points` thật → **2 query khác nhau**, đừng dùng chung.
+6. **Ring** vẽ bằng SVG `stroke-dasharray` đúng tỉ lệ `min(total_points,36)/36` (= `MASTER_THRESHOLD`, MB-45), **màu theo `stage`** (MB-43 — bỏ 6 mốc điểm vì trùng màu level gây hiểu nhầm) — KHÔNG conic-gradient, KHÔNG vòng luôn đầy. Grammar / Flashcard / Matching KHÔNG có ring.
 7. **Chọn sai chỉ tô ô vừa chọn** (đỏ); các ô còn lại giữ trung tính — không lộ đáp án đúng.
 8. **Import theo thứ tự:** insert `vocab` trước → map `temp_id → uuid` → mới insert `exercises`/`dialogue`. KHÔNG tra cứu theo `word` (sẽ dính bản ghi cũ). Trùng từ = **luôn thêm mới**, chỉ cảnh báo không chặn.
 9. **AI response** parse JSON thuần; fail → strip code-fence parse lại 1 lần → vẫn fail thì không cộng điểm cho từ đó, hiện nút "Chấm lại" và GIỮ NGUYÊN câu đã nhập.
@@ -200,6 +200,8 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 | `npm run check:auth` | Kiểm chứng tài khoản duy nhất + `disable_signup` |
 | `npm run test:import` | 6 ca TDD cho `import_topic()`, cũng chạy trong `begin…rollback` |
 | `npm run import:file -- <file> [--dry-run]` | Nạp 1 file JSON thật; đăng nhập rồi gọi RPC như app |
+| `npm run bo-sung:hoi-thoai -- <file…> [--dry-run]` | M23 — thêm `select_dialog`/`fill_dialog` vào chủ đề ĐÃ CÓ (chỉ INSERT `exercises`, kiểm tất cả file trước, 1 POST/chủ đề) |
+| `node scripts/chup-chu-de.mjs > du-lieu-import/bo-sung-hoi-thoai/chu-de-db.json` | M23 — snapshot chỉ đọc: từ + nghĩa + ví dụ + cặp hội thoại của mọi chủ đề (builder bổ sung đọc file này) |
 
 **4 luật không được phá:**
 1. **Mọi migration phải idempotent** — không có bảng lịch sử migration; tính idempotent là thứ thay thế nó.

@@ -14,7 +14,6 @@ import {
   coBaiTinhDiem,
   homNayVN,
   locRetryTheoRecord,
-  mocRing,
   soKhopDapAn,
   tongHopTongKet,
   xaoTron,
@@ -239,12 +238,6 @@ describe('X-player — giữ tính thuần', () => {
   })
 })
 
-describe('mocRing — 6 mốc màu DEC-12', () => {
-  it('biên các mốc', () => {
-    expect([0, 5, 6, 11, 12, 17, 18, 23, 24, 29, 30, 99].map(mocRing)).toEqual([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5])
-  })
-})
-
 // ── M4b: stage 1 & 2 ────────────────────────────────────────────────────────
 const dialog = (vocab_id: string, b: string | null, type: DangBai = 'select_dialog') =>
   bai(vocab_id, type, {
@@ -313,6 +306,16 @@ describe('xepBai — stage 1 & 2 (M4b)', () => {
     expect([m0.vocab_a, m0.vocab_b]).toEqual(['x', 'a'])
     expect(m0.la_bai_cuoi).toEqual({ a: false })
     expect(thieu.some((t) => t.type === 'select_dialog')).toBe(false)
+  })
+
+  it('K5 — từ ở 2 bài cùng dạng: bài sau chỉ phục vụ từ đã có màn ⇒ bỏ (M23/G2)', () => {
+    const { man } = xepBai({ tu: [tu('a', 'stage1'), tu('b', 'stage1')], baiTap: [dialog('a', 'b'), dialog('c', 'a')] })
+    expect(man.filter((m) => m.loai === 'select_dialog')).toHaveLength(1)
+  })
+
+  it('K6 — bài sau còn phục vụ từ CHƯA có màn ⇒ vẫn dựng', () => {
+    const { man } = xepBai({ tu: [tu('a', 'stage1'), tu('c', 'stage1')], baiTap: [dialog('a', 'b'), dialog('c', 'a')] })
+    expect(man.filter((m) => m.loai === 'select_dialog')).toHaveLength(2)
   })
 })
 

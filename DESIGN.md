@@ -1,202 +1,78 @@
-# DESIGN.md — M21: Từ kẹt "đến hạn nhưng không có bài" (复习)
+# DESIGN.md — M24: Nâng ngưỡng Mastered 30 → 36
 
-> Kiến trúc của RIÊNG task này (thay nội dung M20 đã xong, M20 đã ghi vào memory-bank MB-41).
-> Ngày lập: 2026-09-30 · Trạng thái: **✅ DESIGN + PLAN ĐÃ DUYỆT · ĐÃ XONG 2026-09-30** (MB-42)
-> Người dùng chốt: phương án **(a)** — Player tự gỡ kẹt, KHÔNG sửa tay DB.
+> Kiến trúc của RIÊNG task này (thay nội dung M23 đã xong, M23 đã ghi vào memory-bank MB-44).
+> Ngày lập: 2026-10-02 · Trạng thái: **✅ DESIGN + PLAN ĐÃ DUYỆT · ĐÃ XONG 2026-10-02** (MB-45)
 
-## A. Nguyên nhân (đã đo trên DB thật, chỉ đọc)
+## 1. Yêu cầu (người dùng chốt 2026-10-02)
+- `MASTER_THRESHOLD` = **36** = đúng điểm tối đa cả lộ trình (4 + 8 + 12 + 12, SPEC §3.2).
+- Đúng trọn vẹn (không gợi ý, không bỏ ngày) ⇒ xong stage3 đủ 36 ⇒ **lên thẳng Mastered**. Hụt dù 1 điểm ⇒ **Nở hoa**
+  (intensive), mỗi vòng +9–12 ⇒ thường 1 vòng là đủ 36.
+- **Từ đang học dở giữ nguyên** (không bù điểm, không ghi DB): ~40 từ stage2/stage3 thiếu điểm do dữ liệu cũ thiếu bài hội
+  thoại (trước M23) sẽ ôn thêm 1 vòng Nở hoa. Riêng 复习 (26đ ở stage3) vẫn có thể lên thẳng (26 + 12 = 38).
 
-复习 · `stage2` · due 30/09 · `cycle_points 7 < 9` · `cycle_completed_exercises = [select_sentence, arrange_words,
-trans_collocation]` · **không có record `fill_dialog`** · `daily_retry_queue` rỗng.
+## 2. Kiểm tra tiền đề (DB thật, chỉ đọc 2026-10-02)
+- 678/678 từ có đủ 8 dạng cần record (gồm `trans_sentence`, `complete_situation`) + đủ SD/FD (M23) ⇒ từ mới đi đúng hết
+  đạt đúng 36.
+- 0 từ đang ở intensive/mastered ⇒ đổi ngưỡng không làm từ nào "tụt" khỏi mastered.
+- Cron SQL (`run_daily_maintenance`) KHÔNG dùng ngưỡng 30 ⇒ không cần migration.
 
-1. `srs.ts` `xuLyTraLoi` (bài cuối, chưa đủ ngưỡng): `chuaDat = ['fill_dialog']` ≠ rỗng ⇒ KHÔNG vào nhánh R2d
-   "mở lại bộ bài" ⇒ `daDat` giữ nguyên 3 dạng.
-2. `PlayerPage` `locRetryTheoRecord` lọc `fill_dialog` (từ không có record) ⇒ `null` ⇒ không ghi hàng retry.
-3. Lần sau `xepBai` bỏ 3 dạng đã đạt ⇒ chỉ còn flashcard ⇒ `coBaiTinhDiem = false` ⇒ `khong_co_tu`.
-4. Dashboard chỉ đếm theo `next_review_date` ⇒ vẫn hiện 1. Từ **kẹt vĩnh viễn** + bị cron phạt mỗi ngày.
-
-Phạm vi: **200/240 từ** không có `select_dialog`/`fill_dialog` (bài hội thoại dùng chung 2 từ) ⇒ stage1/2/intensive
-có điểm tối đa **bằng đúng ngưỡng** — dùng gợi ý 1 lần là kẹt. Các dạng 1-từ khác (8 dạng) đủ 100% record.
-
-**Gốc rễ:** R2d (M4a) hỏi "đã đạt hết bộ bài LÝ THUYẾT chưa?", đúng ra phải hỏi "đã đạt hết bài THỰC CÓ chưa?".
-`srs.ts` thuần nên không biết từ có record nào — tầng gọi phải truyền vào.
-
-## B. Thiết kế — 2 lớp, cùng 1 định nghĩa "dạng khả dụng"
-
-### B1. Hàm thuần mới `dangKhaDung(stage, dangCoRecord)` — `src/lib/player.ts`
-Dạng tính điểm của stage mà từ **thực sự dựng được màn**: dạng không cần record (đọc từ `vocab`) luôn có;
-dạng cần record chỉ có khi có record. `trans_sentence`/`complete_situation` cũng tính là cần record
-(khớp đúng `xepBai` dòng 188 — hiện nằm ngoài `CAN_RECORD` nhưng `xepBai` vẫn bỏ màn khi thiếu).
-
-### B2. Phòng lỗi — `srs.ts` `xuLyTraLoi` nhận tham số TUỲ CHỌN `dang_kha_dung?: readonly DangBai[]`
-- `chuaDat` chỉ xét các dạng trong `dang_kha_dung` (không truyền ⇒ hành vi cũ, ~32 test cũ khỏi sửa).
-- `chuaDat` rỗng ⇒ đi đúng nhánh R2d có sẵn: `daDat = []` + retry **cả bộ** (`exercise_types: null`).
-- ⇒ Từ thiếu điểm vào `daily_retry_queue`, ôn lại ở **lượt riêng SAU** (giữ đúng DEC-06), không lặp ngay.
-- `srs.ts` vẫn 0 dòng `import` (test X1c canh) — chỉ nhận thêm 1 mảng.
-- `PlayerPage` truyền `dangKhaDung(stage, dangCoRecord.current[vocab_id] ?? [])`.
-
-### B3. Gỡ kẹt (phương án a) — hàm thuần `moLaiNeuHetBai(tu, dangCo)` — `src/lib/player.ts`
-- Từ ở stage ôn, **mọi dạng khả dụng đều đã nằm trong `cycle_completed_exercises`** ⇒ trả bản sao với
-  `cycle_completed_exercises = []` (giữ nguyên `cycle_points`). Ngược lại trả nguyên từ.
-- `napSession` áp cho từng từ của phiên **trước `xepBai`** (luồng hằng ngày + retry; topic đã `boQuaDaDat` nên bỏ qua),
-  và dispatch chính bản đã mở lại ⇒ lần trả lời đầu tiên tự ghi `daDat` mới xuống DB. **0 lệnh ghi DB lúc tải.**
-- Đây là lưới an toàn cho dữ liệu ĐÃ kẹt (复习) và mọi đường kẹt chưa biết; B2 chặn đường kẹt đã biết.
-
-### Không làm (YAGNI)
-- Không đổi ngưỡng/điểm tối đa theo số bài khả dụng (đổi luật SPEC §3.2 — cần quyết riêng).
-- Không đổi cách Dashboard đếm (sau B2+B3, từ due luôn có bài ⇒ 2 bên khớp).
-- Không sinh thêm record hội thoại cho 200 từ (việc của dữ liệu import, không phải app).
-
-## C. Edge case đã xét
-| Ca | Kết quả |
+## 3. Thay đổi
+| Nơi | Đổi |
 |---|---|
-| Thiếu `fill_dialog`, sai `arrange_words` ở bài cuối | `chuaDat = [arrange_words]` ⇒ retry đúng dạng đó (như cũ) |
-| Đủ record, dùng gợi ý, đạt hết | nhánh R2d cũ, không đổi |
-| Từ là **vai B** của bài hội thoại | `dungMapRecord` đã tính record qua `blank_b_vocab_id` ⇒ vẫn khả dụng |
-| Từ `new` (matching luôn có) · `stage3` · `intensive` | dùng chung 1 định nghĩa, không nhánh riêng |
-| Kẹt + đang có hàng retry | luồng retry cũng áp B3 ⇒ không dựng 0 màn |
-| Mở lại xong mà người dùng thoát ngay | DB chưa đổi ⇒ lần sau B3 lại mở lại, không mất gì |
+| `src/lib/srs.ts` | `MASTER_THRESHOLD = 36` (nhánh rẽ mastered/intensive dùng sẵn hằng này) |
+| `src/features/player/Ring.tsx` | % viền = `min(total_points, MASTER_THRESHOLD) / MASTER_THRESHOLD` — **import hằng từ `srs.ts`** để vòng đầy đúng lúc Mastered, không còn số 30 viết tay |
+| Comment | `Ring.tsx`, `tokens.css`, `TokenSheet.tsx` |
+| Tài liệu | SPEC §3.1 sơ đồ (2 chỗ "≥ 30"), §3.3, §12.2 · UI_DESIGN §6 dòng 111, §7 dòng 163 |
+| Không đổi | `MAX_TICH_LUY`/gap/health · phạt · G1 (1 dạng tính điểm 1 lần/vòng) · luật retry |
 
-## D. Kiểm chứng dự kiến
-- TDD: `dangKhaDung` · `moLaiNeuHetBai` · `xuLyTraLoi` ca **R2e** (thiếu `fill_dialog` + gợi ý ⇒ mở lại + retry cả bộ)
-  — RED trước, rồi GREEN. Fixture theo shape THẬT của 复习.
-- `npm test` · `npm run build` · `npm run lint`.
-- Kiểm thật: bấm "Bắt đầu ôn tập" ⇒ 复习 hiện đủ 3 bài stage2 (đo bằng `data-so-tu-phien` + đếm màn, **không trả lời**
-  để không ghi DB thay người dùng).
+Hệ quả hiển thị: vòng của từ stage3 26đ từ 87% → 72%; 100% chỉ khi Mastered.
 
-## E. PLAN — 8 task (mỗi task 2–5 phút)
+---
 
-### T1 · RED — `src/lib/srs.test.ts` (chèn ngay sau ca R2d, dòng 182)
+# PLAN M24
+
+**T1 RED — `src/lib/srs.test.ts`** (describe "Rẽ nhánh cuối"):
 ```ts
-  it('R2e — thiếu record fill_dialog: đạt hết bài THỰC CÓ mà thiếu điểm → mở lại + retry CẢ BỘ (复习 30/09)', () => {
-    const kq = xuLyTraLoi({
-      trang_thai: tu({ stage: 'stage2', cycle_points: 6, cycle_completed_exercises: ['select_sentence', 'arrange_words'] }),
-      dang_bai: 'trans_collocation', dung: true, dung_goi_y: true, dang_due: true, la_bai_cuoi_cua_tu: true,
-      hom_nay: HOM_NAY, dang_kha_dung: ['select_sentence', 'arrange_words', 'trans_collocation'],
-    })
-    expect(kq.trang_thai_moi.cycle_points).toBe(7)
-    expect(kq.trang_thai_moi.stage).toBe('stage2')
-    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual([])
-    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: null })
+  it('M1 — xong vòng stage3 với total ≥ 36 → mastered, DỪNG lịch ôn', () => {
+    const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 33 }), 'trans_sentence',
+      { la_bai_cuoi_cua_tu: true })
+    expect(kq.trang_thai_moi.total_points).toBe(37)
+    expect(kq.trang_thai_moi.stage).toBe('mastered')
+    expect(kq.trang_thai_moi.next_review_date).toBeNull()
+    expect(kq.dong_review_log.stage_after).toBe('mastered')
   })
 
-  it('R2f — có dang_kha_dung mà còn bài THỰC CÓ chưa đạt → retry đúng dạng đó, bỏ dạng không có bài', () => {
-    const kq = xuLyTraLoi({
-      trang_thai: tu({ stage: 'stage2', cycle_points: 3, cycle_completed_exercises: ['select_sentence'] }),
-      dang_bai: 'trans_collocation', dung: true, dung_goi_y: false, dang_due: true, la_bai_cuoi_cua_tu: true,
-      hom_nay: HOM_NAY, dang_kha_dung: ['select_sentence', 'arrange_words', 'trans_collocation'],
-    })
-    expect(kq.trang_thai_moi.cycle_completed_exercises).toEqual(['select_sentence', 'trans_collocation'])
-    expect(kq.vao_retry_queue).toEqual({ reason: 'below_threshold', exercise_types: ['arrange_words'] })
+  it('M1b — M24: xong stage3 với 31 điểm (< 36) → intensive, KHÔNG mastered như ngưỡng cũ 30', () => {
+    const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 27 }), 'trans_sentence',
+      { la_bai_cuoi_cua_tu: true })
+    expect(kq.trang_thai_moi.total_points).toBe(31)
+    expect(kq.trang_thai_moi.stage).toBe('intensive')
   })
 ```
-Chạy `npx vitest run src/lib/srs.test.ts` ⇒ **R2e + R2f phải ĐỎ** (hiện `chuaDat` còn `fill_dialog`).
+M2 đổi tiêu đề "< 36". M2b: `total_points: 33` + 3 = **36** (biên đúng ngưỡng) → mastered. M2c tiêu đề "chưa đủ 36".
+X1b: `expect(MASTER_THRESHOLD).toBe(36)` · tiêu đề "đúng 36". Chạy ⇒ phải ĐỎ (M1b, M2b, X1b).
 
-### T2 · GREEN — `src/lib/srs.ts`
-- Chữ ký `xuLyTraLoi` thêm (sau `hom_nay: string`):
-  ```ts
-    /** M21 — dạng của stage mà từ THỰC SỰ có bài (tầng gọi tính từ record). Không truyền ⇒ cả bộ lý thuyết. */
-    dang_kha_dung?: readonly DangBai[]
-  ```
-- Destructure thêm `dang_kha_dung`. Dòng 273:
-  ```ts
-      const chuaDat = DANG_BAI_THEO_STAGE[stage_before].filter(
-        (x) => !daDat.includes(x) && (!dang_kha_dung || dang_kha_dung.includes(x)),
-      )
-  ```
-- Thêm 1 dòng vào comment R2d: `// M21: chỉ xét dạng THỰC CÓ bài — thiếu record fill_dialog thì "hết bộ" không bao giờ đúng (复习).`
-
-Chạy lại ⇒ `srs.test.ts` xanh toàn bộ (R2d cũ vẫn xanh vì không truyền tham số).
-
-### T3 · RED — `src/lib/player.test.ts`
-Thêm `dangKhaDung, moLaiNeuHetBai` vào import từ `./player.ts`; cuối file:
+**T2 GREEN — `src/lib/srs.ts`**:
 ```ts
-describe('dangKhaDung + moLaiNeuHetBai (M21 — từ kẹt vì thiếu record hội thoại)', () => {
-  const phucTap: TrangThaiTu = {
-    vocab_id: 'fx', stage: 'stage2', next_review_date: '2026-09-30', cycle_points: 7,
-    cycle_completed_exercises: ['select_sentence', 'arrange_words', 'trans_collocation'],
-    total_points: 17, last_reviewed_at: '2026-09-30',
-  }
-  const co: DangBai[] = ['selection', 'audio_recognition', 'fast_decision', 'select_on_describe',
-    'select_sentence', 'arrange_words', 'trans_sentence', 'complete_situation']
-  const baiTap = co.map((type, i) => ({ id: `b${i}`, vocab_id: 'fx', type, payload: {} }))
-
-  it('K1 — dạng không cần record luôn có; dạng cần record chỉ có khi có record', () => {
-    expect(dangKhaDung('stage2', [])).toEqual(['trans_collocation'])
-    expect(dangKhaDung('stage2', co)).toEqual(['select_sentence', 'arrange_words', 'trans_collocation'])
-    expect(dangKhaDung('stage3', ['trans_sentence'])).toEqual(['make_sentence', 'trans_sentence'])
-    expect(dangKhaDung('mastered', co)).toEqual([])
-  })
-  it('K2 — đạt hết bài THỰC CÓ ⇒ mở lại bộ bài, giữ cycle_points + field khác', () => {
-    const kq = moLaiNeuHetBai({ ...phucTap, vocab: { word: '复习' } }, co)
-    expect(kq.cycle_completed_exercises).toEqual([])
-    expect(kq.cycle_points).toBe(7)
-    expect(kq.vocab).toEqual({ word: '复习' })
-  })
-  it('K3 — còn bài thực có chưa đạt / mastered / chưa đạt gì ⇒ trả NGUYÊN object', () => {
-    const conBai = { ...phucTap, cycle_completed_exercises: ['select_sentence'] as DangBai[] }
-    expect(moLaiNeuHetBai(conBai, co)).toBe(conBai)
-    const master = { ...phucTap, stage: 'mastered' as const }
-    expect(moLaiNeuHetBai(master, co)).toBe(master)
-    const rong = { ...phucTap, cycle_completed_exercises: [] as DangBai[] }
-    expect(moLaiNeuHetBai(rong, co)).toBe(rong)
-  })
-  it('K4 — tái hiện lỗi: từ kẹt chỉ ra flashcard; mở lại thì có bài tính điểm', () => {
-    expect(coBaiTinhDiem(xepBai({ tu: [phucTap], baiTap }).man)).toBe(false)
-    expect(coBaiTinhDiem(xepBai({ tu: [moLaiNeuHetBai(phucTap, co)], baiTap }).man)).toBe(true)
-  })
-})
+/** M24 (2026-10-01→02): = điểm tối đa cả lộ trình 4+8+12+12 — đúng trọn vẹn ⇒ lên thẳng mastered, hụt ⇒ intensive. */
+export const MASTER_THRESHOLD = 36
 ```
-Chạy `npx vitest run src/lib/player.test.ts` ⇒ **ĐỎ** (2 hàm chưa tồn tại).
 
-### T4 · GREEN — `src/lib/player.ts` (ngay sau `locRetryTheoRecord`)
-```ts
-/** `xepBai` bỏ màn tự luận khi thiếu record (trừ make_sentence) dù 2 dạng này nằm ngoài CAN_RECORD. */
-const CAN_RECORD_TU_LUAN: ReadonlySet<DangBai> = new Set(['trans_sentence', 'complete_situation'])
-
-/**
- * M21 — dạng TÍNH ĐIỂM của stage mà từ THỰC SỰ dựng được màn. 200/240 từ không có record
- * select_dialog/fill_dialog (bài hội thoại dùng chung 2 từ) ⇒ bộ bài lý thuyết ≠ bộ bài thực có.
- */
-export function dangKhaDung(stage: Stage, dangCoRecord: readonly DangBai[]): DangBai[] {
-  const co = new Set(dangCoRecord)
-  return boBaiCua(stage).filter((d) => co.has(d) || (!CAN_RECORD.has(d) && !CAN_RECORD_TU_LUAN.has(d)))
-}
-
-/**
- * M21 — lưới an toàn: từ đã đạt HẾT dạng thực có mà vẫn due (chưa đủ ngưỡng) thì `xepBai` chỉ còn
- * flashcard ⇒ Player báo "không có từ" trong khi Dashboard đếm 1 (复习, 30/09). Mở lại bộ bài,
- * giữ nguyên cycle_points. Chỉ đổi bản trong bộ nhớ — DB cập nhật khi trả lời bài đầu tiên.
- */
-export function moLaiNeuHetBai<T extends TrangThaiTu>(tu: T, dangCoRecord: readonly DangBai[]): T {
-  const kd = dangKhaDung(tu.stage, dangCoRecord)
-  if (kd.length === 0 || tu.cycle_completed_exercises.length === 0) return tu
-  return kd.every((d) => tu.cycle_completed_exercises.includes(d)) ? { ...tu, cycle_completed_exercises: [] } : tu
-}
+**T3 — `src/features/player/Ring.tsx`**:
+```tsx
+import { MASTER_THRESHOLD } from '../../lib/srs.ts'
+…
+ * Mastery ring (DEC-12 sửa bởi MB-43/MB-45, UI_DESIGN.md §7): % viền = min(total_points, MASTER_THRESHOLD) / MASTER_THRESHOLD
+…
+  const pct = Math.min(total_points, MASTER_THRESHOLD) / MASTER_THRESHOLD
 ```
-Chạy lại ⇒ `player.test.ts` xanh.
 
-### T5 · Nối dây — `src/features/player/PlayerPage.tsx`
-- Import thêm `dangKhaDung, moLaiNeuHetBai` từ `../../lib/player.ts`.
-- `napSession`, ngay sau khối `const baiTapPhien = ...` (dòng ~255):
-  ```ts
-        // M21 — từ đã đạt hết dạng THỰC CÓ mà vẫn due ⇒ mở lại bộ bài (topic đã boQuaDaDat nên bỏ qua)
-        const coRecordPhien = dungMapRecord(baiTapPhien)
-        const phienMo = topicId ? phien : phien.map((t) => moLaiNeuHetBai(t, coRecordPhien[t.vocab_id] ?? []))
-  ```
-  rồi đổi `xepBai({ tu: phienMo, ... })` · `dangCoRecord.current = coRecordPhien` ·
-  `trang_thai: Object.fromEntries(phienMo.map((t) => [t.vocab_id, t]))`.
-- `traLoi` (dòng 356) thêm vào đối số `xuLyTraLoi`:
-  `dang_kha_dung: dangKhaDung(trang_thai.stage, dangCoRecord.current[vocab_id] ?? [])`.
+**T4 — comment**: `tokens.css` dòng ring + `TokenSheet.tsx:85` → `min(total_points, 36) / 36 (MASTER_THRESHOLD, MB-45)`.
 
-### T6 · Kiểm tĩnh
-`npm test` · `npm run build` · `npm run lint` — xanh, không thêm lỗi lint mới.
+**T5 — tài liệu**: SPEC §3.1 (2 chỗ `≥ 30` → `≥ 36`), §3.3 (`MASTER_THRESHOLD = 36 (= 100% của 36)` + ghi chú "Sửa
+2026-10-02 (MB-45)"), §12.2 công thức `/36`; UI_DESIGN dòng 111 + 163.
 
-### T7 · Kiểm thật CHỈ ĐỌC (0 lệnh ghi DB)
-`npm run dev` nền + Chrome headless CDP, đăng nhập, mở `/on-tap`: khẳng định KHÔNG có màn "không có từ",
-`data-so-tu-phien = 1`, màn đầu là Flashcard 复习. **Không bấm trả lời** (tránh ghi `review_log` thay người dùng);
-đếm request `POST /rpc/luu_tra_loi` = 0. Xong tắt Chrome + dev server.
+**T6 — kiểm**: `npm test` · build · lint · CDP Dashboard (chỉ đọc): % ring của 8 từ gần đây = `min(total,36)/36`, 0 lệnh ghi.
+Dọn dev server + Chrome.
 
-### T8 · Ký ức
-`activeContext.md` + `progress.md` (M21) + `decisionLog.md` MB-42 + `systemPatterns.md` §7 thêm pattern
-"bộ bài lý thuyết ≠ bộ bài thực có". Cập nhật trạng thái DESIGN.md.
+**T7 — memory-bank**: MB-45, activeContext, progress, systemPatterns (dòng ring), §A decisionLog nếu có dòng DEC-12/ngưỡng 30.

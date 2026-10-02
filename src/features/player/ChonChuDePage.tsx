@@ -10,8 +10,7 @@ import KhungTrang from '../shell/KhungTrang.tsx'
  * Màn chọn chủ đề để ôn (M7). ⚠️ KHÔNG có mockup — layout mượn card của mockup 13 "Quản lý từ vựng"
  * (tên + N từ + thanh 6 màu stage), bổ sung dòng "N từ đến hạn"; người dùng đã duyệt ở Brainstorm.
  *
- * Màu thanh = màu TƯỢNG TRƯNG theo stage (ring-0..5), giống chip Khu vườn ở Dashboard — KHÔNG phải
- * màu theo `total_points` (UI_DESIGN §8.1).
+ * Màu thanh = màu theo stage (ring-0..5), giống chip Khu vườn ở Dashboard (UI_DESIGN §8.1).
  */
 const MAU_STAGE = ['bg-ring-0', 'bg-ring-1', 'bg-ring-2', 'bg-ring-3', 'bg-ring-4', 'bg-ring-5'] as const
 

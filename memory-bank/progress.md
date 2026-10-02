@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-09-30** (M21 — Sửa từ kẹt "đến hạn nhưng không có bài")
+> Cập nhật lần cuối: **2026-10-02** (M24 — Ngưỡng Mastered 30 → 36)
 
 ## ✅ Đã xong
 
@@ -41,7 +41,27 @@
 - [x] **M19 — Pinyin mặt sau Flashcard + trạng thái rỗng/loading/lỗi + Đăng xuất 2 mức** (2026-09-28).
 - [x] **Dữ liệu CSV H3** (2026-09-29) — 17 chủ đề · 205 từ · 1.723 bài qua `vocabCsv2Json --import`; 3 lớp validate 17/17, kiểm chứng SQL sạch. Còn: sinh audio TTS (205 từ).
 - [x] **M20 — Hội thoại chủ đề ở màn Từ vựng** (2026-09-30).
+- [x] **Bộ "HSK4 giao tiếp"** (2026-09-30) — CSV 20 chủ đề · 438 từ → 20 JSON (3.609 bài) qua `vocabCsv2Json`,
+      3 lớp validate 20/20. Nguồn + builder ở `du-lieu-import/hsk4-giao-tiep/nguon/`. **Đã import 20/20** (thứ tự
+      05–14 → 15–20 → 01–04), kiểm chứng SQL sạch. Còn: sinh audio TTS cho 438 từ.
 - [x] **M21 — Sửa từ kẹt "Dashboard đếm đến hạn, Player không có bài"** (2026-09-30).
+- [x] **M22 — Màu Mastery ring theo stage** (2026-10-01).
+- [x] **M23 — Bổ sung bài hội thoại: 678/678 từ đủ select_dialog + fill_dialog** (2026-10-01).
+- [x] **M24 — Ngưỡng Mastered 30 → 36** (2026-10-02): `npm test` 414/414 · build · lint · CDP Dashboard 19/19, 0 lệnh ghi.
+
+### ✅ M23 — Bổ sung bài hội thoại cho mọi từ (XONG 2026-10-01)
+- [x] Skill `vocabCsv2Json` luật phủ sóng mới + cảnh báo ở `validate_import.py` và builder HSK4.
+- [x] TDD: G1 (R2g — 1 dạng tính điểm 1 lần/vòng) · G2 (K5/K6 — bỏ màn hội thoại thừa) · `boSungHoiThoai` 9 ca (BS1–BS9).
+- [x] CLI `bo-sung:hoi-thoai` + `chup-chu-de.mjs` + builder `dung_bo_sung.py` (chặn `一 ___`, lộ đáp án, phủ sóng…).
+- [x] Chủ đề thử "3. Mệt mỏi" → người dùng duyệt văn phong → đợt 1 (20 chủ đề "3.", +211) → đợt 2 (20 HSK4, +415).
+- [x] SQL chỉ đọc: 678/678 từ đủ 2 dạng, 0 treo, `word_state` md5 không đổi · xepBai thật: 9/9 từ stage1 có màn SD ·
+      CDP Player chế độ chủ đề: tải OK, 28 SD, 0 lệnh ghi · `npm test` **413/413** · build xanh · lint exit 0.
+
+### ✅ M22 — Màu Mastery ring theo stage (XONG 2026-10-01)
+- [x] Chẩn đoán DB chỉ đọc: dữ liệu đúng, lệch do DEC-12 tô màu theo mốc điểm trùng màu level (MB-43).
+- [x] `Ring.tsx` màu theo stage · xoá `mocRing` + test · sửa SPEC §12.2, UI_DESIGN, comment liên quan.
+- [x] `npm test` **401/401** · build xanh · lint exit 0 · CDP Dashboard PC + Mobile **19/19**, 0 lệnh ghi.
+- [x] Lỗi âm phản hồi im trên điện thoại: do chế độ im lặng — không sửa code.
 
 ### ✅ M21 — Từ kẹt vì thiếu record hội thoại (XONG 2026-09-30)
 - [x] Chẩn đoán DB chỉ đọc: 复习 stage2, 7/9 điểm, đạt đủ 3 dạng có bài, KHÔNG có `fill_dialog`, không hàng retry.

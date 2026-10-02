@@ -53,7 +53,7 @@ Người dùng đã tự gom sẵn, **KHÔNG tự suy luận nhóm ngữ nghĩa*
 tên ở dòng đầu khối (Bước 1). Mỗi khối → 1 file JSON riêng.
 
 **ngoại lệ cần xử lý:**
-**Topic chỉ có 1-2 từ:** vẫn xử lý bình thường — `select_dialog`/`fill_dialog` có thể không tạo được nếu không đủ 2 từ liên quan trong CÙNG topic (không được ghép từ 2 topic khác nhau lại với nhau). `dialogue` vẫn cố viết đủ 7-10 câu dù vốn từ ít (dùng thêm ngữ cảnh chung quanh chủ đề, miễn câu hội thoại tự nhiên và có sử dụng từ vựng đó).
+**Topic chỉ có 1-2 từ:** vẫn xử lý bình thường — topic 1 từ KHÔNG tạo được `select_dialog`/`fill_dialog` (cần 2 từ khác nhau, không được ghép từ 2 topic khác nhau lại với nhau); topic 2 từ ⇒ 1 bản ghi mỗi dạng cho cặp đó. `dialogue` vẫn cố viết đủ 7-10 câu dù vốn từ ít (dùng thêm ngữ cảnh chung quanh chủ đề, miễn câu hội thoại tự nhiên và có sử dụng từ vựng đó).
 
 Với CSV 200-300 dòng đã gom sẵn topic → số lượng file phụ thuộc số topic khác nhau trong CSVCSV. Xử lý tuần tự từng topic một, không cố nhồi tất cả vào 1 lần trả lời.
 
@@ -104,7 +104,11 @@ rà lại và cắt bớt. Mức hợp lý thường là **2–4 từ trong 10**
 
 6 dạng KHÔNG được tạo record (đọc mục 2 của `payload-schemas.md`): `flashcard, matching, translate, listen_fill, make_sentence, trans_collocation`.
 
-2 dạng tùy chọn theo CẶP từ (không bắt buộc mọi từ có): `select_dialog`, `fill_dialog` — chỉ tạo khi tìm được 2 từ trong cùng topic ghép tự nhiên vào 1 tình huống hội thoại ngắn. Cố gắng tạo ít nhất 1 cặp/topic nếu khả thi, nhưng KHÔNG ép nếu không tự nhiên.
+2 dạng theo CẶP từ: `select_dialog`, `fill_dialog`. **Cố gắng tạo sao cho MỖI từ xuất hiện ít nhất 1 lần trong `select_dialog` và 1 lần trong `fill_dialog`** (vai A hoặc vai B đều tính) để đảm bảo số điểm tối đa cho từng từ.
+- Chủ đề N từ ⇒ cần ≥ ⌈N/2⌉ bản ghi MỖI dạng. N lẻ ⇒ 1 từ dùng 2 lần, lần thứ 2 ở **vai B** (vai A của 1 dạng chỉ 1 lần/từ).
+- Bạn cặp của 1 từ ở `select_dialog` nên KHÁC bạn cặp ở `fill_dialog` (ôn đa dạng ngữ cảnh, không thuộc vẹt câu).
+- **Vì sao bắt buộc:** thiếu 2 dạng này thì điểm tối đa của từ ở stage1 = 6, stage2/intensive = 9 — **đúng bằng ngưỡng** lên stage, dùng gợi ý 1 lần là phải ôn lại; health lúc lên stage3 chỉ 0,79 ⇒ gap bị cắt còn 70% dù trả lời đúng hết (M21/M23, 2026-10-01: 518/678 từ từng rơi vào cảnh này vì luật cũ chỉ đòi "1 cặp/topic").
+- Vẫn phải TỰ NHIÊN: chọn cặp có thể cùng xuất hiện trong 1 tình huống; khó ghép thì đổi bạn cặp, KHÔNG bỏ từ.
 
 **Nguyên tắc chất lượng nội dung:**
 - `distractors` (đáp án nhiễu) phải hợp lý — cùng phạm trù với đáp án đúng, không quá dễ đoán loại trừ, cũng không đánh lừa phi lý.
@@ -256,6 +260,23 @@ where e.type in ('select_dialog','fill_dialog')
   and (e.payload ->> 'blank_b_vocab_id') not in (select id::text from vocab);
 ```
 Phải bằng **0**.
+
+Và truy vấn phủ sóng bài hội thoại (M23) — liệt kê từ CHƯA có `select_dialog`/`fill_dialog` ở vai A hoặc B:
+
+```sql
+select t.name, v.word,
+       exists (select 1 from exercises e where e.type = 'select_dialog'
+               and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text)) as co_select_dialog,
+       exists (select 1 from exercises e where e.type = 'fill_dialog'
+               and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text)) as co_fill_dialog
+from topics t join vocab_topics vt on vt.topic_id = t.id join vocab v on v.id = vt.vocab_id
+where t.id in (...)
+  and not (exists (select 1 from exercises e where e.type = 'select_dialog'
+                   and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text))
+       and exists (select 1 from exercises e where e.type = 'fill_dialog'
+                   and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text)));
+```
+Phải **0 dòng** (trừ topic chỉ có 1 từ).
 
 ### 7.3 Ba điều PHẢI nói thật trong báo cáo
 

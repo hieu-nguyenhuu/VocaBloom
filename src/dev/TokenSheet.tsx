@@ -82,7 +82,7 @@ const MAU: readonly Nhom[] = [
   },
   {
     ten: 'TẦNG C — Mastery Ring (BẤT BIẾN, không đổi theo mode)',
-    ghiChu: 'ring % = min(total_points, 30) / 30 — DEC-12',
+    ghiChu: 'ring: màu theo stage, % = min(total_points, 36) / 36 (MASTER_THRESHOLD) — DEC-12 + MB-43/45',
     classes: ['bg-ring-0', 'bg-ring-1', 'bg-ring-2', 'bg-ring-3', 'bg-ring-4', 'bg-ring-5'],
   },
 ]

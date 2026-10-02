@@ -1,14 +1,22 @@
 import type { ReactNode } from 'react'
 import { IconCay, type StageCay } from '../../components/icons.tsx'
-import { mocRing } from '../../lib/player.ts'
+import { MASTER_THRESHOLD } from '../../lib/srs.ts'
 
 /**
- * Mastery ring (DEC-12, UI_DESIGN.md §7): % viền = min(total_points, 30) / 30, vẽ bằng SVG
- * stroke-dasharray — KHÔNG conic-gradient, KHÔNG vòng luôn đầy. 6 mốc màu ring-0..5 cố định,
- * không đi qua token light/dark. Icon giữa = giai đoạn cây theo `stage`.
+ * Mastery ring (DEC-12 sửa bởi MB-43/MB-45, UI_DESIGN.md §7): % viền = min(total_points, MASTER_THRESHOLD) / MASTER_THRESHOLD
+ * (đầy đúng lúc mastered), vẽ bằng SVG
+ * stroke-dasharray — KHÔNG conic-gradient, KHÔNG vòng luôn đầy. MÀU theo `stage` (ring-0..5, cùng màu chip
+ * Khu vườn) — độ đầy mới phản ánh điểm. Không đi qua token light/dark. Icon giữa = giai đoạn cây theo `stage`.
  * Số liệu mockup 02: 60px (PC) / 56 (Mobile), r=26 trong viewBox 60, track sw 5, icon 24/22.
  */
-const MAU = ['text-ring-0', 'text-ring-1', 'text-ring-2', 'text-ring-3', 'text-ring-4', 'text-ring-5'] as const
+const MAU: Record<StageCay, string> = {
+  new: 'text-ring-0',
+  stage1: 'text-ring-1',
+  stage2: 'text-ring-2',
+  stage3: 'text-ring-3',
+  intensive: 'text-ring-4',
+  mastered: 'text-ring-5',
+}
 
 /** `noiDung`: Dashboard (mockup 01) đặt CHỮ HÁN giữa ring thay cho icon cây. Bỏ trống = icon cây. */
 type Props = { total_points: number; stage: StageCay; size?: number; noiDung?: ReactNode }
@@ -16,9 +24,9 @@ type Props = { total_points: number; stage: StageCay; size?: number; noiDung?: R
 export default function Ring({ total_points, stage, size = 60, noiDung }: Props) {
   const r = 26
   const chuVi = 2 * Math.PI * r
-  const pct = Math.min(total_points, 30) / 30
+  const pct = Math.min(total_points, MASTER_THRESHOLD) / MASTER_THRESHOLD
   return (
-    <div className={`relative ${MAU[mocRing(total_points)]}`} style={{ width: size, height: size }}>
+    <div className={`relative ${MAU[stage]}`} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox="0 0 60 60" aria-hidden="true">
         <circle cx="30" cy="30" r={r} fill="none" strokeWidth="5" className="stroke-border-card" />
         <circle

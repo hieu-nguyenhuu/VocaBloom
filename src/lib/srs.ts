@@ -48,7 +48,8 @@ export type KetQuaTraLoi = {
 
 // ── Hằng số nghiệp vụ — GOM ĐÚNG 1 CHỖ (systemPatterns.md §6) ──────────────
 
-export const MASTER_THRESHOLD = 30
+/** M24 (MB-45): = điểm tối đa cả lộ trình 4+8+12+12 — đúng trọn vẹn ⇒ lên thẳng mastered, hụt dù 1 điểm ⇒ intensive. */
+export const MASTER_THRESHOLD = 36
 
 /** Điểm mỗi bài ĐÚNG. Q4: intensive dùng nguyên luật stage2. */
 const DIEM_MOI_BAI: Record<StageOn, number> = {
@@ -224,7 +225,10 @@ export function xuLyTraLoi(dv: {
   // §4.4 — Select/Fill Dialog ôn 2 từ cùng lúc, nhưng CHỈ từ đang due mới được tính
   // điểm và tính chu kỳ. Từ kia vẫn chấm đúng/sai tại chỗ ("ôn thêm miễn phí").
   const tinhChoTuNay = dang_due
-  const diem = dung && tinhChoTuNay ? diemChoBai(stage_before, dang_bai, dung_goi_y) : 0
+  const thuocBoBai = laStageOn(stage_before) && DANG_BAI_THEO_STAGE[stage_before].includes(dang_bai)
+  // M23/G1: mỗi dạng chỉ tính điểm 1 lần/vòng — từ nằm ở 2 bài hội thoại cùng dạng (chủ đề lẻ từ) không được cộng đôi.
+  const daDatTruoc = thuocBoBai && trang_thai.cycle_completed_exercises.includes(dang_bai)
+  const diem = dung && tinhChoTuNay && !daDatTruoc ? diemChoBai(stage_before, dang_bai, dung_goi_y) : 0
 
   let cycle_points = trang_thai.cycle_points + diem
   let total_points = trang_thai.total_points + diem
@@ -232,7 +236,6 @@ export function xuLyTraLoi(dv: {
 
   // Chỉ bài ĐÚNG và thuộc bộ bài của stage mới được ghi nhận đã đạt (§4.2).
   // Dùng gợi ý được 0 điểm nhưng VẪN tính là đạt — retry câu đã trả lời đúng là vô nghĩa.
-  const thuocBoBai = laStageOn(stage_before) && DANG_BAI_THEO_STAGE[stage_before].includes(dang_bai)
   if (dung && tinhChoTuNay && thuocBoBai && !daDat.includes(dang_bai)) {
     daDat = [...daDat, dang_bai]
   }

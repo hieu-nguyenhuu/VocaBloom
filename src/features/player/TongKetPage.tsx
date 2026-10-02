@@ -16,7 +16,7 @@ import { phatAmThanh } from '../../lib/amThanh.ts'
 /**
  * Tổng kết phiên ôn tập (mockup 12, SPECIFICATION §4.6, UI_DESIGN §8.8). Route /on-tap/tong-ket, ngoài shell.
  * Số liệu là CỘNG DỒN CẢ NGÀY — query review_log, KHÔNG dùng state client (§4.6). Xem bao nhiêu lần
- * trong ngày cũng đúng. Icon stage tô màu TƯỢNG TRƯNG theo stage (ring-N), không theo total_points.
+ * trong ngày cũng đúng. Icon stage tô màu theo stage (ring-N), như mọi nơi (MB-43).
  * Tự quyết (DESIGN §4): thêm nút "Ôn lại N từ chưa đạt" khi hàng đợi retry hôm nay có hàng.
  *
  * M14: đây cũng là nơi CHỐT NHẬT KÝ NGÀY — mọi đường kết thúc lượt (hết bài, bấm X, xong hội

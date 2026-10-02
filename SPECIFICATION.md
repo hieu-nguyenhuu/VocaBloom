@@ -211,11 +211,11 @@ Add từ vựng (import) ──► next_review_date = NULL (hàng đợi chờ k
    stage = stage3, next_review_date += 7 × gap_factor(health)
         │  (làm bài AI-graded, cộng total_points)
         ▼
-   total_points ≥ 30 ? ──YES──► stage = mastered (DỪNG, miễn nhiễm phạt)
+   total_points ≥ 36 ? ──YES──► stage = mastered (DỪNG, miễn nhiễm phạt)
         │ NO
         ▼
    stage = intensive (bài dạng stage2, gap 7 ngày/lần, cộng total_points)
-        │  lặp lại tới khi total_points ≥ 30
+        │  lặp lại tới khi total_points ≥ 36
         ▼
    stage = mastered
 ```
@@ -231,11 +231,19 @@ Add từ vựng (import) ──► next_review_date = NULL (hàng đợi chờ k
 
 Tổng max lý thuyết cả đời: `4 + 8 + 12 + 12 = 36`.
 
+⚠️ **Bổ sung 2026-10-01 (M23, MB-44):** mỗi dạng bài chỉ tính điểm **1 lần trong 1 vòng** — dạng đã có trong
+`cycle_completed_exercises` mà làm lại (từ nằm ở 2 bài hội thoại cùng dạng, ôn theo chủ đề…) thì vẫn chấm đúng/sai,
+vẫn ghi log, nhưng **0 điểm**. Nhờ vậy điểm 1 vòng không bao giờ vượt Max/vòng ở bảng trên.
+
 ### 3.3 Mastered threshold (`total_points`)
 
 ```
-MASTER_THRESHOLD = 30   (≈ 83% của 36)
+MASTER_THRESHOLD = 36   (= 100% của 36 — điểm tối đa cả lộ trình)
 ```
+
+⚠️ **Sửa 2026-10-02 (M24, MB-45):** bản trước là 30 (≈ 83%) ⇒ từ học tốt gần như luôn bỏ qua intensive. Nay đúng trọn
+vẹn mọi vòng (không gợi ý, không bỏ ngày) ⇒ xong stage3 đủ 36 ⇒ lên thẳng mastered; hụt dù 1 điểm ⇒ intensive (mỗi vòng
++9–12 ⇒ thường 1 vòng là đủ). Điều kiện: mọi từ có đủ bài tập (M23 — xem §4.4).
 
 Kiểm tra tại 2 thời điểm: (a) ngay sau khi hoàn thành bài stage3 lần đầu, (b) sau mỗi lần ôn ở Intensive.
 
@@ -316,6 +324,10 @@ where type = 'select_dialog'
 → Dù A, B, hay cả 2 cùng nằm trong session, câu hỏi chỉ xuất hiện đúng 1 lần.
 
 **Quy tắc điểm:** CHỈ cộng `cycle_points`/`total_points` cho từ đang thực sự due hôm nay. Từ kia (nếu chưa due) vẫn được điền + chấm đúng/sai tại chỗ, nhưng không ảnh hưởng điểm/chu kỳ của nó ("ôn thêm miễn phí").
+
+**Phủ sóng (M23, 2026-10-01):** mỗi từ phải có ≥ 1 `select_dialog` và ≥ 1 `fill_dialog` (vai A hoặc B) — thiếu thì điểm
+tối đa của từ ở stage1/stage2/intensive bằng đúng ngưỡng. Chủ đề số từ lẻ ⇒ 1 từ nằm ở 2 bài cùng dạng: Player bỏ màn thứ
+2 nếu mọi từ liên quan trong phiên đã có màn cùng dạng, và điểm chỉ tính 1 lần (§3.2).
 
 ### 4.5 Chế độ ôn — 2 loại (tách biệt hoàn toàn)
 
@@ -644,19 +656,24 @@ Ngoài checklist thủ công ở §10.5, có **1 file JSON Schema hình thức**
 ### 12.2 Viền (mastery ring)
 
 ```
-% viền = min(total_points, 30) / 30    -- CHỈ dùng total_points, không dùng cycle_points
+% viền = min(total_points, 36) / 36    -- = MASTER_THRESHOLD (MB-45); CHỈ dùng total_points, không dùng cycle_points
 ```
 
-| `total_points` | % viền | Màu | Mã màu |
-|---|---|---|---|
-| 0–5 | 0–19% | Đỏ | `#ef4444` |
-| 6–11 | 20–39% | Cam | `#f97316` |
-| 12–17 | 40–59% | Vàng | `#eab308` |
-| 18–23 | 60–79% | Vàng chanh | `#a3e635` |
-| 24–29 | 80–99% | Xanh lá nhạt | `#4ade80` |
-| 30 (Mastered) | 100% | Xanh lá đậm | `#16a34a` |
+⚠️ **Sửa 2026-10-01 (MB-43):** bản trước tô màu viền theo 6 mốc `total_points` (0–5 đỏ … 30 xanh đậm). Vì 6 màu
+đó trùng 6 màu giai đoạn cây, người dùng đọc màu như level ⇒ thấy "lệch level" (vd. 复习 stage3 · 26 điểm ra
+màu của intensive). Nay **MÀU theo `stage`, ĐỘ ĐẦY theo `total_points`**:
 
-Nếu `total_points` bị phạt (§3.5), viền **lùi màu tương ứng** — hành vi mong muốn, phản ánh đúng thực tế đang quên dần.
+| `stage` | Màu | Mã màu |
+|---|---|---|
+| new | Đỏ | `#ef4444` |
+| stage1 | Cam | `#f97316` |
+| stage2 | Vàng | `#eab308` |
+| stage3 | Vàng chanh | `#a3e635` |
+| intensive | Xanh lá nhạt | `#4ade80` |
+| mastered | Xanh lá đậm | `#16a34a` |
+
+Nếu `total_points` bị phạt (§3.5), viền **ngắn lại** — phản ánh đúng thực tế đang quên dần; màu giữ theo stage
+(stage không bao giờ tụt — DEC-08/09).
 
 ---
 

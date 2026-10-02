@@ -108,7 +108,7 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 └───────────────────────────────────┘
 ```
 
-**Chi tiết ring:** hiển thị **MỌI dạng bài** (trừ Matching, Flashcard, Grammar — xem §6.2). Vẽ bằng SVG `stroke-dasharray` thể hiện đúng % (`min(total_points,30)/30`, DEC-12) — KHÔNG phải vòng tròn đặc/luôn đầy. Icon cây ở giữa đổi theo `stage`.
+**Chi tiết ring:** hiển thị **MỌI dạng bài** (trừ Matching, Flashcard, Grammar — xem §6.2). Vẽ bằng SVG `stroke-dasharray` thể hiện đúng % (`min(total_points,36)/36` = `MASTER_THRESHOLD`, DEC-12 + MB-45) — KHÔNG phải vòng tròn đặc/luôn đầy. Màu viền và icon cây ở giữa đổi theo `stage` (MB-43).
 
 ✅ **ĐÃ GIẢI QUYẾT (trước đây flag là "cần vẽ riêng"):** Bộ 6 icon cây (hạt giống→mầm→chồi→lá→hoa→quả) đã có sẵn dưới dạng SVG path tùy chỉnh trong `PcView.html`/`MobileView.html` (tìm trong khối "Khu vườn của bạn" ở màn Dashboard, hoặc trong ring ở đầu mỗi màn Player). **KHÔNG vẽ lại — trích xuất nguyên `<path>`/`<ellipse>`/`<circle>` từ file gốc**, biến thành component SVG dùng chung (VD `<GrowthStageIcon stage="sprout" />`). Toàn bộ icon trong app (nav sidebar, 3 nút tiện ích, 6 icon cây) đều theo phong cách vẽ tay nhất quán (viền `stroke-width:1.7-1.8`, `stroke-linecap:round`) — **không trộn lẫn với bất kỳ icon font nào** (Tabler, Lucide...) vì sẽ phá vỡ tính nhất quán nét vẽ.
 
@@ -160,10 +160,11 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 
 Kế thừa DEC-12, áp dụng token thị giác Nhiệt đới:
 
-- **% viền** = `min(total_points, 30) / 30`, vẽ bằng SVG partial stroke, KHÔNG conic-gradient.
+- **% viền** = `min(total_points, 36) / 36` (= `MASTER_THRESHOLD`, sửa 2026-10-02 MB-45 — đầy đúng lúc mastered), vẽ bằng SVG partial stroke, KHÔNG conic-gradient.
 - **Icon giữa** = theo `stage` (6 icon cây, cần minh họa custom — xem §6.1).
-- **6 mốc màu viền** (không đổi, xem §3): mỗi mốc ứng đúng 6 điểm `total_points`.
-- Khi `total_points` bị phạt, viền **lùi màu tương ứng** — hành vi mong muốn.
+- **Màu viền theo `stage`** (6 mã ring-0..5, xem §3) — cùng màu chip Khu vườn (sửa 2026-10-01, MB-43; bản trước
+  tô theo mốc `total_points` gây hiểu nhầm "lệch level").
+- Khi `total_points` bị phạt, viền **ngắn lại**, màu giữ theo stage.
 
 ---
 
@@ -177,7 +178,7 @@ Kế thừa DEC-12, áp dụng token thị giác Nhiệt đới:
 
 **Nội dung** (đã validate bằng mockup): header chào + ngày + streak badge (coral tint) → 2 thẻ màu riêng biệt "đến hạn hôm nay" (tint chàm `#EDE9FE`) / "quá hạn" (tint vàng `#FEF9C3`, giọng điệu bình thản, KHÔNG dùng đỏ) → CTA chính "Bắt đầu ôn tập · N từ" (nền chàm sâu đặc) → CTA phụ "Ôn theo chủ đề" (tint ngọc lam) → khối "Khu vườn của bạn" gồm 2 tầng: hàng đếm 6 giai đoạn (icon trong chip màu tint theo ramp) + cụm ring cá nhân của từ vừa ôn gần đây.
 
-⚠️ **Lưu ý quan trọng khi code:** màu ở hàng đếm 6 giai đoạn là **màu tượng trưng cho cả nhóm** (1 màu/stage cố định), KHÁC với màu ring cá nhân ở cụm bên dưới (phản ánh đúng `total_points` thật của từng từ, có thể lệch màu dù cùng stage). Đây là 2 nguồn dữ liệu khác nhau, đừng dùng chung 1 query.
+⚠️ **Lưu ý quan trọng khi code:** màu ở hàng đếm 6 giai đoạn là **màu tượng trưng cho cả nhóm** (1 màu/stage cố định), ring cá nhân ở cụm bên dưới CÙNG màu theo stage (MB-43) nhưng độ đầy phản ánh `total_points` thật của từng từ. Đây là 2 nguồn dữ liệu khác nhau, đừng dùng chung 1 query.
 
 - **Mobile:** 1 cột dọc đúng như mockup đã duyệt.
 - **PC:** 2 cột — cột trái (rộng ~60%) chứa header/streak/2 thẻ due-overdue/CTA chính+phụ; cột phải (~40%) chứa khối "Khu vườn của bạn" đứng riêng, cao hơn để hiện được nhiều ring cá nhân hơn (8-10 thay vì 5).
@@ -232,7 +233,7 @@ Xuất hiện **mỗi khi người dùng rời khỏi Player** (hết từ due t
 1. Header ăn mừng nhẹ nhàng (icon + câu chào, KHÔNG dùng ngôn ngữ thổi phồng).
 2. 3 thẻ số liệu: tổng điểm hôm nay (tint chàm), số từ đã ôn (trung tính), số từ lên stage (tint xanh).
 3. **Nếu có từ đạt Mastered hôm nay:** thẻ nổi bật riêng, nền **vàng/hổ phách** (`#FEF9C3`) — dùng làm màu "spotlight thành tích" (quy ước ngôi sao vàng), TÁCH BIỆT khỏi ý nghĩa dữ liệu nghiêm ngặt của thang ring. Icon quả bên trong vẫn giữ đúng `#16a34a` (mốc Mastered thật của ring) để không mất liên kết ngữ nghĩa.
-4. Danh sách chi tiết từng từ: icon stage-trước → mũi tên → icon stage-sau (nếu có lên stage) hoặc chỉ icon hiện tại + nhãn "chưa đủ điểm" (nếu không lên). Icon tô màu theo đúng stage tương ứng (dùng lại logic tô màu "tổng hợp theo stage" ở §8.1, KHÔNG phải màu ring cá nhân theo `total_points`).
+4. Danh sách chi tiết từng từ: icon stage-trước → mũi tên → icon stage-sau (nếu có lên stage) hoặc chỉ icon hiện tại + nhãn "chưa đủ điểm" (nếu không lên). Icon tô màu theo đúng stage tương ứng (dùng lại logic tô màu theo stage ở §8.1).
 5. Dòng chữ nhẹ nhàng (không phải cảnh báo) cho số từ chưa đạt ngưỡng: "N từ chưa đủ điểm hôm nay sẽ tiếp tục vào ngày mai".
 6. **2 biến thể CTA tùy trạng thái hàng đợi:**
    - **Đã hết từ due trong ngày:** chỉ 1 nút "Về Dashboard" (nền chàm sâu đặc).

@@ -128,6 +128,78 @@ function laCap(x: unknown, khoa: 'word' | 'text'): boolean {
   return p === null || typeof p === 'string'
 }
 
+/**
+ * M23 — kiểm ĐỦ FIELD + ĐÚNG SHAPE payload của 1 bài theo §6 (M13 — xem ghi chú ở LUAT_PAYLOAD).
+ * Dùng chung cho file import và lệnh bổ sung bài hội thoại. `kiemTempId` nhận giá trị của field kiểu
+ * 'temp_id' (import: temp_id trong file; bổ sung: uuid của từ trong chủ đề), trả thông điệp lỗi hoặc null.
+ */
+export function kiemPayload(
+  kieu: string,
+  payload: unknown,
+  g: string,
+  kiemTempId: (gt: unknown) => string | null,
+): ViTri[] {
+  const ra: ViTri[] = []
+  const bao = (duong_dan: string, thong_diep: string) => ra.push({ duong_dan, thong_diep })
+  const luatCua = LUAT_PAYLOAD[kieu] ?? {}
+  const coLuat = Object.keys(luatCua).length > 0
+  if (coLuat && !laObject(payload)) {
+    bao(`${g}.payload`, `Dạng '${kieu}' cần payload là object.`)
+    return ra
+  }
+  if (!laObject(payload)) return ra
+
+  for (const [field, luat] of Object.entries(luatCua)) {
+    const duong = `${g}.payload.${field}`
+    if (!(field in payload)) {
+      bao(duong, `Dạng '${kieu}' thiếu field này.`)
+      continue
+    }
+    const gt = payload[field]
+
+    if (luat === 'chuoi') {
+      if (!laChuoiKhongRong(gt)) bao(duong, 'Phải là chuỗi không rỗng.')
+      continue
+    }
+    if (luat === 'chuoi_hoac_null') {
+      // Phiên âm: KEY luôn phải có; null hợp lệ khi lang = en (§6.5)
+      if (gt !== null && typeof gt !== 'string') bao(duong, 'Phải là chuỗi hoặc null.')
+      continue
+    }
+    if (luat === 'temp_id') {
+      const thongDiep = kiemTempId(gt)
+      if (thongDiep) bao(duong, thongDiep)
+      continue
+    }
+    if (luat === 'cau') {
+      if (!laCap(gt, 'text')) bao(duong, 'Phải là object { text, pinyin } (key pinyin luôn có mặt).')
+      continue
+    }
+
+    // Còn lại là mảng: ['mang_chuoi' | 'mang_tu' | 'mang_cau', số phần tử]
+    const [kieuMang, soLuong] = luat
+    if (!Array.isArray(gt)) {
+      bao(duong, 'Phải là mảng.')
+      continue
+    }
+    if (soLuong > 0 && gt.length !== soLuong) {
+      bao(duong, `Phải có đúng ${soLuong} phần tử, đang có ${gt.length}.`)
+    } else if (soLuong === 0 && gt.length < 2) {
+      bao(duong, `Phải có ít nhất 2 phần tử, đang có ${gt.length}.`)
+    }
+    gt.forEach((pt, k) => {
+      if (kieuMang === 'mang_chuoi') {
+        if (!laChuoiKhongRong(pt)) bao(`${duong}[${k}]`, 'Phải là chuỗi không rỗng.')
+      } else if (kieuMang === 'mang_tu') {
+        if (!laCap(pt, 'word')) bao(`${duong}[${k}]`, 'Phải là object { word, pinyin } — KHÔNG phải chuỗi.')
+      } else if (kieuMang === 'mang_cau') {
+        if (!laCap(pt, 'text')) bao(`${duong}[${k}]`, 'Phải là object { text, pinyin } — chú ý khoá là `text`, không phải `word`.')
+      }
+    })
+  }
+  return ra
+}
+
 export function validateImportFile(raw: unknown): KetQuaValidate {
   const loi: ViTri[] = []
   const canh_bao: ViTri[] = []
@@ -233,67 +305,12 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
       if (!kieuHopLe || KIEU_KHONG_PAYLOAD.has(kieu)) return
 
       // Payload: kiểm ĐỦ FIELD + ĐÚNG SHAPE theo §6 (M13 — xem ghi chú ở LUAT_PAYLOAD)
-      const payload = bai['payload']
-      const luatCua = LUAT_PAYLOAD[kieu] ?? {}
-      const coLuat = Object.keys(luatCua).length > 0
-      if (coLuat && !laObject(payload)) {
-        bao(`${g}.payload`, `Dạng '${kieu}' cần payload là object.`)
-        return
-      }
-      if (!laObject(payload)) return
-
-      for (const [field, luat] of Object.entries(luatCua)) {
-        const duong = `${g}.payload.${field}`
-        if (!(field in payload)) {
-          bao(duong, `Dạng '${kieu}' thiếu field này.`)
-          continue
-        }
-        const gt = payload[field]
-
-        if (luat === 'chuoi') {
-          if (!laChuoiKhongRong(gt)) bao(duong, 'Phải là chuỗi không rỗng.')
-          continue
-        }
-        if (luat === 'chuoi_hoac_null') {
-          // Phiên âm: KEY luôn phải có; null hợp lệ khi lang = en (§6.5)
-          if (gt !== null && typeof gt !== 'string') bao(duong, 'Phải là chuỗi hoặc null.')
-          continue
-        }
-        if (luat === 'temp_id') {
-          if (!laChuoiKhongRong(gt) || !tempIdCoThat.has(gt)) {
-            bao(duong, `Không có temp_id ${JSON.stringify(gt)} nào trong mảng vocab.`)
-          } else if (gt === bai['vocab_temp_id']) {
-            // Bài 2 TỪ (§4.4) mà cả 2 chỗ trống trỏ về cùng 1 từ ⇒ Player ghi log 2 lần cho 1 từ
-            bao(duong, 'Trỏ về chính từ của bài này — bài 2 từ phải là 2 từ KHÁC nhau.')
-          }
-          continue
-        }
-        if (luat === 'cau') {
-          if (!laCap(gt, 'text')) bao(duong, 'Phải là object { text, pinyin } (key pinyin luôn có mặt).')
-          continue
-        }
-
-        // Còn lại là mảng: ['mang_chuoi' | 'mang_tu' | 'mang_cau', số phần tử]
-        const [kieuMang, soLuong] = luat
-        if (!Array.isArray(gt)) {
-          bao(duong, 'Phải là mảng.')
-          continue
-        }
-        if (soLuong > 0 && gt.length !== soLuong) {
-          bao(duong, `Phải có đúng ${soLuong} phần tử, đang có ${gt.length}.`)
-        } else if (soLuong === 0 && gt.length < 2) {
-          bao(duong, `Phải có ít nhất 2 phần tử, đang có ${gt.length}.`)
-        }
-        gt.forEach((pt, k) => {
-          if (kieuMang === 'mang_chuoi') {
-            if (!laChuoiKhongRong(pt)) bao(`${duong}[${k}]`, 'Phải là chuỗi không rỗng.')
-          } else if (kieuMang === 'mang_tu') {
-            if (!laCap(pt, 'word')) bao(`${duong}[${k}]`, 'Phải là object { word, pinyin } — KHÔNG phải chuỗi.')
-          } else if (kieuMang === 'mang_cau') {
-            if (!laCap(pt, 'text')) bao(`${duong}[${k}]`, 'Phải là object { text, pinyin } — chú ý khoá là `text`, không phải `word`.')
-          }
-        })
-      }
+      loi.push(...kiemPayload(kieu, bai['payload'], g, (gt) => {
+        if (!laChuoiKhongRong(gt) || !tempIdCoThat.has(gt)) return `Không có temp_id ${JSON.stringify(gt)} nào trong mảng vocab.`
+        // Bài 2 TỪ (§4.4) mà cả 2 chỗ trống trỏ về cùng 1 từ ⇒ Player ghi log 2 lần cho 1 từ
+        if (gt === bai['vocab_temp_id']) return 'Trỏ về chính từ của bài này — bài 2 từ phải là 2 từ KHÁC nhau.'
+        return null
+      }))
 
       // Cảnh báo: 2 bài CÙNG dạng cho CÙNG 1 từ ⇒ Player dựng 2 màn trùng nhau
       if (laChuoiKhongRong(vTempId)) {
