@@ -178,6 +178,9 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 16. **Bộ bài LÝ THUYẾT ≠ bộ bài THỰC CÓ (M21).** `DANG_BAI_THEO_STAGE` liệt kê cả `select_dialog`/`fill_dialog`, nhưng
     200/240 từ không có record 2 dạng này. Mọi phép "đã đạt hết bộ chưa?" phải dùng `dangKhaDung(stage, dangCoRecord)`
     (`player.ts`); `xuLyTraLoi` nhận nó qua `dang_kha_dung`. Quên ⇒ từ kẹt "Dashboard đếm đến hạn, Player không có bài".
+17. **Chọn lại đến khi đúng (M25):** màn bài tập KHÔNG chuyển màn khi sai — giữ đỏ `KHOANG_CHO_SAI_MS` (800) rồi cho làm
+    lại; chỉ gọi `onTraLoi` **1 lần khi đúng**, với kết quả LẦN ĐẦU từ `chamLuot` (`player.ts`). Thêm màn bài tập mới ⇒
+    theo cùng khuôn + thêm tên vào test X2. Bài nhiều chỗ trống: chỉ đưa vào `chamLuot` các ô THỰC CÓ (thiếu ô ⇒ kẹt).
 
 ## 8. Chuẩn code & an toàn
 

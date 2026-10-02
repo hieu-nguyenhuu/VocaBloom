@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-02** (M24: ngưỡng Mastered 30 → 36)
+> Cập nhật lần cuối: **2026-10-02** (M25: chọn sai thì chọn lại đến khi đúng)
 
 ## Trạng thái hiện tại
 
@@ -39,9 +39,23 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M22 (Màu Mastery ring theo stage) — ✅ XONG 2026-10-01.**
 **M23 (Bổ sung bài hội thoại cho mọi từ) — ✅ XONG 2026-10-01.**
 **M24 (Ngưỡng Mastered 30 → 36) — ✅ XONG 2026-10-02.**
+**M25 (Chọn sai thì chọn lại đến khi đúng / Bỏ qua) — ✅ XONG 2026-10-02.**
 
-> ⚠️ M21 đã commit (`0413b73 fix bug`). **M22 + M23 + M24 CHƯA commit** (người dùng tự commit).
+> ⚠️ M21 đã commit (`0413b73 fix bug`). **M22 + M23 + M24 + M25 CHƯA commit** (người dùng tự commit).
 > `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+
+### M25 vừa xong (2026-10-02) — MB-46
+- 4 màn `TracNghiem` · `DienTu` · `SapXep` · `HoiThoai`: sai ⇒ đỏ **800ms** ⇒ chọn lại đến khi đúng (hoặc Bỏ qua). Trắc
+  nghiệm: ô sai mờ + khoá · điền: giữ chữ + bôi đen · sắp xếp: giữ khay · hội thoại: ô đúng giữ xanh + khoá, chip sai khoá
+  TRỪ KHI là đáp án ô kia. **Không đổi:** Fast Decision, AI chấm, Ghép cặp (vốn đã vậy), Flashcard (Hard vốn đã xuống cuối
+  phiên — `hard_day_cuoi`; Again vẫn vào hàng Ôn lại).
+- ⭐ **Điểm theo LẦN ĐẦU** qua hàm thuần `chamLuot` (`player.ts`, test C1–C5). Component chỉ gọi `onTraLoi` **1 lần khi đúng**,
+  với `dung = !daSai` ⇒ `srs.ts` / `PlayerPage.traLoi` / RPC / retry **không sửa dòng nào**.
+- ⚠️ Hội thoại **thiếu từ B**: chỉ chấm ô thực có (code cũ trả `b: false` cố định ⇒ áp "đến khi đúng" là kẹt vĩnh viễn).
+- `KHOANG_CHO_SAI_MS` 1000 → **800** (nay = thời gian giữ đỏ, không phải chờ chuyển màn); X2 canh `? 600 : 800`.
+- Chấm chuyển từ `useEffect` sang **handler** ở `TracNghiem` (khỏi double khi StrictMode / đổi `soGoiY`); mọi màn có
+  `clearTimeout` khi unmount.
+- Hệ quả đã báo người dùng: bấm X sau 1 lần sai ⇒ bài đó KHÔNG ghi log (như chưa làm) · `thoi_gian_ms` gồm thời gian làm lại.
 
 ### M24 vừa xong (2026-10-02) — MB-45
 - `MASTER_THRESHOLD = 36` (= 4+8+12+12): đúng trọn vẹn ⇒ stage3 lên thẳng mastered; hụt (gợi ý / bỏ ngày) ⇒ intensive.

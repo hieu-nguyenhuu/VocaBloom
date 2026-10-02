@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-02** (M24 — Ngưỡng Mastered 30 → 36)
+> Cập nhật lần cuối: **2026-10-02** (M25 — Chọn sai thì chọn lại đến khi đúng)
 
 ## ✅ Đã xong
 
@@ -48,6 +48,14 @@
 - [x] **M22 — Màu Mastery ring theo stage** (2026-10-01).
 - [x] **M23 — Bổ sung bài hội thoại: 678/678 từ đủ select_dialog + fill_dialog** (2026-10-01).
 - [x] **M24 — Ngưỡng Mastered 30 → 36** (2026-10-02): `npm test` 414/414 · build · lint · CDP Dashboard 19/19, 0 lệnh ghi.
+- [x] **M25 — Chọn sai thì chọn lại đến khi đúng / Bỏ qua** (2026-10-02).
+
+### ✅ M25 — Chọn lại đến khi đúng (XONG 2026-10-02)
+- [x] TDD `chamLuot` C1–C5 (ĐỎ trước) · X2 đổi `600 : 800` (ĐỎ trước ở cả 4 màn rồi mới sửa màn).
+- [x] `TracNghiem` · `DienTu` · `SapXep` · `HoiThoai` — chọn lại, điểm theo lần đầu, hội thoại thiếu B không kẹt.
+- [x] SPEC §4.2 (đoạn "Chọn lại trong màn") + UI_DESIGN §6.2 cập nhật.
+- [x] `npm test` **419/419** · build xanh · lint 0 lỗi (9 cảnh báo cũ) · **CDP 21/21** trên trang tạm không đăng nhập
+      (0 lệnh ghi Supabase), trang tạm đã xoá.
 
 ### ✅ M23 — Bổ sung bài hội thoại cho mọi từ (XONG 2026-10-01)
 - [x] Skill `vocabCsv2Json` luật phủ sóng mới + cảnh báo ở `validate_import.py` và builder HSK4.

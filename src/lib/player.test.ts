@@ -5,6 +5,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
+  chamLuot,
   chamMatching,
   chonNghiaFastDecision,
   demConCho,
@@ -685,5 +686,26 @@ describe('dangKhaDung + moLaiNeuHetBai (M21 — từ kẹt vì thiếu record h�
   it('K4 — tái hiện lỗi: từ kẹt chỉ ra flashcard; mở lại thì có bài tính điểm', () => {
     expect(coBaiTinhDiem(xepBai({ tu: [phucTap], baiTap }).man)).toBe(false)
     expect(coBaiTinhDiem(xepBai({ tu: [moLaiNeuHetBai(phucTap, co)], baiTap }).man)).toBe(true)
+  })
+})
+
+describe('chamLuot — chọn lại đến khi đúng, LẦN ĐẦU quyết định điểm (M25)', () => {
+  it('C1 đúng ngay ⇒ xong, ghi true', () => {
+    expect(chamLuot({}, { x: true })).toEqual({ xong: true, ghi: { x: true }, daSai: { x: false } })
+  })
+  it('C2 sai ⇒ chưa xong, chưa ghi, nhớ đã sai', () => {
+    expect(chamLuot({}, { x: false })).toEqual({ xong: false, ghi: null, daSai: { x: true } })
+  })
+  it('C3 sai rồi đúng ⇒ ghi false (giống Ghép cặp)', () => {
+    const l1 = chamLuot({}, { x: false })
+    expect(chamLuot(l1.daSai, { x: true })).toEqual({ xong: true, ghi: { x: false }, daSai: { x: true } })
+  })
+  it('C4 hội thoại: A đúng B sai ⇒ chưa xong; sửa B ⇒ ghi { a: true, b: false }', () => {
+    const l1 = chamLuot({}, { a: true, b: false })
+    expect(l1.xong).toBe(false)
+    expect(chamLuot(l1.daSai, { a: true, b: true }).ghi).toEqual({ a: true, b: false })
+  })
+  it('C5 thiếu từ B ⇒ chỉ chấm ô a, đúng là xong (không kẹt vĩnh viễn)', () => {
+    expect(chamLuot({}, { a: true })).toEqual({ xong: true, ghi: { a: true }, daSai: { a: false } })
   })
 })

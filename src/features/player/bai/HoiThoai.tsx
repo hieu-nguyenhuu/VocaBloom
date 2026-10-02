@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { amKhiCham } from '../../../lib/amThanhCore.ts'
-import { oGoiY, soKhopDapAn, tachChoTrong, xaoTron, type PayloadDialog, type VocabDb } from '../../../lib/player.ts'
+import { chamLuot, oGoiY, soKhopDapAn, tachChoTrong, xaoTron, type PayloadDialog, type VocabDb } from '../../../lib/player.ts'
 import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
 
 /**
@@ -12,6 +12,9 @@ import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
  * Select Dialog: 4 chip (đáp án A + từ B + 2 distractors, đã xáo), bấm điền vào chỗ đang chờ (A trước).
  * Fill Dialog: 2 ô nhập tay ngay tại chỗ trống (UI_DESIGN §6.3) + nút "Kiểm tra".
  * Gợi ý: Select ẩn 1 chip sai; Fill lộ đáp án chỗ A.
+ *
+ * M25: sai → đỏ 800ms rồi ô ĐÚNG giữ xanh + khoá, chỉ ô SAI làm lại đến khi đúng (hoặc Bỏ qua). Select:
+ * chip vừa chọn sai mờ + khoá, TRỪ KHI nó là đáp án của ô kia. Điểm từng ô theo LẦN ĐẦU (`chamLuot`).
  */
 type Props = {
   cheDo: 'select_dialog' | 'fill_dialog'
@@ -47,13 +50,45 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
   const goiYFill = oDuocGoiY.includes('a') ? dapAnA : ''
   const goiYFillB = oDuocGoiY.includes('b') ? dapAnB : ''
 
+  const coB = Boolean(dapAnB)
+  const dayDu = Boolean(dienA) && (!coB || Boolean(dienB))
+  // M25 — ô đã đúng (giữ xanh + khoá) · chip đã chọn sai (mờ + khoá) · ô nào từng sai (điểm theo lần đầu)
+  const [dungRoi, setDungRoi] = useState({ a: false, b: false })
+  const [khoa, setKhoa] = useState<Set<string>>(() => new Set())
+  const daSai = useRef<Partial<Record<string, boolean>>>({})
+  const hen = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const oA = useRef<HTMLInputElement>(null)
+  const oB = useRef<HTMLInputElement>(null)
+  useEffect(() => () => clearTimeout(hen.current), [])
+
   function chot(a: string, b: string) {
-    const ket = { a: soKhopDapAn(a, dapAnA, lang), b: dapAnB ? soKhopDapAn(b, dapAnB, lang) : false }
-    setKq(ket)
+    // Chỉ chấm ô THỰC CÓ — thiếu từ B mà chấm `b: false` cố định thì màn kẹt vĩnh viễn (M25)
+    const ket: Record<string, boolean> = { a: soKhopDapAn(a, dapAnA, lang), ...(coB ? { b: soKhopDapAn(b, dapAnB, lang) } : {}) }
+    const dungHet = Object.values(ket).every(Boolean)
+    const goiY = soGoiY > 0
+    setKq({ a: ket.a ?? false, b: ket.b ?? false })
     // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
-    // Đúng CẢ 2 chỗ mới là đúng — cùng điều kiện với khoảng chờ ngay dưới để âm và nhịp chuyển màn khớp nhau
-    phatAmThanh(amKhiCham(ket.a && ket.b, soGoiY > 0))
-    setTimeout(() => onTraLoi(ket, soGoiY > 0), ket.a && ket.b ? 600 : 1000)
+    // Đúng MỌI chỗ mới là đúng — cùng điều kiện với khoảng chờ ngay dưới để âm và nhịp chuyển màn khớp nhau
+    phatAmThanh(amKhiCham(dungHet, goiY))
+    const cham = chamLuot(daSai.current, ket)
+    daSai.current = cham.daSai
+    hen.current = setTimeout(() => {
+      if (cham.ghi) return onTraLoi({ a: cham.ghi.a ?? false, b: cham.ghi.b ?? false }, goiY)
+      // M25 — ô đúng giữ + khoá; ô sai làm lại. Chip sai mờ + khoá TRỪ KHI là đáp án của ô kia.
+      setDungRoi({ a: ket.a ?? false, b: ket.b ?? false })
+      if (cheDo === 'select_dialog') {
+        setKhoa((k) => {
+          const m = new Set(k)
+          for (const [o, c] of [['a', a], ['b', b]] as const) if (!ket[o] && c && c !== dapAnA && c !== dapAnB) m.add(c)
+          return m
+        })
+        if (!ket.a) setDienA('')
+        if (coB && !ket.b) setDienB('')
+      }
+      setKq(null)
+      // Fill: GIỮ chữ đã gõ ở ô sai + bôi đen (ô bị disabled lúc chấm ⇒ đợi 1 frame mới select được)
+      if (cheDo === 'fill_dialog') requestAnimationFrame(() => (ket.a ? oB : oA).current?.select())
+    }, dungHet ? 600 : 800)
   }
 
   // M11/Q2-Q3: Enter = Kiểm tra (chế độ điền) · phím 1–4 = chọn chip thứ n (chế độ chọn)
@@ -70,55 +105,60 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
     const i = soThuTuPhim(e, chip.length)
     if (i === null) return
     const c = chip[i]
-    if (!c || anDi.has(c) || dienB !== '') return
+    if (!c || anDi.has(c) || khoa.has(c) || dayDu) return
     e.preventDefault()
     bamChip(c)
   }, true)
 
+  /** Điền ô trống đầu tiên (A trước); đủ mọi ô thực có thì chấm. Sau 1 lần sai, ô đúng vẫn giữ (M25). */
   function bamChip(c: string) {
-    if (kq) return
+    if (kq || khoa.has(c)) return
     if (!dienA) {
       setDienA(c)
-      if (!dapAnB) chot(c, '')
+      if (!coB || dienB) chot(c, dienB)
       return
     }
-    if (!dienB) {
+    if (coB && !dienB) {
       setDienB(c)
       chot(dienA, c)
     }
   }
 
-  function oTrong(gia_tri: string, dat: (v: string) => void, dapAn: string) {
+  function oTrong(gia_tri: string, dat: (v: string) => void, dapAn: string, o: 'a' | 'b', ref: RefObject<HTMLInputElement | null>) {
     if (cheDo === 'select_dialog') {
       const mau = !gia_tri
         ? 'text-accent'
         : kq === null
-          ? 'text-accent-text'
+          ? dungRoi[o]
+            ? 'text-success-text'
+            : 'text-accent-text'
           : soKhopDapAn(gia_tri, dapAn, lang)
             ? 'text-success-text'
             : 'text-danger-text'
       return <span className={`font-bold ${mau}`}>{gia_tri || '___'}</span>
     }
+    const vien = kq === null ? (dungRoi[o] ? 'border-success' : '') : soKhopDapAn(gia_tri, dapAn, lang) ? 'border-success' : 'border-danger'
     return (
       <input
+        ref={ref}
         value={gia_tri}
         onChange={(e) => dat(e.target.value)}
-        disabled={kq !== null}
+        disabled={kq !== null || dungRoi[o]}
         lang={lang}
         aria-label="Điền vào chỗ trống"
-        className={`${O_NHAP} ${kq === null ? '' : soKhopDapAn(gia_tri, dapAn, lang) ? 'border-success' : 'border-danger'}`}
+        className={`${O_NHAP} ${vien}`}
       />
     )
   }
 
-  function cau(text: string, gia_tri: string, dat: (v: string) => void, dapAn: string) {
+  function cau(text: string, gia_tri: string, dat: (v: string) => void, dapAn: string, o: 'a' | 'b', ref: RefObject<HTMLInputElement | null>) {
     // Dữ liệu chuẩn: mỗi câu đúng 1 dấu `___`. `tachChoTrong` chịu được cả câu 0 hoặc nhiều dấu
     // mà không nuốt mất chữ (bản cũ split rồi lấy 2 phần đầu ⇒ ô trống nhảy lung tung).
     const { truoc, sau } = tachChoTrong(text)
     return (
       <span lang={lang} className="font-han text-18 text-content-primary md:text-19">
         {truoc}
-        {sau !== null && oTrong(gia_tri, dat, dapAn)}
+        {sau !== null && oTrong(gia_tri, dat, dapAn, o, ref)}
         {sau}
       </span>
     )
@@ -129,14 +169,14 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
       <div className="flex flex-col gap-3 md:flex-row md:gap-4">
         <div className={KHOI}>
           <div className="mb-2 text-13 font-bold text-content-muted">A</div>
-          {cau(payload.dialog_a, dienA || goiYFill, setDienA, dapAnA)}
+          {cau(payload.dialog_a, dienA || goiYFill, setDienA, dapAnA, 'a', oA)}
           {hienPhienAm && payload.dialog_a_pinyin && (
             <div className="mt-2 text-12 text-content-muted">{payload.dialog_a_pinyin}</div>
           )}
         </div>
         <div className={KHOI}>
           <div className="mb-2 text-13 font-bold text-content-muted">B</div>
-          {cau(payload.dialog_b, dienB || goiYFillB, setDienB, dapAnB)}
+          {cau(payload.dialog_b, dienB || goiYFillB, setDienB, dapAnB, 'b', oB)}
           {hienPhienAm && payload.dialog_b_pinyin && (
             <div className="mt-2 text-12 text-content-muted">{payload.dialog_b_pinyin}</div>
           )}
@@ -149,9 +189,9 @@ export default function HoiThoai({ cheDo, payload, tuB, lang, hienPhienAm, soGoi
             <button
               key={c}
               type="button"
-              disabled={kq !== null || dienB !== '' || anDi.has(c)}
+              disabled={kq !== null || dayDu || anDi.has(c) || khoa.has(c)}
               onClick={() => bamChip(c)}
-              className={`${CHIP} ${anDi.has(c) ? 'invisible' : ''}`}
+              className={`${CHIP} ${anDi.has(c) ? 'invisible' : ''} ${khoa.has(c) ? 'opacity-40' : ''}`}
             >
               {c}
             </button>

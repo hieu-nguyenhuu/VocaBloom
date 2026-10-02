@@ -302,6 +302,11 @@ Khi ôn chưa đạt ngưỡng nâng stage:
 - Chỉ retry các bài **CHƯA đạt** trong chu kỳ (đọc từ `cycle_completed_exercises`), không lặp lại bài đã đúng.
 - **KHÔNG retry ngay lập tức** trong cùng session — dồn vào `daily_retry_queue`, chạy ở lượt riêng SAU KHI đã hoàn thành các session khác trong ngày (giảm rủi ro "nhớ tạm thời").
 
+**Chọn lại trong màn (M25, 2026-10-02):** ở trắc nghiệm, điền từ, sắp xếp, Select/Fill Dialog, chọn sai thì xoá đỏ và
+**chọn lại đến khi đúng hoặc Bỏ qua** mới sang câu (Ghép cặp vốn đã vậy). Đây là luyện tại chỗ, KHÔNG phải retry:
+**điểm + đạt/chưa đạt theo LẦN TRẢ LỜI ĐẦU** (từng chỗ trống riêng với bài 2 từ) ⇒ sai lần đầu = 0 điểm, chưa đạt, vẫn vào
+`daily_retry_queue` như trên. `review_log` ghi 1 dòng/từ khi kết thúc màn. Fast Decision và 3 dạng AI chấm không áp dụng.
+
 ### 4.3 Flashcard — Good / Hard / Again (DEC-11)
 
 Flashcard KHÔNG tính điểm nâng stage (tự chấm, không khách quan).

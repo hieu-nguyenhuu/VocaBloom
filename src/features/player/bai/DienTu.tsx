@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { Icon } from '../../../components/icons.tsx'
-import { gioiHanNhap, soKhopDapAn, type VocabDb } from '../../../lib/player.ts'
+import { chamLuot, gioiHanNhap, soKhopDapAn, type VocabDb } from '../../../lib/player.ts'
 import { phatAm } from '../../../lib/tts.ts'
 
 /**
@@ -16,6 +16,9 @@ import { phatAm } from '../../../lib/tts.ts'
  *
  * M10: giới hạn độ dài VẪN giữ, nhưng chỉ áp sau khi IME chốt chữ — nếu cắt ngay lúc đang gõ pinyin
  * thì chữ Hán đã nhập trước đó bị xoá mất (người dùng báo 19/09).
+ *
+ * M25: sai → đỏ 800ms rồi về viền tím, GIỮ chữ đã gõ + bôi đen để gõ lại đến khi đúng (hoặc Bỏ qua).
+ * Điểm theo LẦN ĐẦU (`chamLuot`) ⇒ `onTraLoi` chỉ gọi 1 lần, khi đã đúng.
  */
 type Props = {
   vocab: VocabDb
@@ -45,13 +48,26 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
     if (cheDo === 'listen_fill') phatAm(vocab.word, vocab.lang, vocab.audio_url)
   }, [cheDo, vocab.id, vocab.word, vocab.lang, vocab.audio_url])
 
+  const daSai = useRef<Partial<Record<'x', boolean>>>({})
+  const hen = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(hen.current), [])
+
   function kiemTra() {
     if (kq !== null || !giaTri.trim()) return
     const dung = soKhopDapAn(giaTri, dapAn, vocab.lang)
+    const goiY = soGoiY > 0
     setKq(dung)
     // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
-    phatAmThanh(amKhiCham(dung, soGoiY > 0))
-    setTimeout(() => onTraLoi(dung, soGoiY > 0), dung ? 600 : 1000)
+    phatAmThanh(amKhiCham(dung, goiY))
+    const cham = chamLuot(daSai.current, { x: dung })
+    daSai.current = cham.daSai
+    hen.current = setTimeout(() => {
+      if (cham.ghi) return onTraLoi(cham.ghi.x, goiY)
+      // M25 — bỏ đỏ, GIỮ chữ đã gõ + bôi đen: gõ đè luôn hoặc sửa từng ký tự.
+      // Ô bị `disabled` khi `kq !== null` ⇒ đợi 1 frame sau khi bật lại mới select (kèm focus) được.
+      setKq(null)
+      requestAnimationFrame(() => oNhap.current?.select())
+    }, dung ? 600 : 800)
   }
 
   const de =

@@ -122,7 +122,7 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 
 | Trạng thái | Màu | Ghi chú |
 |---|---|---|
-| Chọn sai | `#ef4444` (nền tint `#FEE2E2`, viền đậm, chữ `#B91C1C`) | **CHỈ tô ô vừa chọn sai** — các ô còn lại (kể cả đáp án đúng) giữ nguyên trung tính, không gợi ý |
+| Chọn sai | `#ef4444` (nền tint `#FEE2E2`, viền đậm, chữ `#B91C1C`) | **CHỈ tô ô vừa chọn sai** — các ô còn lại (kể cả đáp án đúng) giữ nguyên trung tính, không gợi ý. **M25 (2026-10-02):** đỏ ~0.8s rồi xoá đỏ, **chọn lại đến khi đúng hoặc Bỏ qua** — trắc nghiệm: ô sai mờ (`opacity-40`) + khoá · điền từ: giữ chữ + bôi đen · sắp xếp: giữ chip trong khay · hội thoại: ô đúng giữ xanh + khoá, chỉ ô sai làm lại. Ngoại lệ: Fast Decision, AI chấm, Ghép cặp (vốn đã chọn lại) |
 | Gợi ý | `#eab308` | |
 | Đúng | `#4ade80` | Auto-next sau ~0.6s nếu không có logic đặc biệt |
 

@@ -45,11 +45,12 @@ export const KHOA_LUU_AM = 'vb-am-thanh'
 export const AM_LUONG_MAC_DINH = 60
 
 /**
- * Khoảng chờ trước khi màn bài tập chuyển màn (ms). Chép từ `setTimeout(..., dung ? 600 : 1000)`
- * trong TracNghiem / DienTu / SapXep / HoiThoai — test X2 canh 2 nơi khớp nhau.
+ * Khoảng chờ của màn bài tập (ms), chép từ `setTimeout(..., dung ? 600 : 800)` trong TracNghiem / DienTu /
+ * SapXep / HoiThoai — test X2 canh 2 nơi khớp nhau. Đúng ⇒ chờ rồi chuyển màn. Sai ⇒ giữ màu đỏ rồi
+ * cho chọn lại (M25; trước đây 1000ms rồi chuyển màn).
  */
 export const KHOANG_CHO_DUNG_MS = 600
-export const KHOANG_CHO_SAI_MS = 1000
+export const KHOANG_CHO_SAI_MS = 800
 
 export type CaiDatAmThanh = {
   /** Công tắc tổng. Tắt thì mọi âm im, nhưng `tung` vẫn giữ nguyên để bật lại là như cũ. */

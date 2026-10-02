@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { Icon } from '../../../components/icons.tsx'
-import { xaoTron, type VocabDb } from '../../../lib/player.ts'
+import { chamLuot, xaoTron, type VocabDb } from '../../../lib/player.ts'
 import { useDungPhim, soThuTuPhim } from '../dungPhim.ts'
 import { phatAm } from '../../../lib/tts.ts'
 
@@ -11,7 +11,8 @@ import { phatAm } from '../../../lib/tts.ts'
  *   selection · audio_recognition (stage 0, đáp án = nghĩa) · select_on_describe (stage 1, đáp án = TỪ)
  *   · select_sentence (stage 2, đáp án = CÂU, lưới 1 cột vì câu dài).
  * Feedback §6.2: chọn sai CHỈ tô ô vừa chọn, các ô còn lại trung tính (không lộ đáp án);
- * đúng → xanh rồi tự sang bài sau 600ms; sai → 1000ms (tự quyết).
+ * đúng → xanh rồi tự sang bài sau 600ms. M25: sai → đỏ 800ms rồi ô đó mờ + khoá, chọn lại đến khi
+ * đúng (hoặc Bỏ qua); điểm theo LẦN ĐẦU (`chamLuot`) nên chỉ gọi `onTraLoi` đúng 1 lần khi đã đúng.
  * Gợi ý (DEC-19, progressive): ẩn dần 1 đáp án sai/lần (tối đa 2); Audio thì hiện chữ Hán dưới loa.
  */
 export type CheDoTracNghiem = 'selection' | 'audio_recognition' | 'select_on_describe' | 'select_sentence'
@@ -66,29 +67,45 @@ export default function TracNghiem({
     onTraLoiRef.current = onTraLoi
   }, [onTraLoi])
 
-  // M11/Q3: phím 1–4 chọn đáp án thứ n (bỏ qua đáp án đang bị gợi ý ẩn)
+  // M25 — ô đã chọn sai: mờ + khoá. `daSai` nhớ đã từng sai để điểm tính theo LẦN ĐẦU.
+  const [khoa, setKhoa] = useState<Set<string>>(() => new Set())
+  const daSai = useRef<Partial<Record<'x', boolean>>>({})
+  const daGui = useRef(false)
+  const hen = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(hen.current), [])
+
+  // Chấm trong HANDLER (không trong effect) ⇒ StrictMode không gọi đôi, đổi `soGoiY` không đặt lại hẹn giờ
+  function chon(x: string) {
+    if (daChon !== null || daGui.current || khoa.has(x) || anDi.has(x)) return
+    setDaChon(x)
+    const dung = x === dapAn
+    const goiY = soGoiY > 0
+    // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
+    phatAmThanh(amKhiCham(dung, goiY))
+    const kq = chamLuot(daSai.current, { x: dung })
+    daSai.current = kq.daSai
+    if (kq.ghi) daGui.current = true
+    hen.current = setTimeout(() => {
+      if (kq.ghi) return onTraLoiRef.current(kq.ghi.x, goiY)
+      // M25 — sai: bỏ đỏ, ô vừa chọn mờ + khoá, chọn tiếp (không lộ đáp án đúng)
+      setKhoa((k) => new Set(k).add(x))
+      setDaChon(null)
+    }, dung ? 600 : 800)
+  }
+
+  // M11/Q3: phím 1–4 chọn đáp án thứ n (bỏ qua đáp án đang bị gợi ý ẩn hoặc đã khoá)
   useDungPhim((e) => {
     if (daChon !== null) return
     const i = soThuTuPhim(e, luaChon.length)
     if (i === null) return
     const x = luaChon[i]
-    if (!x || anDi.has(x)) return
+    if (!x || anDi.has(x) || khoa.has(x)) return
     e.preventDefault()
-    setDaChon(x)
+    chon(x)
   })
 
-  const daGui = useRef(false)
-  useEffect(() => {
-    if (daChon === null || daGui.current) return
-    daGui.current = true
-    const dung = daChon === dapAn
-    // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
-    phatAmThanh(amKhiCham(dung, soGoiY > 0))
-    const t = setTimeout(() => onTraLoiRef.current(dung, soGoiY > 0), dung ? 600 : 1000)
-    return () => clearTimeout(t)
-  }, [daChon, dapAn, soGoiY])
-
   function lop(x: string) {
+    if (khoa.has(x)) return `${O_TRUNG_TINH} opacity-40`
     if (daChon === null) return `${O_TRUNG_TINH} hover:border-accent`
     if (x !== daChon) return O_TRUNG_TINH
     return x === dapAn ? O_DUNG : O_SAI
@@ -154,8 +171,8 @@ export default function TracNghiem({
           <button
             key={x}
             type="button"
-            disabled={daChon !== null}
-            onClick={() => setDaChon(x)}
+            disabled={daChon !== null || khoa.has(x)}
+            onClick={() => chon(x)}
             className={`${lop(x)} ${anDi.has(x) ? 'invisible' : ''} ${
               laCau ? 'px-4 py-3 text-left' : 'p-5 text-center'
             } ${laChuHan ? 'font-han text-17' : 'text-16'}`}

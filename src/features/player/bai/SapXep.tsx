@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { useDungPhim } from '../dungPhim.ts'
-import { chamArrange, xaoTron, type PayloadSapXep, type VocabDb } from '../../../lib/player.ts'
+import { chamArrange, chamLuot, xaoTron, type PayloadSapXep, type VocabDb } from '../../../lib/player.ts'
 
 /**
  * Pattern 3 — sắp xếp từ (mockup 04). Hàng dưới = chip chưa chọn (trung tính), khay trên = chip đã
  * chọn (tint tím). Bấm chip dưới → lên khay; bấm chip trên → trả về dưới. Đáp án đúng là thứ tự
  * `payload.tokens` GỐC; app chỉ xáo lúc hiển thị (§6.3 #13).
  * Gợi ý (DEC-19): mỗi lần bấm đưa đúng 1 chip tiếp theo vào khay.
+ * M25: sai → viền khay đỏ 800ms rồi GIỮ chip trong khay để gỡ/xếp lại đến khi đúng (hoặc Bỏ qua).
+ * Điểm theo LẦN ĐẦU (`chamLuot`) ⇒ `onTraLoi` chỉ gọi 1 lần, khi đã đúng.
  */
 type Props = {
   vocab: VocabDb
@@ -45,13 +47,23 @@ export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }
     kiemTra()
   })
 
+  const daSai = useRef<Partial<Record<'x', boolean>>>({})
+  const hen = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(hen.current), [])
+
   function kiemTra() {
     if (kq !== null || khay.length === 0) return
     const dung = chamArrange(khay.map((i) => xao[i]!.text), payload.tokens)
+    const goiY = soGoiY > 0
     setKq(dung)
     // M17 — phát âm CÙNG khoảnh khắc tô xanh/đỏ, KHÔNG đợi tới lúc chuyển màn (DESIGN §4)
-    phatAmThanh(amKhiCham(dung, soGoiY > 0))
-    setTimeout(() => onTraLoi(dung, soGoiY > 0), dung ? 600 : 1000)
+    phatAmThanh(amKhiCham(dung, goiY))
+    const cham = chamLuot(daSai.current, { x: dung })
+    daSai.current = cham.daSai
+    hen.current = setTimeout(() => {
+      if (cham.ghi) return onTraLoi(cham.ghi.x, goiY)
+      setKq(null) // M25 — bỏ đỏ, khay giữ nguyên, chip bật lại để gỡ/xếp lại
+    }, dung ? 600 : 800)
   }
 
   const vienKhay = kq === null ? 'border-border-card' : kq ? 'border-success' : 'border-danger'

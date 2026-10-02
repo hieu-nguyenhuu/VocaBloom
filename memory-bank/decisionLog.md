@@ -909,3 +909,16 @@ lúc lên stage3 = 0,79 ⇒ gap bị cắt 70% dù đúng hết. Gốc: skill ch
 **Bằng chứng:** `npm test` **414/414** (M1b + X1b ĐỎ trước) · build xanh · lint exit 0 · CDP Dashboard PC+Mobile 19/19
 (12đ → 33%, 4đ → 11%), 0 lệnh ghi. SPEC §3.1/§3.3/§12.2 + UI_DESIGN §6/§7 đã sửa.
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-10-02] MB-46 — M25: chọn sai thì chọn lại đến khi đúng (hoặc Bỏ qua)
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | **Lần trả lời ĐẦU quyết định** điểm + đạt/chưa đạt (từng chỗ trống riêng) — chọn lại chỉ để luyện | Người dùng: "cách chấm điểm giữ nguyên". Cùng luật Ghép cặp có sẵn; giữ DEC-06 (retry vẫn qua `daily_retry_queue`) |
+| **Q2** | Flashcard Hard xuống cuối phiên (ĐÃ CÓ), Again giữ vào hàng Ôn lại | Người dùng chọn giữ |
+| **Q3** | Trắc nghiệm: ô sai đỏ 800ms rồi **mờ + khoá** | Loại dần ô sai, không lộ đáp án đúng (UI_DESIGN §6.2) |
+| **Q4** | **Fast Decision giữ nguyên** | 2 nút ⇒ chọn lại vô nghĩa |
+| **Q5** | Ghi DB **1 lần khi kết thúc màn**, logic điểm ở hàm thuần `chamLuot`; component gọi `onTraLoi(!daSai)` | 0 dòng sửa ở `srs.ts`/`PlayerPage`/RPC. Đánh đổi: X sau 1 lần sai ⇒ bài không có dòng log (như chưa làm) |
+| **Q6** | Hội thoại chỉ chấm ô THỰC CÓ; chip sai không khoá nếu là đáp án ô kia | Thiếu từ B mà giữ `b: false` cố định ⇒ kẹt vĩnh viễn; khoá nhầm đáp án B ⇒ không làm xong được |
+**Bằng chứng:** `npm test` 419/419 (C1–C5 + X2 ĐỎ trước) · build xanh · lint 0 lỗi · CDP 21/21 trên trang tạm không đăng
+nhập, 0 lệnh ghi Supabase (bộ đo kiểm ở mốc ~1050ms ⇒ code cũ gọi `onTraLoi` lúc 1000ms sẽ đỏ).
+**Trạng thái:** ✅ Đã áp dụng.

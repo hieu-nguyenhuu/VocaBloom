@@ -550,6 +550,24 @@ export function coBaiTinhDiem(man: Man[]): boolean {
   return man.some((m) => !KHONG_TINH_DIEM.has(m.loai))
 }
 
+// ── M25: chọn sai thì chọn lại đến khi đúng ─────────────────────────────────
+
+/**
+ * M25 — chấm 1 lượt thử của màn "chọn lại đến khi đúng". Điểm theo LẦN ĐẦU từng ô (cùng luật Ghép cặp):
+ * `ghi` chỉ có khi MỌI ô đã đúng, mỗi ô = chưa từng sai. Chỉ truyền các ô THỰC CÓ — hội thoại thiếu
+ * từ B mà truyền `b: false` cố định thì màn không bao giờ xong.
+ */
+export function chamLuot<K extends string>(
+  daSai: Partial<Record<K, boolean>>,
+  ket: Record<K, boolean>,
+): { xong: boolean; ghi: Record<K, boolean> | null; daSai: Record<K, boolean> } {
+  const khoa = Object.keys(ket) as K[]
+  const moi = Object.fromEntries(khoa.map((k) => [k, Boolean(daSai[k]) || !ket[k]])) as Record<K, boolean>
+  const xong = khoa.every((k) => ket[k])
+  const ghi = xong ? (Object.fromEntries(khoa.map((k) => [k, !moi[k]])) as Record<K, boolean>) : null
+  return { xong, ghi, daSai: moi }
+}
+
 // ── M10: nhập liệu & hội thoại ──────────────────────────────────────────────
 
 /**
