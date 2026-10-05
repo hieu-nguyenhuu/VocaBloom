@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-02** (M25 — Chọn sai thì chọn lại đến khi đúng)
+> Cập nhật lần cuối: **2026-10-05** (M28 xong)
 
 ## ✅ Đã xong
 
@@ -49,6 +49,53 @@
 - [x] **M23 — Bổ sung bài hội thoại: 678/678 từ đủ select_dialog + fill_dialog** (2026-10-01).
 - [x] **M24 — Ngưỡng Mastered 30 → 36** (2026-10-02): `npm test` 414/414 · build · lint · CDP Dashboard 19/19, 0 lệnh ghi.
 - [x] **M25 — Chọn sai thì chọn lại đến khi đúng / Bỏ qua** (2026-10-02).
+- [x] **M26a — Nền dữ liệu song ngữ Trung ↔ Anh** (2026-10-03).
+- [x] **M26b** (ĐÓNG 2026-10-05 sau T11) — bổ sung dữ liệu song ngữ.
+      **T11 (2026-10-05):**
+      - SQL chỉ đọc: 740/740 đủ 3 trường phụ · 740 near_synonym (1/từ) · 0 mô tả tiếng Việt · 35/35 hội thoại, 350/350 dòng có câu phụ.
+      - CLI dry-run 20/20 file H4 = 0 thay đổi.
+      - `npm test` 448/448 · build · lint 0 lỗi · CDP chỉ đọc 7/7, 0 lệnh ghi.
+      - Chưa xem được mặt sau Flashcard trên dữ liệu thật (0 từ đến hạn).
+
+      Lịch sử: 🚧 Công cụ T0–T6 xong · **Đợt thử 46 ĐÃ GHI 2026-10-03** (người dùng duyệt
+      văn phong; 24/24 từ, md5 word_state không đổi, chạy lại = 0 thay đổi). **Đợt 1 (41–45, 47–50) ĐÃ GHI 2026-10-03**: 201 từ;
+      SQL: 10 chủ đề H4 công việc 225/225 đủ phụ + 225 near_synonym, 0 mô tả còn tiếng Việt, 0 dòng hội thoại thiếu câu phụ,
+      md5 word_state `2483a4bb…` không đổi. **Đợt 2 (51–60) ĐÃ GHI 2026-10-05**: 213 từ, đọc lại 0 thay đổi; SQL: 20/20 chủ đề
+      H4 = 438/438 đủ phụ + 438 near_synonym, 0 mô tả tiếng Việt, 0 dòng hội thoại thiếu câu phụ; md5 word_state trước = sau.
+      Vá 4 câu near_synonym pinyin sai của đợt 1 (`ganNghiaSua`). ~~Đợt 3 (H3 cũ)~~ **HUỶ 2026-10-05** (M27 thay bộ H3). Còn: T11 + đóng sau M27d.
+- [x] **M27 — Bộ "HSK3 giao tiếp" mới** (XONG 2026-10-05) (thay 20 bộ H3 cũ, học trước H4) — `design.m27.md`.
+  - [x] **M27a** (2026-10-05): CSV 15 chủ đề · 302 từ · 73 hư từ (0 lỗi) + builder `dung_h3.py` 12/12 test (có kiểm đột biến)
+        · fixture qua 3 cổng validate · `npm test` 448/448. ⛔ Chờ người dùng duyệt danh sách (cổng 1).
+  - [x] **M27b** — chủ đề thử 01: soạn + build + 3 cổng sạch, builder 13/13 (thêm B6); văn phong ✅ duyệt (2026-10-05).
+  - [x] **M27c** (2026-10-05) — 02–15 xong cả 2 đợt.
+        - 15 chủ đề · 302 từ · 3100 bài · 31 ngữ pháp · 150 câu hội thoại.
+        - 3 cổng sạch 15/15.
+        - Builder 15/15 (B7 bảng đọc, B8 `NSLAP`) · `npm test` 448/448.
+  - [x] **M27d** (2026-10-05):
+        - Sao lưu → xoá 20 chủ đề H3 cũ (240 từ, mất 76 từ đang học + 742 review_log; streak còn) → import 15 → dời H4.
+        - Verify: 740 vocab, 0 mồ côi, 0 thiếu EN.
+- [x] **M26c** (XONG 2026-10-05, MB-48) — 4 dạng thay thế Trung–Anh 0-payload (có fallback tiếng Việt) + vá `de_bai` chấm AI.
+      - TDD 16 ca (NG1–5, DT1–4, AI1–7, đều ĐỎ trước) · `npm test` 464/464 · build · lint 0 lỗi.
+      - CDP trang tạm 22/22, 0 request Supabase · AI thật 5/5.
+- [x] **M26d** (XONG 2026-10-05, MB-49 · ảnh bố cục ✅ duyệt ⇒ M26 ĐÓNG) — màn `near_synonym` + bảng điểm 15/12/39 +
+      `secondary_word NOT NULL` (migration `0017`).
+      - TDD: P3b · X1b · X3 · N1 · NS1–3 · GN1–2 · form 2 ca · X2/X5 (đều ĐỎ trước) · `npm test` 474/474 · build · lint 0 lỗi.
+      - DB: `db:migrate` ×2 · `check:schema` xanh · 5 script test 34/34 (rollback).
+      - CDP trang tạm 17/17 (payload thật, 0 request Supabase) · dữ liệu thật chỉ đọc 5/5.
+
+- [x] **M28** (XONG 2026-10-05, MB-50) — Select Dialog: gỡ từ đã điền (bấm từ trong câu / Backspace), chip ẩn giữ chỗ, chấm khi
+      bấm "Kiểm tra" · vá Gợi ý in lộ đáp án A. TDD DC1–DC5 (ĐỎ trước) · `npm test` 479/479 · build · lint exit 0 · CDP trang tạm 58/58.
+
+### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
+- [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.
+- [x] `songNgu.ts` 5 ca (ĐỎ trước) · validator TS SN1–SN9 + S11 (ĐỎ trước; 6 luật chứng minh bằng mutation) · JSON Schema +
+      Python đồng bộ (3 file mẫu qua cả 3 cổng; 4 file sai bị Python chặn 4/4, ajv chặn 3/4 — đúng giới hạn đối chiếu chéo).
+- [x] `import_topic()` ghi 5 cột · `test:import` **10/10** (I10 ĐỎ trước).
+- [x] `tuVung` (tìm theo từ phụ, `nhanPhu`) · `hoiThoai` (`phu`) · Flashcard · form 13 ô · hội thoại 2 màn.
+- [x] Skill (SKILL.md, payload-schemas.md) · SPEC §2/§4.5/§6.6/§10.1 · UI_DESIGN §6.3/§8.3/§8.4.
+- [x] `npm test` **437/437** · build xanh · lint exit 0 (9 cảnh báo cũ, 0 ở file M26a) · `check:schema` xanh ·
+      **CDP 53/53** (PC 1280 + Mobile 390 × Sáng/Tối, trang tạm không đăng nhập, **0 request Supabase**) · DB thật: 0 từ có
+      dữ liệu phụ, 0 `near_synonym` (không ghi gì). Trang tạm + script tạm đã xoá.
 
 ### ✅ M25 — Chọn lại đến khi đúng (XONG 2026-10-02)
 - [x] TDD `chamLuot` C1–C5 (ĐỎ trước) · X2 đổi `600 : 800` (ĐỎ trước ở cả 4 màn rồi mới sửa màn).

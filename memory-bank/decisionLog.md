@@ -922,3 +922,59 @@ lúc lên stage3 = 0,79 ⇒ gap bị cắt 70% dù đúng hết. Gốc: skill ch
 **Bằng chứng:** `npm test` 419/419 (C1–C5 + X2 ĐỎ trước) · build xanh · lint 0 lỗi · CDP 21/21 trên trang tạm không đăng
 nhập, 0 lệnh ghi Supabase (bộ đo kiểm ở mốc ~1050ms ⇒ code cũ gọi `onTraLoi` lúc 1000ms sẽ đỏ).
 **Trạng thái:** ✅ Đã áp dụng.
+
+### [2026-10-03] MB-47 — M26: từ vựng phụ song ngữ Trung ↔ Anh (thiết kế tổng) + M26a (nền dữ liệu)
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **Q1** | Mục tiêu tiếng Anh = **(b) chủ động dùng được**, không chỉ làm cầu nối | Người dùng (Test Engineer, phỏng vấn bằng tiếng Anh) |
+| **Q2** | Từ phụ là **THUỘC TÍNH** của `vocab` (5 cột `secondary_*`), KHÔNG có SRS riêng, KHÔNG bảng liên kết | Hướng 2 (2 dòng vocab + link) gấp đôi số từ phải ôn |
+| **Q3** | Tiền tố `secondary_` (không dùng `2nd_` — tên cột bắt đầu bằng số phải trích dẫn ở mọi câu SQL); ngôn ngữ phụ SUY RA từ `lang`; **không audio** | Người dùng chọn |
+| **Q4** | **Thay** 5 dạng sang Trung–Anh, GIỮ tên enum + điểm; `near_synonym` là dạng MỚI tính điểm stage2/intensive ⇒ max 15, ngưỡng 12, `MASTER_THRESHOLD = 39` (bật ở M26d) | Người dùng muốn thêm dạng gần nghĩa nhưng hạn chế thay đổi; phần tăng thêm so với "thay thế" chỉ ~10–15% effort |
+| **Q5** | GIỮ `select_sentence` | Người dùng chọn |
+| **Q6** | Câu song ngữ stage3: điểm theo **câu Trung**, ô câu Anh **tuỳ chọn**, AI chỉ nhận xét câu Anh | Từ đang học là từ Trung |
+| **Q7** | Bài Anh→Trung **kèm nghĩa Việt** (1 từ Anh ↔ nhiều từ Trung) · Ghép cặp chỉ thêm nghĩa Việt khi 2 từ trùng nghĩa Anh | Tránh mơ hồ mà không lộ đáp án |
+| **Q8** | Không xoá từ nào: kiểm DB 03/10 — 53 từ học dở đều đầu vòng, retry rỗng; 36→39 chỉ đổi kết cục 复习 | Người dùng cho phép xoá từ gây ca biên phức tạp — không có từ nào như vậy |
+| **Q9** | Cột **nullable** ở M26a; `NOT NULL` + bật điểm chỉ khi 678/678 đủ dữ liệu (M26d) | Bài học M21: dạng tính điểm thiếu dữ liệu ⇒ từ kẹt |
+| **Q10** | Tách tài liệu: `Design.m26.md` (tổng) + `design.m26{a,b,c,d}.md` (plan từng milestone); `DESIGN.md` thành chỉ mục | Người dùng yêu cầu |
+
+**Bằng chứng M26a:** `npm test` 437/437 · `test:import` 10/10 · `check:schema` xanh · build · lint exit 0 · CDP 53/53 (0 request
+Supabase) · DB thật không đổi (0 dữ liệu phụ). 6 luật validator chứng minh bằng mutation vì RED ban đầu bị "nhiễm" (xem activeContext).
+**Trạng thái:** ✅ M26a xong · ✅ M26b đóng 2026-10-05 (T11; Đợt 3 H3 cũ huỷ vì M27 thay bộ H3 — dữ liệu phụ H3 mới vào thẳng qua import) · M26c–d chờ.
+
+### [2026-10-05] MB-48 — M26c: 4 dạng Trung–Anh không payload + vá `de_bai` chấm AI
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **C1** | Đặt câu song ngữ: Enter ở ô Trung ⇒ nhảy xuống ô Anh; Enter ở ô Anh ⇒ nộp; ô Trung trống ⇒ Enter không nộp | Người dùng chọn — tránh lỡ tay nộp khi chưa viết câu Anh |
+| **C2** | Vá luôn lỗi cũ M5: gửi `de_bai` cho AI ở trans_sentence/complete_situation | `ItemCham.de_bai` khai báo nhưng chưa từng gán ⇒ AI chấm không thấy đề. Người dùng cho vá trong M26c |
+| **C3** | Thẻ đề Đặt câu + ChamAI: `复习 (ôn tập · review)` (nghĩa ĐẦU của từ phụ) | Người dùng chọn — từ đang ôn đã hiện sẵn nên không lộ đáp án |
+| **Q1** | Nhãn Ghép cặp = nghĩa đầu `secondary_word`; trùng nhãn (không phân biệt hoa/thường) ⇒ CHỈ ô trùng kèm `(meaning_vi)` | Design.m26.md §4 — hiện nghĩa Việt mọi ô là lộ đáp án |
+| **Q2** | `secondary_feedback` là khối TRUNG TÍNH trong khối verdict | Không ảnh hưởng điểm ⇒ không mang màu verdict (Color Lock) |
+| **Q3** | Khoá tuỳ chọn của item chấm (`de_bai`, `secondary_*`) trống ⇒ BỎ HẲN khoá (`taoItemCham`) | Prompt nói "không có ⇒ bỏ trường"; gửi chuỗi rỗng dễ khiến AI nhận xét câu rỗng |
+**Bằng chứng:** `npm test` 464/464 (16 ca mới ĐỎ trước) · build · lint 0 lỗi · CDP 22/22 (0 request Supabase) · AI thật 5/5 (câu Anh
+sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPEC §6.1–6.4/§7.2/§7.3 + UI_DESIGN Pattern 2/4/8 đã sửa.
+**Trạng thái:** ✅ Đã áp dụng. M26d (màn `near_synonym` + bảng điểm 15/12/39 + `NOT NULL`) chờ lệnh.
+
+### [2026-10-05] MB-49 — M26d: màn "Phân biệt từ gần nghĩa" + bảng điểm 15/12/39 + `secondary_word NOT NULL`
+| Mã | Nội dung chốt | Lý do |
+|---|---|---|
+| **D1** | Câu ngôn ngữ phụ (`sentence_secondary`) CHỈ hiện SAU khi chọn đúng | Kiểm DB: câu Anh hay chứa nguyên văn nghĩa Anh của đáp án (顺便 ↔ "while you're at it") ⇒ hiện sẵn thì bài thành dịch ngược, không còn là phân biệt bằng văn cảnh Trung. Người dùng chọn |
+| **D2** | Màn không có mockup: code theo phác thảo Design.m26.md §5 (0 màu mới), duyệt qua ảnh chụp | Người dùng chọn |
+| **D3** | Ghi log khi bấm "Tiếp tục"; X lúc xem bảng ⇒ không ghi | Nhất quán luật M25, không đụng luồng lưu của PlayerPage. Người dùng chọn |
+| **Q1** | Bảng điểm: stage2/intensive 5 dạng, max 15, ngưỡng 12; `MAX_TICH_LUY` 4/12/27/39; `MASTER_THRESHOLD` 39 | Design.m26.md §3. Lúc đổi 740/740 từ ở `new`, 0 điểm ⇒ không ca chuyển tiếp |
+| **Q2** | `bangGanNghia` đặt ở `songNgu.ts`, KHÔNG nới test X-player | Giữ cổng "player.ts chỉ import srs.ts"; `songNgu.ts` cũng thuần (0 import, SL5 canh) |
+| **Q3** | `0017` tự chặn (raise tiếng Việt) nếu còn từ thiếu `secondary_word` trước khi `SET NOT NULL` | Lỗi 23502 khó hiểu; idempotent vẫn giữ |
+| **Q4** | Sau khi đúng, pinyin câu điền pinyin đáp án thay `___` | Phát hiện khi xem ảnh: chữ Hán đã điền mà pinyin vẫn còn `___` |
+**Bằng chứng:** `npm test` 474/474 · build · lint 0 lỗi · `db:migrate` ×2 · `check:schema` (mục NOT NULL ĐỎ trước) · 5 script test DB
+34/34 · CDP trang tạm 17/17 · `xepBai` trên dữ liệu thật chủ đề 46 (chỉ đọc) 5/5. SPEC §2/§3.1–3.3/§6.6/§12.2 + UI_DESIGN Pattern 10.
+**Trạng thái:** ✅ Đã áp dụng · ✅ ảnh bố cục được người dùng duyệt 2026-10-05 ⇒ **M26 ĐÓNG**.
+
+### [2026-10-05] MB-50 — M28: Select Dialog gỡ từ đã điền + chấm khi bấm "Kiểm tra"
+- **Bối cảnh:** người dùng báo chọn chip rồi không gỡ/chọn lại được. Gốc: `bamChip` tự `chot()` ngay khi đủ ô; chip đã dùng vẫn bấm được (điền trùng 1 chữ cho 2 ô).
+- **Quyết định (người dùng duyệt `design.m28.md` + plan `design.m28a.md`):**
+  - Bỏ tự chấm khi đủ ô ⇒ nút **"Kiểm tra"** dùng chung với Fill Dialog (Enter). Điền/gỡ trước đó KHÔNG tính là sai; điểm vẫn theo lần Kiểm tra đầu (`chamLuot`, M25).
+  - Chip theo **CHỈ SỐ** (`ChipTrongO`), không theo chữ. Chip đang trong câu ⇒ `invisible` GIỮ CHỖ (hàng không nhảy, phím 1–4 khớp).
+  - Từ trong câu = `<button>` nền `accent-tint` bo 8, bấm để gỡ; ô đã chấm đúng khoá (mất nền). Backspace gỡ B rồi A.
+  - Hàm thuần `dienChip` · `goO` · `oGoLui` ở `player.ts` (DC1–DC5, ĐỎ trước).
+  - **Vá kèm:** Select bấm Gợi ý từng IN đáp án A vào câu (do `oGoiY` không xét chế độ) — trái comment "Select ẩn 1 chip sai". Nay Select chỉ ẩn chip sai; Fill giữ nguyên.
+- **Bằng chứng:** `npm test` 479/479 · build · lint exit 0 (0 cảnh báo ở file sửa) · CDP trang tạm **58/58** (PC 1280 + Mobile 390 × Sáng/Tối, 0 request supabase.co). SPEC §4.2 + UI_DESIGN §6.3 Pattern 7.
+- **Trạng thái:** ✅ Đã áp dụng. Chưa xem trong Player thật (0 từ stage1 đến hạn).

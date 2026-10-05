@@ -44,6 +44,12 @@ export type VocabDb = {
   example_meaning_vi: string | null
   lang: 'zh' | 'en'
   audio_url: string | null
+  /** M26 — từ vựng PHỤ (Trung ↔ Anh), null khi chưa bổ sung. Xem `songNgu.ts`. */
+  secondary_word: string | null
+  secondary_phonetic: string | null
+  secondary_collocation: string | null
+  secondary_example: string | null
+  secondary_note: string | null
 }
 
 // ── Xếp màn trong 1 session ─────────────────────────────────────────────────
@@ -69,6 +75,15 @@ export type PayloadTuLuan = {
   given_sentence_pinyin?: string
 }
 export type DangBaiAI = 'make_sentence' | 'trans_sentence' | 'complete_situation'
+/** M26d — payload thật §6.6 (đáp án = vocab.word, KHÔNG lặp trong payload — DEC-22). */
+export type NhieuGanNghia = { word: string; pinyin?: string | null; secondary?: string | null; note_vi?: string | null }
+export type PayloadGanNghia = {
+  sentence: string
+  sentence_pinyin?: string | null
+  sentence_secondary?: string | null
+  answer_note_vi?: string | null
+  distractors: NhieuGanNghia[]
+}
 export type PayloadDialog = {
   dialog_a: string
   dialog_b: string
@@ -90,6 +105,7 @@ export type Man =
   | { loai: 'select_on_describe'; vocab_id: string; payload: PayloadMoTa; la_bai_cuoi_cua_tu: boolean }
   | { loai: 'select_sentence'; vocab_id: string; payload: PayloadChonCau; la_bai_cuoi_cua_tu: boolean }
   | { loai: 'arrange_words'; vocab_id: string; payload: PayloadSapXep; la_bai_cuoi_cua_tu: boolean }
+  | { loai: 'near_synonym'; vocab_id: string; payload: PayloadGanNghia; la_bai_cuoi_cua_tu: boolean } // M26d
   /** Bài 2 TỪ (§4.4): 1 record dùng chung cho A và B; `la_bai_cuoi` chỉ chứa từ CÓ trong session. */
   | { loai: 'select_dialog' | 'fill_dialog'; vocab_a: string; vocab_b: string | null; payload: PayloadDialog; la_bai_cuoi: Record<string, boolean> }
   // M5 — stage 3 tự luận: màn NHẬP không chấm, chấm gom ở màn `cham_ai` (DEC-14: 3 request/session)
@@ -104,13 +120,14 @@ export type Man =
 export const CAN_RECORD: ReadonlySet<DangBai> = new Set([
   'grammar', 'selection', 'audio_recognition', 'fast_decision',
   'select_dialog', 'select_on_describe', 'fill_dialog', 'select_sentence', 'arrange_words',
+  'near_synonym', // M26d
 ])
 
 /** Thứ tự màn đã chốt (Brainstorm M4a): theo DẠNG BÀI, xen kẽ từ — tốt cho trí nhớ hơn làm hết 1 từ. */
 const THU_TU_MAN: readonly DangBai[] = [
   'flashcard', 'grammar', 'matching', 'selection', 'audio_recognition', 'fast_decision',
   'translate', 'select_dialog', 'listen_fill', 'select_on_describe',
-  'fill_dialog', 'select_sentence', 'arrange_words', 'trans_collocation',
+  'fill_dialog', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation',
   'make_sentence', 'trans_sentence', 'complete_situation',
 ]
 
@@ -229,6 +246,8 @@ export function xepBai(dv: {
         man.push({ loai: dang, vocab_id: t.vocab_id, payload: b.payload as PayloadChonCau, la_bai_cuoi_cua_tu: false })
       } else if (dang === 'arrange_words') {
         man.push({ loai: dang, vocab_id: t.vocab_id, payload: b.payload as PayloadSapXep, la_bai_cuoi_cua_tu: false })
+      } else if (dang === 'near_synonym') {
+        man.push({ loai: dang, vocab_id: t.vocab_id, payload: b.payload as PayloadGanNghia, la_bai_cuoi_cua_tu: false })
       }
     }
   }
@@ -603,6 +622,30 @@ export function oGoiY(soGoiY: number, dienA: string, dienB: string, coB: boolean
   if (!dienA) trong.push('a')
   if (coB && !dienB) trong.push('b')
   return trong.slice(0, Math.max(0, soGoiY))
+}
+
+/** Select Dialog (M28): chỉ số chip đang nằm ở mỗi ô; `null` = ô trống. Theo CHỈ SỐ để 2 chip cùng chữ không lẫn nhau. */
+export type ChipTrongO = { a: number | null; b: number | null }
+
+/** Điền chip `i` vào ô trống đầu tiên (A → B). Chip đang dùng / đủ ô ⇒ giữ nguyên. */
+export function dienChip(o: ChipTrongO, i: number, coB: boolean): ChipTrongO {
+  if (o.a === i || o.b === i) return o
+  if (o.a === null) return { ...o, a: i }
+  if (coB && o.b === null) return { ...o, b: i }
+  return o
+}
+
+/** Gỡ chip khỏi ô `k` (chip quay về khu chọn). Ô đã chấm đúng bị khoá ⇒ không gỡ (M25). */
+export function goO(o: ChipTrongO, k: 'a' | 'b', khoa: { a: boolean; b: boolean }): ChipTrongO {
+  if (khoa[k] || o[k] === null) return o
+  return { ...o, [k]: null }
+}
+
+/** Ô bị gỡ khi bấm Backspace: B trước A, bỏ qua ô khoá. */
+export function oGoLui(o: ChipTrongO, khoa: { a: boolean; b: boolean }): 'a' | 'b' | null {
+  if (o.b !== null && !khoa.b) return 'b'
+  if (o.a !== null && !khoa.a) return 'a'
+  return null
 }
 
 /**

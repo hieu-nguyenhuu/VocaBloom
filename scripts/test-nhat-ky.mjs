@@ -17,8 +17,8 @@ const NGAY_VN = `(now() at time zone 'Asia/Ho_Chi_Minh')::date`
 /** Dựng 1 từ + 1 dòng review_log hôm nay với thoi_gian_ms cho trước. */
 const DUNG_DU_LIEU = (ms) => `
   insert into topics (id, name) values ('00000000-0000-0000-0000-00000000aaa1'::uuid, 'ZZ test') ;
-  insert into vocab (id, word, meaning_vi, lang)
-    values ('00000000-0000-0000-0000-00000000bbb1'::uuid, 'ZZ', 'thử', 'zh');
+  insert into vocab (id, word, meaning_vi, lang, secondary_word)
+    values ('00000000-0000-0000-0000-00000000bbb1'::uuid, 'ZZ', 'thử', 'zh', 'test');
   insert into word_state (vocab_id, stage, next_review_date)
     values ('00000000-0000-0000-0000-00000000bbb1'::uuid, 'new', null);
   insert into vocab_topics (vocab_id, topic_id)

@@ -8,6 +8,8 @@ export type DongHoiThoai = {
   text: string
   pinyin: string
   nghia: string
+  /** M26 — câu tương đương bằng ngôn ngữ phụ (Trung ↔ Anh), luôn hiện. Dữ liệu cũ thiếu ⇒ ''. */
+  phu: string
   /** Chữ của các từ vựng cần bôi đậm trong câu (đã đổi từ `highlight_vocab_ids`). */
   tu_dam: string[]
 }
@@ -17,6 +19,7 @@ type DongThô = {
   text_zh?: unknown
   pinyin?: unknown
   text_vi?: unknown
+  text_secondary?: unknown
   highlight_vocab_ids?: unknown
 }
 
@@ -37,6 +40,7 @@ export function docHoiThoai(content: unknown, tenTu: Record<string, string>): Do
       text: chuoi(d.text_zh),
       pinyin: chuoi(d.pinyin),
       nghia: chuoi(d.text_vi),
+      phu: chuoi(d.text_secondary),
       // Từ có thể đã bị xoá khỏi `vocab` ⇒ lọc bỏ id không tra được
       tu_dam: ids.map((id) => tenTu[String(id)]).filter((w): w is string => Boolean(w)),
     }

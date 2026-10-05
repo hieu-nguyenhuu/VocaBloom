@@ -57,7 +57,14 @@ create table vocab (
   example_meaning_vi    text,
   lang                  text not null check (lang in ('zh','en')),
   audio_url             text,           -- cache TTS, null cho tới khi được gen (DEC-15)
-  created_at            timestamptz not null default now()
+  created_at            timestamptz not null default now(),
+  -- M26 (2026-10-03, migration 0016) — từ vựng PHỤ song ngữ Trung ↔ Anh. Ngôn ngữ phụ SUY RA: zh ⇒ en, en ⇒ zh.
+  -- secondary_word NOT NULL từ 0017 (M26d, 2026-10-05 — 740/740 đã đủ); 4 cột còn lại nullable.
+  secondary_word        text not null,           -- "review; revise" — nhiều nghĩa ngăn '; ', nghĩa ĐẦU là nghĩa chính
+  secondary_phonetic    text,           -- IPA (phụ en) hoặc pinyin (phụ zh)
+  secondary_collocation text,           -- bản dịch tự nhiên của collocation
+  secondary_example     text,           -- bản dịch của example_sentence
+  secondary_note        text            -- ghi chú phân biệt (tiếng Việt), chỉ khi dễ nhầm giữa 2 ngôn ngữ
 );
 
 -- Quan hệ nhiều-nhiều
@@ -107,13 +114,14 @@ create table daily_retry_queue (
 create index idx_retry_queue_date on daily_retry_queue (queue_date);
 
 -- ============================================================
--- 5. EXERCISES — 17 dạng bài, payload JSONB (DEC-22)
+-- 5. EXERCISES — 17 dạng bài (+ near_synonym từ M26 = 18), payload JSONB (DEC-22)
 -- ============================================================
 create type exercise_type as enum (
   'flashcard','grammar','matching','selection','audio_recognition','fast_decision',   -- stage 0
   'translate','select_dialog','listen_fill','select_on_describe',                      -- stage 1
   'fill_dialog','select_sentence','arrange_words','trans_collocation',                 -- stage 2
-  'make_sentence','trans_sentence','complete_situation'                                -- stage 3
+  'make_sentence','trans_sentence','complete_situation',                               -- stage 3
+  'near_synonym'                                                                       -- M26 (0016) — stage 2, §6.6
 );
 
 create table exercises (
@@ -152,7 +160,7 @@ create index idx_review_log_daily on review_log (vocab_id, reviewed_at);
 create table topic_dialogues (
   id          uuid primary key default gen_random_uuid(),
   topic_id    uuid not null references topics(id) on delete cascade,
-  content     jsonb not null,     -- { lines: [{speaker, text_zh, pinyin, text_vi, highlight_vocab_ids}] }
+  content     jsonb not null,     -- { lines: [{speaker, text_zh, pinyin, text_vi, text_secondary, highlight_vocab_ids}] } — text_secondary: M26
   created_at  timestamptz not null default now()
 );
 
@@ -206,16 +214,16 @@ Add từ vựng (import) ──► next_review_date = NULL (hàng đợi chờ k
         │  cycle_points ≥ 6/8
         ▼
    stage = stage2, next_review_date += 4 × gap_factor(health)
-        │  cycle_points ≥ 9/12
+        │  cycle_points ≥ 12/15   (M26d — +near_synonym)
         ▼
    stage = stage3, next_review_date += 7 × gap_factor(health)
         │  (làm bài AI-graded, cộng total_points)
         ▼
-   total_points ≥ 36 ? ──YES──► stage = mastered (DỪNG, miễn nhiễm phạt)
+   total_points ≥ 39 ? ──YES──► stage = mastered (DỪNG, miễn nhiễm phạt)
         │ NO
         ▼
    stage = intensive (bài dạng stage2, gap 7 ngày/lần, cộng total_points)
-        │  lặp lại tới khi total_points ≥ 36
+        │  lặp lại tới khi total_points ≥ 39
         ▼
    stage = mastered
 ```
@@ -226,10 +234,10 @@ Add từ vựng (import) ──► next_review_date = NULL (hàng đợi chờ k
 |---|---|---|---|---|
 | new (0) | Matching*, Selection, Audio Recognition, Fast Decision (*Matching/Flashcard/Grammar KHÔNG tính điểm) | 4 | **≥ 3** | +1 |
 | stage1 | Translate, Select Dialog, Listen Fill, Select on Describe | 8 | **≥ 6** | +2 |
-| stage2 | Fill Dialog, Select Sentence, Arrange Words, Trans Collocation | 12 | **≥ 9** | +3 |
+| stage2 | Fill Dialog, Select Sentence, **Near Synonym** (M26d), Arrange Words, Trans Collocation | 15 | **≥ 12** | +3 |
 | stage3 | Make Sentence, Trans Sentence, Complete Situation | 12 | *(không nâng stage, rẽ nhánh — xem §3.3)* | +4 |
 
-Tổng max lý thuyết cả đời: `4 + 8 + 12 + 12 = 36`.
+Tổng max lý thuyết cả đời: `4 + 8 + 15 + 12 = 39` (M26d; trước là 36). Intensive dùng nguyên bộ bài stage2 (max 15, ngưỡng 12).
 
 ⚠️ **Bổ sung 2026-10-01 (M23, MB-44):** mỗi dạng bài chỉ tính điểm **1 lần trong 1 vòng** — dạng đã có trong
 `cycle_completed_exercises` mà làm lại (từ nằm ở 2 bài hội thoại cùng dạng, ôn theo chủ đề…) thì vẫn chấm đúng/sai,
@@ -238,12 +246,14 @@ vẫn ghi log, nhưng **0 điểm**. Nhờ vậy điểm 1 vòng không bao gi�
 ### 3.3 Mastered threshold (`total_points`)
 
 ```
-MASTER_THRESHOLD = 36   (= 100% của 36 — điểm tối đa cả lộ trình)
+MASTER_THRESHOLD = 39   (= 100% của 39 — điểm tối đa cả lộ trình; M26d, trước là 36)
 ```
 
 ⚠️ **Sửa 2026-10-02 (M24, MB-45):** bản trước là 30 (≈ 83%) ⇒ từ học tốt gần như luôn bỏ qua intensive. Nay đúng trọn
 vẹn mọi vòng (không gợi ý, không bỏ ngày) ⇒ xong stage3 đủ 36 ⇒ lên thẳng mastered; hụt dù 1 điểm ⇒ intensive (mỗi vòng
 +9–12 ⇒ thường 1 vòng là đủ). Điều kiện: mọi từ có đủ bài tập (M23 — xem §4.4).
+⚠️ **Sửa 2026-10-05 (M26d):** 36 → **39** vì stage2 thêm `near_synonym` (max vòng 12 → 15). Lúc đổi, 740/740 từ đang ở `new`
+với 0 điểm ⇒ không từ nào bị ảnh hưởng giữa chừng. Intensive mỗi vòng +12–15.
 
 Kiểm tra tại 2 thời điểm: (a) ngay sau khi hoàn thành bài stage3 lần đầu, (b) sau mỗi lần ôn ở Intensive.
 
@@ -252,7 +262,7 @@ Kiểm tra tại 2 thời điểm: (a) ngay sau khi hoàn thành bài stage3 l�
 Khi promote lên stage kế, KHÔNG dùng gap cố định — nhân thêm hệ số theo độ tin cậy trí nhớ:
 
 ```
-health = total_points / max_điểm_có_thể_đạt_tới_thời_điểm_promote
+health = total_points / max_điểm_có_thể_đạt_tới_thời_điểm_promote   -- cộng dồn: new 4 · stage1 12 · stage2 27 · stage3/intensive 39
 gap_factor(health):
     health ≥ 0.8        → 100%
     0.5 ≤ health < 0.8   → 70%
@@ -306,6 +316,8 @@ Khi ôn chưa đạt ngưỡng nâng stage:
 **chọn lại đến khi đúng hoặc Bỏ qua** mới sang câu (Ghép cặp vốn đã vậy). Đây là luyện tại chỗ, KHÔNG phải retry:
 **điểm + đạt/chưa đạt theo LẦN TRẢ LỜI ĐẦU** (từng chỗ trống riêng với bài 2 từ) ⇒ sai lần đầu = 0 điểm, chưa đạt, vẫn vào
 `daily_retry_queue` như trên. `review_log` ghi 1 dòng/từ khi kết thúc màn. Fast Decision và 3 dạng AI chấm không áp dụng.
+**Select Dialog (M28, 2026-10-05):** điền/gỡ chip tự do (bấm từ trong câu để gỡ) — CHỈ lần bấm "Kiểm tra" mới là một lượt trả
+lời; điền rồi gỡ trước đó không tính là sai.
 
 ### 4.3 Flashcard — Good / Hard / Again (DEC-11)
 
@@ -340,6 +352,9 @@ tối đa của từ ở stage1/stage2/intensive bằng đúng ngưỡng. Chủ 
 |---|---|---|
 | Ôn hằng ngày | Từ due hôm nay, không phân biệt topic | KHÔNG |
 | Ôn theo topic | Chọn 1 topic, ôn toàn bộ từ trong topic đó | CÓ — sau khi hoàn thành lượt ôn |
+
+**M26:** mỗi dòng hội thoại có thêm `text_secondary` (câu tương đương bằng ngôn ngữ phụ), hiện LUÔN ngay dưới pinyin; nghĩa
+tiếng Việt vẫn ẩn/hiện bằng nút. Câu phụ không in đậm từ vựng. Áp cho cả màn Hội thoại kết thúc lẫn khối hội thoại ở màn Từ vựng.
 
 ### 4.6 Tổng kết phiên ôn tập hằng ngày (bổ sung — lỗ hổng đã phát hiện, đã sửa lần 2)
 
@@ -423,7 +438,7 @@ NẾU hàng_đợi_còn_lại < new_words_per_day × 3 AND settings.low_queue_al
 |---|---|---|---|---|
 | 1 | **Flashcard** | *(không cần record)* | 0 (không tính nâng stage) | — |
 | 2 | **Grammar** | `{content_target, pinyin?, content_vi}` | 0 | — (chỉ tham khảo) |
-| 3 | **Matching** | *(không cần record)* | +1/từ | `vocab.meaning_vi` |
+| 3 | **Matching** | *(không cần record)* | +1/từ | M26c: nghĩa ĐẦU của `vocab.secondary_word` (trùng nhãn trong phiên ⇒ kèm `(meaning_vi)`); thiếu ⇒ `vocab.meaning_vi` |
 | 4 | **Selection** | `{distractors: [3 nghĩa sai]}` | +1 | `vocab.meaning_vi` |
 | 5 | **Audio Recognition** | `{distractors: [3 nghĩa sai]}` | +1 | `vocab.meaning_vi`, audio=`vocab.audio_url` |
 | 6 | **Fast Decision** | `{wrong_meaning: "1 nghĩa sai"}` | +1 | App random 50/50 giữa `vocab.meaning_vi` và `wrong_meaning` lúc runtime |
@@ -434,7 +449,7 @@ NẾU hàng_đợi_còn_lại < new_words_per_day × 3 AND settings.low_queue_al
 
 | # | Dạng bài | Payload | Điểm | Đáp án đúng |
 |---|---|---|---|---|
-| 7 | **Translate** | *(không cần record)* | +2 | `vocab.word` (gợi ý ký tự từ `word`) |
+| 7 | **Translate** | *(không cần record)* | +2 | `vocab.word` (gợi ý ký tự từ `word`). M26c: đề = `secondary_word` + `meaning_vi`; thiếu ⇒ đề `meaning_vi` |
 | 8 | **Select Dialog** | `{dialog_a, dialog_a_pinyin, dialog_b, dialog_b_pinyin, blank_a_answer, blank_b_vocab_id, distractors: [{word, pinyin} ×2]}` | +2/từ due | Xem §4.4 |
 | 9 | **Listen Fill** | *(không cần record)* | +2 | `vocab.word`, audio=`vocab.audio_url` |
 | 10 | **Select on Describe** | `{description, distractors: [{word, pinyin} ×3]}` | +2 | `vocab.word` |
@@ -446,7 +461,7 @@ NẾU hàng_đợi_còn_lại < new_words_per_day × 3 AND settings.low_queue_al
 | 11 | **Fill Dialog** | `{dialog_a, dialog_a_pinyin, dialog_b, dialog_b_pinyin, blank_a_answer, blank_b_vocab_id}` (giống Select Dialog, bỏ distractors) | +3/từ due | Nhập tay, so khớp sau khi trim khoảng trắng, KHÔNG cho sai ký tự |
 | 12 | **Select Sentence** | `{correct_sentence: {text, pinyin}, wrong_sentences: [{text, pinyin} ×3]}` | +3 | `correct_sentence` |
 | 13 | **Arrange Words** | `{tokens: [{text, pinyin} ...]}` (đúng thứ tự gốc) | +3 | Thứ tự mảng gốc; app shuffle khi hiển thị |
-| 14 | **Trans Collocation** | *(không cần record — dùng `vocab.collocation`/`collocation_pinyin`/`collocation_meaning_vi`)* | +3 | `vocab.collocation` |
+| 14 | **Trans Collocation** | *(không cần record — dùng `vocab.collocation`/`collocation_pinyin`/`collocation_meaning_vi`)* | +3 | `vocab.collocation`. M26c: đề = `secondary_collocation` + `collocation_meaning_vi`; thiếu ⇒ đề tiếng Việt |
 
 ### 6.4 Nhóm Stage 3 (AI-graded)
 
@@ -459,6 +474,23 @@ NẾU hàng_đợi_còn_lại < new_words_per_day × 3 AND settings.low_queue_al
 Xem §7 cho chi tiết luồng AI chấm.
 
 **Cả 3 dạng:** nút gợi ý (Ctrl) **ẨN HOÀN TOÀN**. Nút bỏ qua = tính `fail` ngay, KHÔNG gọi AI.
+
+**M26c — Make Sentence song ngữ:** từ có `secondary_word` ⇒ thêm ô câu ngôn ngữ phụ **tuỳ chọn**. Điểm/verdict **CHỈ theo câu
+chính**; câu phụ chỉ nhận thêm nhận xét `secondary_feedback`. Từ thiếu dữ liệu phụ ⇒ 1 ô như cũ.
+
+### 6.6 `near_synonym` — Phân biệt từ gần nghĩa (M26, dạng 18)
+
+| # | Dạng bài | Payload | Điểm | Đáp án đúng |
+|---|---|---|---|---|
+| 18 | **Near Synonym** | `{sentence, sentence_pinyin, sentence_secondary, answer_note_vi, distractors: [{word, pinyin, secondary, note_vi} ×3]}` | +3 (stage2 / intensive) | `vocab.word` |
+
+- `sentence` có ĐÚNG 1 `___`; 3 nhiễu khác nhau và ≠ `vocab.word` (validator chặn cứng). Nhiễu ưu tiên từ gần nghĩa thật.
+- ✅ **Bật 2026-10-05 (M26d):** vào bộ bài tính điểm stage2/intensive (thứ tự màn: fill_dialog → select_sentence →
+  **near_synonym** → arrange_words → trans_collocation) — §3.1–3.4 và §12.2 đã sửa theo (max 15, ngưỡng 12, `MASTER_THRESHOLD = 39`).
+- **Màn (design.m26d.md D1–D3):** đề = câu Trung có `___` (+pinyin theo nút 拼), 4 ô chữ Hán lưới 2×2. Chọn sai ⇒ luật M25
+  (đỏ → mờ + khoá, chọn lại). Chọn đúng ⇒ điền từ vào chỗ trống, **hiện `sentence_secondary` (chỉ SAU khi đúng)** + bảng so sánh
+  4 từ (pinyin · nghĩa phụ · ghi chú) ⇒ "Tiếp tục". Điểm theo LẦN ĐẦU; ghi log khi bấm Tiếp tục (thoát lúc xem bảng ⇒ không ghi).
+  Gợi ý = ẩn dần tối đa 2 ô sai (×50% điểm). Có nút Giải thích (AI).
 
 ### 6.5 Bảng tổng hợp phiên âm cần bổ sung trong payload
 
@@ -499,6 +531,12 @@ Batch theo dạng bài — mỗi session stage3 (5 từ) sinh đúng **3 request
 }
 ```
 
+**Trường tuỳ chọn (M26c) — trống thì BỎ HẲN khoá:**
+- Request item: `de_bai` (trans_sentence = `vietnamese_sentence`; complete_situation = `situation_vi` + `given_sentence_zh`) ·
+  `secondary_sentence` + `secondary_word` (chỉ make_sentence, khi người học viết câu phụ).
+- Response item: `secondary_feedback` (1–2 câu tiếng Việt nhận xét câu phụ). Thiếu/rác ⇒ bỏ qua, KHÔNG làm hỏng kết quả chấm.
+- ⚠️ Trước M26c, `de_bai` chưa từng được gửi ⇒ AI chấm trans_sentence/complete_situation mà không thấy đề.
+
 ### 7.3 System prompt — quy tắc chấm
 
 - `good`: đúng ngữ pháp + tự nhiên → full điểm, không cần `improved_sentence`.
@@ -506,6 +544,7 @@ Batch theo dạng bài — mỗi session stage3 (5 từ) sinh đúng **3 request
 - `fail`: sai/bỏ trống → 0 điểm.
 - Nếu câu trả lời là tiếng Việt trong `(...)` → luôn `fail`, `is_translation_request=true`, `improved_sentence` = bản dịch sang ngôn ngữ đích.
 - Bắt buộc trả JSON thuần, không markdown.
+- M26c: `verdict` CHỈ dựa vào `user_answer`; `secondary_sentence` đúng/sai KHÔNG được làm đổi verdict.
 
 ### 7.4 Xử lý lỗi
 
@@ -566,7 +605,9 @@ Prompt tùy biến theo `exercise.type`, output luôn theo schema trên.
       "word": "苹果", "pinyin": "píngguǒ", "meaning_vi": "quả táo",
       "collocation": "一个苹果", "collocation_pinyin": "yí ge píngguǒ", "collocation_meaning_vi": "một quả táo",
       "example_sentence": "我每天吃一个苹果。", "example_meaning_vi": "Mỗi ngày tôi ăn một quả táo.",
-      "lang": "zh"
+      "lang": "zh",
+      "secondary_word": "apple", "secondary_phonetic": "/ˈæp.əl/", "secondary_collocation": "an apple",
+      "secondary_example": "I eat an apple every day.", "secondary_note": null
     }
   ],
   "exercises": [
@@ -574,7 +615,7 @@ Prompt tùy biến theo `exercise.type`, output luôn theo schema trên.
   ],
   "dialogue": {
     "lines": [
-      { "speaker": "A", "text_zh": "你今天吃苹果了吗？", "pinyin": "...", "text_vi": "...", "highlight_vocab_temp_ids": ["v1"] }
+      { "speaker": "A", "text_zh": "你今天吃苹果了吗？", "pinyin": "...", "text_vi": "...", "text_secondary": "Did you eat an apple today?", "highlight_vocab_temp_ids": ["v1"] }
     ]
   }
 }
@@ -661,7 +702,7 @@ Ngoài checklist thủ công ở §10.5, có **1 file JSON Schema hình thức**
 ### 12.2 Viền (mastery ring)
 
 ```
-% viền = min(total_points, 36) / 36    -- = MASTER_THRESHOLD (MB-45); CHỈ dùng total_points, không dùng cycle_points
+% viền = min(total_points, 39) / 39    -- = MASTER_THRESHOLD (MB-45 → M26d); CHỈ dùng total_points, không dùng cycle_points
 ```
 
 ⚠️ **Sửa 2026-10-01 (MB-43):** bản trước tô màu viền theo 6 mốc `total_points` (0–5 đỏ … 30 xanh đậm). Vì 6 màu

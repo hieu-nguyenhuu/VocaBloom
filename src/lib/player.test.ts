@@ -29,7 +29,12 @@ import {
   oGoiY,
   dangKhaDung,
   moLaiNeuHetBai,
+  type PayloadGanNghia,
+  dienChip,
+  goO,
+  oGoLui,
 } from './player.ts'
+import { bangGanNghia } from './songNgu.ts'
 import { boBaiCua, gomSession, type DangBai, type Stage, type TrangThaiTu } from './srs.ts'
 
 describe('homNayVN', () => {
@@ -442,7 +447,7 @@ describe('xepBai — stage 3 (M5)', () => {
 describe('stageBaiTap', () => {
   it('mastered mượn bộ bài của intensive (M7/Q1)', () => {
     expect(stageBaiTap('mastered')).toBe('intensive')
-    expect(boBaiCua(stageBaiTap('mastered'))).toHaveLength(4)
+    expect(boBaiCua(stageBaiTap('mastered'))).toHaveLength(5) // M26d: + near_synonym
   })
 
   it('stage khác giữ nguyên', () => {
@@ -707,5 +712,94 @@ describe('chamLuot — chọn lại đến khi đúng, LẦN ĐẦU quyết đ�
   })
   it('C5 thiếu từ B ⇒ chỉ chấm ô a, đúng là xong (không kẹt vĩnh viễn)', () => {
     expect(chamLuot({}, { a: true })).toEqual({ xong: true, ghi: { a: true }, daSai: { a: false } })
+  })
+})
+
+describe('near_synonym trong Player (M26d)', () => {
+  // Payload THẬT của 测试 (đọc DB 2026-10-05) — luật MB-21: fixture chép đúng shape dữ liệu thật
+  const NS: PayloadGanNghia = {
+    sentence: '这个软件上线以前，一定要先做___。',
+    sentence_pinyin: 'Zhè ge ruǎnjiàn shàngxiàn yǐqián, yídìng yào xiān zuò ___.',
+    sentence_secondary: 'This software has to be tested before it goes live.',
+    answer_note_vi: '测试: kiểm thử theo quy trình trước khi phát hành.',
+    distractors: [
+      { word: '考试', pinyin: 'kǎoshì', note_vi: 'thi cử — dành cho người học, không cho phần mềm', secondary: 'exam; test' },
+      { word: '检查', pinyin: 'jiǎnchá', note_vi: 'xem xét, rà soát', secondary: 'check; inspect' },
+      { word: '实验', pinyin: 'shíyàn', note_vi: 'thí nghiệm khoa học', secondary: 'experiment' },
+    ],
+  }
+  const dialog2 = (a: string, b: string) => ({ id: `${a}-fd`, vocab_id: a, type: 'fill_dialog' as DangBai,
+    payload: { dialog_a: 'x ___', dialog_b: 'y ___', blank_a_answer: a, blank_b_vocab_id: b } })
+
+  it('NS1 — stage2: fill_dialog → select_sentence → near_synonym → arrange_words → trans_collocation', () => {
+    const bt = [
+      dialog2('a', 'b'),
+      bai('a', 'select_sentence', { correct_sentence: { text: 'c' }, wrong_sentences: [] }),
+      bai('a', 'near_synonym', NS),
+      bai('a', 'arrange_words', { tokens: [{ text: 'x', pinyin: 'x' }] }),
+    ]
+    const { man } = xepBai({ tu: [tu('a', 'stage2')], baiTap: bt })
+    expect(man.map((m) => m.loai)).toEqual([
+      'flashcard', 'fill_dialog', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation',
+    ])
+    const ns = man.find((m) => m.loai === 'near_synonym')
+    expect(ns && 'payload' in ns ? ns.payload : null).toEqual(NS)
+  })
+  it('NS2 — thiếu record ⇒ không có màn + báo thieu; dangKhaDung chỉ có dạng khi có record', () => {
+    const { man, thieu } = xepBai({ tu: [tu('a', 'stage2')], baiTap: [] })
+    expect(man.some((m) => m.loai === 'near_synonym')).toBe(false)
+    expect(thieu).toContainEqual({ vocab_id: 'a', type: 'near_synonym' })
+    expect(dangKhaDung('stage2', ['near_synonym'])).toContain('near_synonym')
+    expect(dangKhaDung('stage2', [])).not.toContain('near_synonym')
+  })
+  it('NS3 — đã đạt near_synonym trong vòng ⇒ không dựng lại màn', () => {
+    const { man } = xepBai({ tu: [tu('a', 'stage2', ['near_synonym'])], baiTap: [bai('a', 'near_synonym', NS)] })
+    expect(man.some((m) => m.loai === 'near_synonym')).toBe(false)
+  })
+  it('GN1 — bangGanNghia: đúng THỨ TỰ ô đã hiện, hàng đáp án lấy pinyin/từ phụ của vocab + answer_note_vi', () => {
+    const rows = bangGanNghia({ word: '测试', pinyin: 'cèshì', secondary_word: 'test; check' }, NS, ['考试', '测试', '实验', '检查'])
+    expect(rows.map((r) => r.word)).toEqual(['考试', '测试', '实验', '检查'])
+    expect(rows[1]).toEqual({ word: '测试', pinyin: 'cèshì', secondary: 'test · check', note: NS.answer_note_vi, dung: true })
+    expect(rows[0]).toMatchObject({ pinyin: 'kǎoshì', secondary: 'exam · test', dung: false })
+  })
+  it('GN2 — thiếu pinyin / từ phụ / ghi chú ⇒ chuỗi rỗng, không ném', () => {
+    const rows = bangGanNghia({ word: '测试', pinyin: null, secondary_word: null }, { ...NS, answer_note_vi: null }, ['测试'])
+    expect(rows[0]).toEqual({ word: '测试', pinyin: '', secondary: '', note: '', dung: true })
+  })
+})
+
+describe('dienChip / goO / oGoLui — Select Dialog gỡ từ (M28)', () => {
+  const TRONG = { a: null, b: null }
+  const KHONG_KHOA = { a: false, b: false }
+
+  it('DC1 — điền vào ô trống đầu tiên: A rồi B', () => {
+    const x = dienChip(TRONG, 2, true)
+    expect(x).toEqual({ a: 2, b: null })
+    expect(dienChip(x, 0, true)).toEqual({ a: 2, b: 0 })
+  })
+
+  it('DC2 — chip đang dùng / đủ ô / không có ô B ⇒ giữ nguyên', () => {
+    expect(dienChip({ a: 2, b: null }, 2, true)).toEqual({ a: 2, b: null })
+    expect(dienChip({ a: 2, b: 0 }, 1, true)).toEqual({ a: 2, b: 0 })
+    expect(dienChip({ a: 2, b: null }, 1, false)).toEqual({ a: 2, b: null })
+  })
+
+  it('DC3 — gỡ A khi B đang có ⇒ chip kế tiếp vào lại A', () => {
+    const go = goO({ a: 2, b: 0 }, 'a', KHONG_KHOA)
+    expect(go).toEqual({ a: null, b: 0 })
+    expect(dienChip(go, 3, true)).toEqual({ a: 3, b: 0 })
+  })
+
+  it('DC4 — ô đã chấm đúng (khoá) không gỡ được; gỡ ô trống ⇒ giữ nguyên', () => {
+    expect(goO({ a: 2, b: 0 }, 'a', { a: true, b: false })).toEqual({ a: 2, b: 0 })
+    expect(goO({ a: null, b: 0 }, 'a', KHONG_KHOA)).toEqual({ a: null, b: 0 })
+  })
+
+  it('DC5 — Backspace gỡ B trước A, bỏ qua ô khoá, null khi không còn gì gỡ được', () => {
+    expect(oGoLui({ a: 2, b: 0 }, KHONG_KHOA)).toBe('b')
+    expect(oGoLui({ a: 2, b: null }, KHONG_KHOA)).toBe('a')
+    expect(oGoLui({ a: 2, b: 0 }, { a: false, b: true })).toBe('a')
+    expect(oGoLui({ a: 2, b: null }, { a: true, b: false })).toBeNull()
+    expect(oGoLui(TRONG, KHONG_KHOA)).toBeNull()
   })
 })

@@ -48,6 +48,8 @@ export type KetQuaCham = {
   is_translation_request: boolean
   feedback_vi: string
   improved_sentence: string | null
+  /** M26c — nhận xét câu song ngữ (chỉ make_sentence có câu phụ). Thiếu/rác ⇒ null, KHÔNG ảnh hưởng verdict. */
+  secondary_feedback: string | null
 }
 
 const chuoi = (v: unknown): string => (typeof v === 'string' ? v : '')
@@ -75,6 +77,7 @@ export function docKetQuaCham(text: string, ids: string[]): { ok: KetQuaCham[]; 
       is_translation_request: bool(o['is_translation_request']),
       feedback_vi: chuoi(o['feedback_vi']),
       improved_sentence: chuoi(o['improved_sentence']) || null,
+      secondary_feedback: chuoi(o['secondary_feedback']).trim() || null,
     })
   }
   return { ok, thieu: ids.filter((id) => !ok.some((x) => x.vocab_id === id)) }
@@ -98,13 +101,19 @@ CHỈ trả JSON thuần đúng schema sau, KHÔNG markdown, KHÔNG giải thíc
 const MO_TA_DANG: Record<DangBaiAI, string> = {
   make_sentence: 'Người học tự đặt câu chứa từ vựng cho trước.',
   trans_sentence:
-    'Người học dịch câu tiếng Việt cho trước sang ngôn ngữ đích; câu dịch phải chứa từ vựng cần luyện.',
+    'Người học dịch câu tiếng Việt trong trường "de_bai" sang ngôn ngữ đích; câu dịch phải đúng ý "de_bai" và chứa từ vựng cần luyện.',
   complete_situation:
-    'Người học viết 1-3 câu hoàn thành tình huống cho trước; bài viết phải chứa từ vựng cần luyện.',
+    'Người học viết 1-3 câu hoàn thành tình huống trong trường "de_bai"; bài viết phải hợp tình huống và chứa từ vựng cần luyện.',
 }
 
+/** M26c — chỉ make_sentence có câu song ngữ (Design.m26.md §4, Q8). */
+const LUAT_SONG_NGU = `
+Câu song ngữ: item có thể kèm "secondary_sentence" (câu người học tự dịch sang ngôn ngữ phụ) và "secondary_word" (từ tương ứng).
+- "verdict" CHỈ dựa vào "user_answer"; "secondary_sentence" đúng hay sai KHÔNG được làm đổi "verdict".
+- Item có "secondary_sentence" ⇒ thêm trường "secondary_feedback": 1-2 câu tiếng Việt nhận xét câu đó (ngữ pháp, có đúng ý "user_answer" không), kèm câu sửa nếu cần. Item không có ⇒ bỏ trường này.`
+
 export function promptCham(dang: DangBaiAI): string {
-  return `${MO_TA_DANG[dang]}\n\n${LUAT_CHUNG}`
+  return `${MO_TA_DANG[dang]}${dang === 'make_sentence' ? LUAT_SONG_NGU : ''}\n\n${LUAT_CHUNG}`
 }
 
 export type ItemCham = {
@@ -113,6 +122,41 @@ export type ItemCham = {
   meaning_vi: string
   user_answer: string
   de_bai?: string
+  secondary_word?: string
+  secondary_sentence?: string
+}
+
+/** M26c/C2 — đề bài gửi kèm cho AI. Trước M26c trường này chưa từng được gán (AI chấm mà không thấy đề). */
+export function deBaiCua(
+  dang: DangBaiAI,
+  p: { vietnamese_sentence?: string; situation_vi?: string; given_sentence_zh?: string } | undefined,
+): string | undefined {
+  if (dang === 'trans_sentence') return p?.vietnamese_sentence?.trim() || undefined
+  if (dang === 'complete_situation') {
+    return [p?.situation_vi, p?.given_sentence_zh].map((x) => x?.trim()).filter(Boolean).join(' ') || undefined
+  }
+  return undefined
+}
+
+/** Dựng 1 item chấm; khoá tuỳ chọn trống thì BỎ HẲN (prompt: "không có ⇒ bỏ trường"). */
+export function taoItemCham(dv: {
+  vocab_id: string
+  word: string
+  meaning_vi: string
+  secondary_word: string | null
+  user_answer: string
+  secondary_sentence?: string | undefined
+  de_bai?: string | undefined
+}): ItemCham {
+  const phu = dv.secondary_sentence?.trim()
+  return {
+    vocab_id: dv.vocab_id,
+    word: dv.word,
+    meaning_vi: dv.meaning_vi,
+    user_answer: dv.user_answer,
+    ...(dv.de_bai ? { de_bai: dv.de_bai } : {}),
+    ...(phu ? { ...(dv.secondary_word ? { secondary_word: dv.secondary_word } : {}), secondary_sentence: phu } : {}),
+  }
 }
 
 export type BodyAI = {
@@ -159,6 +203,7 @@ export function promptGiaiThich(dang: string): string {
 Dữ liệu người dùng gửi là JSON; trường "dap_an" LÀ ĐÁP ÁN ĐÚNG đã được hệ thống xác nhận.
 Hãy giải thích vì sao CHÍNH đáp án đó đúng — tuyệt đối không tự chọn đáp án khác, không nói nó sai.
 Nếu có trường "cau_hoi", bám sát câu hỏi đó khi giải thích.
+Nếu có trường "secondary_word" (nghĩa tiếng Anh/Trung của từ), có thể dùng nó làm cầu nối khi giải thích.
 Giải thích ngắn gọn bằng tiếng Việt, tối đa 3 câu.
 CHỈ trả JSON thuần, KHÔNG markdown:
 {"question_translation_vi":"...","answer_pinyin":"...","answer_meaning_vi":"...","explanation_vi":"..."}

@@ -31,6 +31,7 @@ const KIEU_HOP_LE = [
   'translate', 'select_dialog', 'listen_fill', 'select_on_describe',
   'fill_dialog', 'select_sentence', 'arrange_words', 'trans_collocation',
   'make_sentence', 'trans_sentence', 'complete_situation',
+  'near_synonym', // M26 — dạng 18
 ] as const
 
 /** 6 dạng Player đọc thẳng từ vocab — CÓ record trong exercises là sai (DEC-22). */
@@ -53,6 +54,7 @@ const KIEU_KHONG_PAYLOAD = new Set([
  *   ['mang_tu', n]     — mảng đúng n object { word, pinyin }
  *   ['mang_cau', n]    — mảng đúng n object { text, pinyin }; n = 0 nghĩa là "ít nhất 2"
  *   'cau'              — 1 object { text, pinyin }
+ *   ['mang_tu_phu', n] — mảng đúng n object { word, pinyin, secondary, note_vi } (M26)
  */
 type LuatField = 'chuoi' | 'chuoi_hoac_null' | 'temp_id' | 'cau' | [string, number]
 
@@ -80,18 +82,28 @@ const LUAT_PAYLOAD: Record<string, Record<string, LuatField>> = {
     dialog_b: 'chuoi', dialog_b_pinyin: 'chuoi_hoac_null',
     blank_a_answer: 'chuoi', blank_b_vocab_id: 'temp_id',
   },
+  // M26 — 'Phân biệt từ gần nghĩa'. Đáp án đúng = vocab.word (DEC-22, không lặp trong payload).
+  near_synonym: {
+    sentence: 'chuoi', sentence_pinyin: 'chuoi_hoac_null', sentence_secondary: 'chuoi',
+    answer_note_vi: 'chuoi', distractors: ['mang_tu_phu', 3],
+  },
 }
 
 const FIELD_VOCAB_BAT_BUOC = [
   'temp_id', 'word', 'pinyin', 'meaning_vi', 'collocation', 'collocation_pinyin',
   'collocation_meaning_vi', 'example_sentence', 'example_meaning_vi', 'lang',
+  'secondary_word', 'secondary_phonetic', 'secondary_collocation', 'secondary_example', 'secondary_note',
 ] as const
 
 /** Phải là chuỗi KHÔNG rỗng (M13). */
 const FIELD_VOCAB_CHUOI = [
   'temp_id', 'word', 'meaning_vi', 'collocation',
   'collocation_meaning_vi', 'example_sentence', 'example_meaning_vi',
+  'secondary_word', 'secondary_collocation', 'secondary_example',
 ] as const
+
+/** M26 — KEY bắt buộc có mặt, giá trị chuỗi hoặc null (IPA có thể chưa có; ghi chú chỉ khi cần). */
+const FIELD_VOCAB_CHUOI_HOAC_NULL = ['secondary_phonetic', 'secondary_note'] as const
 
 /** Phiên âm: chuỗi hoặc null; lang=zh thì bắt buộc có nội dung (§6.5). */
 const FIELD_VOCAB_PHIEN_AM = ['pinyin', 'collocation_pinyin'] as const
@@ -106,6 +118,7 @@ const FIELD_VOCAB_PHIEN_AM = ['pinyin', 'collocation_pinyin'] as const
 const DANG_KHUYEN_NGHI = [
   'selection', 'audio_recognition', 'fast_decision', 'select_on_describe',
   'select_sentence', 'arrange_words', 'trans_sentence', 'complete_situation',
+  'near_synonym', // M26
 ] as const
 
 function laObject(x: unknown): x is Record<string, unknown> {
@@ -126,6 +139,11 @@ function laCap(x: unknown, khoa: 'word' | 'text'): boolean {
   if (!('pinyin' in x)) return false
   const p = x['pinyin']
   return p === null || typeof p === 'string'
+}
+
+/** M26 — đáp án nhiễu của near_synonym: { word, pinyin, secondary, note_vi }. */
+function laTuPhu(x: unknown): boolean {
+  return laCap(x, 'word') && laObject(x) && laChuoiKhongRong(x['secondary']) && laChuoiKhongRong(x['note_vi'])
 }
 
 /**
@@ -194,9 +212,31 @@ export function kiemPayload(
         if (!laCap(pt, 'word')) bao(`${duong}[${k}]`, 'Phải là object { word, pinyin } — KHÔNG phải chuỗi.')
       } else if (kieuMang === 'mang_cau') {
         if (!laCap(pt, 'text')) bao(`${duong}[${k}]`, 'Phải là object { text, pinyin } — chú ý khoá là `text`, không phải `word`.')
+      } else if (kieuMang === 'mang_tu_phu') {
+        if (!laTuPhu(pt)) bao(`${duong}[${k}]`, 'Phải là object { word, pinyin, secondary, note_vi }.')
       }
     })
   }
+  // M26 — đúng 1 chỗ trống (cùng quy ước MB-29/Q5 của bài hội thoại)
+  if (kieu === 'near_synonym' && laChuoiKhongRong(payload['sentence'])) {
+    const n = payload['sentence'].split('___').length - 1
+    if (n !== 1) bao(`${g}.payload.sentence`, `Phải có ĐÚNG 1 chỗ trống ___, đang có ${n}.`)
+  }
+  return ra
+}
+
+/**
+ * M26 — đáp án nhiễu của near_synonym phải khác nhau và KHÁC chính từ đang ôn (nếu không ⇒ bài có 2 đáp án đúng).
+ * Dùng chung cho file import và lệnh bổ sung song ngữ (M26b).
+ */
+export function kiemNhieuGanNghia(payload: unknown, tuDangOn: unknown, g: string): ViTri[] {
+  if (!laObject(payload) || !Array.isArray(payload['distractors'])) return []
+  const ds = (payload['distractors'] as unknown[]).map((x) => (laObject(x) ? x['word'] : undefined))
+  const ra: ViTri[] = []
+  if (tuDangOn !== undefined && ds.includes(tuDangOn)) {
+    ra.push({ duong_dan: `${g}.payload.distractors`, thong_diep: 'Có đáp án nhiễu trùng chính từ đang ôn.' })
+  }
+  if (new Set(ds).size !== ds.length) ra.push({ duong_dan: `${g}.payload.distractors`, thong_diep: '3 đáp án nhiễu phải khác nhau.' })
   return ra
 }
 
@@ -222,6 +262,7 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
   // ── vocab (lớp 1) + dựng tập temp_id cho lớp 2 ───────────────────────
   const dsVocab = raw['vocab']
   const tempIdCoThat = new Set<string>()
+  const tuCua = new Map<string, unknown>() // M26 — temp_id -> word, để chặn đáp án nhiễu trùng chính từ
 
   if (!Array.isArray(dsVocab) || dsVocab.length === 0) {
     bao('vocab', 'Thiếu mảng vocab hoặc mảng rỗng.')
@@ -256,6 +297,11 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
           bao(`vocab[${i}].${field}`, 'Từ tiếng Trung bắt buộc có phiên âm (không được null/rỗng).')
         }
       }
+      for (const field of FIELD_VOCAB_CHUOI_HOAC_NULL) {
+        if (field in tu && tu[field] !== null && typeof tu[field] !== 'string') {
+          bao(`vocab[${i}].${field}`, 'Phải là chuỗi hoặc null.')
+        }
+      }
       const tempId = tu['temp_id']
       if (!laChuoiKhongRong(tempId)) {
         bao(`vocab[${i}].temp_id`, 'Thiếu hoặc rỗng — cần để nối exercises/dialogue (§10.2).')
@@ -263,6 +309,7 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
         bao(`vocab[${i}].temp_id`, `Trùng với một vocab khác trong cùng file: '${tempId}'.`)
       } else {
         tempIdCoThat.add(tempId)
+        tuCua.set(tempId, tu['word'])
       }
     })
   }
@@ -286,7 +333,7 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
       const kieu = bai['type']
       const kieuHopLe = typeof kieu === 'string' && (KIEU_HOP_LE as readonly string[]).includes(kieu)
       if (!kieuHopLe) {
-        bao(`${g}.type`, `Không thuộc 17 dạng hợp lệ: ${JSON.stringify(kieu)}.`)
+        bao(`${g}.type`, `Không thuộc 18 dạng hợp lệ: ${JSON.stringify(kieu)}.`)
       } else if (KIEU_KHONG_PAYLOAD.has(kieu)) {
         bao(g, `Dạng '${kieu}' KHÔNG được có record trong exercises — Player đọc thẳng từ vocab (DEC-22).`)
       }
@@ -311,6 +358,11 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
         if (gt === bai['vocab_temp_id']) return 'Trỏ về chính từ của bài này — bài 2 từ phải là 2 từ KHÁC nhau.'
         return null
       }))
+
+      // M26 — đáp án nhiễu trùng chính từ đang ôn / trùng nhau ⇒ bài có 2 đáp án đúng
+      if (kieu === 'near_synonym') {
+        loi.push(...kiemNhieuGanNghia(bai['payload'], laChuoiKhongRong(vTempId) ? tuCua.get(vTempId) : undefined, g))
+      }
 
       // Cảnh báo: 2 bài CÙNG dạng cho CÙNG 1 từ ⇒ Player dựng 2 màn trùng nhau
       if (laChuoiKhongRong(vTempId)) {
@@ -349,6 +401,10 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
         }
         if (dong['speaker'] !== 'A' && dong['speaker'] !== 'B') {
           bao(`dialogue.lines[${i}].speaker`, `Chỉ nhận 'A' hoặc 'B', đang là ${JSON.stringify(dong['speaker'])}.`)
+        }
+        // M26 — câu tương đương bằng ngôn ngữ phụ (Trung ↔ Anh), luôn hiện dưới pinyin
+        if (!laChuoiKhongRong(dong['text_secondary'])) {
+          bao(`dialogue.lines[${i}].text_secondary`, 'Phải là chuỗi không rỗng — câu tương đương bằng ngôn ngữ phụ (M26).')
         }
         const ds = dong['highlight_vocab_temp_ids']
         if (ds === undefined) return

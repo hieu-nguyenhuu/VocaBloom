@@ -4,6 +4,7 @@ import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import { Icon } from '../../../components/icons.tsx'
 import { chamLuot, gioiHanNhap, soKhopDapAn, type VocabDb } from '../../../lib/player.ts'
 import { phatAm } from '../../../lib/tts.ts'
+import { deDienTu } from '../../../lib/songNgu.ts'
 
 /**
  * Pattern 2 — điền từ nhập tay (mockup 03): Translate · Listen Fill · Trans Collocation.
@@ -19,6 +20,8 @@ import { phatAm } from '../../../lib/tts.ts'
  *
  * M25: sai → đỏ 800ms rồi về viền tím, GIỮ chữ đã gõ + bôi đen để gõ lại đến khi đúng (hoặc Bỏ qua).
  * Điểm theo LẦN ĐẦU (`chamLuot`) ⇒ `onTraLoi` chỉ gọi 1 lần, khi đã đúng.
+ *
+ * M26c: translate / trans_collocation ra đề bằng NGÔN NGỮ PHỤ (dòng to) + nghĩa Việt (dòng nhỏ) — `deDienTu`.
  */
 type Props = {
   vocab: VocabDb
@@ -70,10 +73,7 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
     }, dung ? 600 : 800)
   }
 
-  const de =
-    cheDo === 'trans_collocation'
-      ? { chinh: vocab.collocation_meaning_vi ?? vocab.meaning_vi, phu: 'Nhập cụm từ' }
-      : { chinh: vocab.meaning_vi, phu: vocab.lang === 'zh' ? 'Nhập từ tiếng Trung' : 'Nhập từ tiếng Anh' }
+  const de = cheDo === 'listen_fill' ? null : deDienTu(cheDo, vocab)
 
   const vienKq = kq === null ? 'border-accent' : kq ? 'border-success' : 'border-danger'
   const chuKq = kq === null ? 'text-content-primary' : kq ? 'text-success-text' : 'text-danger-text'
@@ -91,10 +91,12 @@ export default function DienTu({ vocab, cheDo, hienPhienAm, soGoiY, onTraLoi }: 
             <Icon ten="loa" size={28} />
           </button>
         ) : (
-          <div className="text-26 font-semibold text-content-primary">{de.chinh}</div>
+          <div lang={de?.langChinh} className={`text-26 font-semibold text-content-primary ${de?.langChinh === 'zh' ? 'font-han' : ''}`}>
+            {de?.chinh}
+          </div>
         )}
         <div className="mt-[10px] text-15 text-content-muted">
-          {cheDo === 'listen_fill' ? 'Nghe và gõ lại từ' : de.phu}
+          {cheDo === 'listen_fill' ? 'Nghe và gõ lại từ' : de?.nho}
           {hienPhienAm && cheDo === 'trans_collocation' && vocab.collocation_pinyin
             ? ` · ${vocab.collocation_pinyin}`
             : ''}

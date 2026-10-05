@@ -8,6 +8,7 @@ import {
   locTheoStage,
   locTu,
   NHAN_STAGE,
+  nhanPhu,
   nhanTu,
   type DongTu,
 } from './tuVung.ts'
@@ -15,7 +16,9 @@ import {
 const tu = (p: Partial<DongTu>): DongTu => ({
   id: 'x', word: '苹果', pinyin: 'píngguǒ', meaning_vi: 'quả táo', lang: 'zh',
   collocation: null, collocation_pinyin: null, collocation_meaning_vi: null,
-  example_sentence: null, example_meaning_vi: null, audio_url: null, ...p,
+  example_sentence: null, example_meaning_vi: null, audio_url: null,
+  secondary_word: null, secondary_phonetic: null, secondary_collocation: null,
+  secondary_example: null, secondary_note: null, ...p,
 })
 const DS = [
   tu({ id: '1', word: '苹果', pinyin: 'píngguǒ', meaning_vi: 'quả táo' }),
@@ -70,12 +73,17 @@ describe('nhanTu', () => {
 
 describe('kiemTraFormTu', () => {
   it('hợp lệ → null', () => {
-    expect(kiemTraFormTu({ word: '苹果', meaning_vi: 'quả táo' })).toBeNull()
+    expect(kiemTraFormTu({ word: '苹果', meaning_vi: 'quả táo', secondary_word: 'apple' })).toBeNull()
   })
 
   it('thiếu từ hoặc nghĩa → báo lỗi', () => {
-    expect(kiemTraFormTu({ word: '  ', meaning_vi: 'quả táo' })).toBe('Chưa nhập từ')
-    expect(kiemTraFormTu({ word: '苹果', meaning_vi: '' })).toBe('Chưa nhập nghĩa tiếng Việt')
+    expect(kiemTraFormTu({ word: '  ', meaning_vi: 'quả táo', secondary_word: 'apple' })).toBe('Chưa nhập từ')
+    expect(kiemTraFormTu({ word: '苹果', meaning_vi: '', secondary_word: 'apple' })).toBe('Chưa nhập nghĩa tiếng Việt')
+  })
+
+  it('M26d — thiếu từ vựng phụ (NOT NULL từ 0017) → báo lỗi', () => {
+    expect(kiemTraFormTu({ word: '苹果', meaning_vi: 'quả táo', secondary_word: ' ' })).toBe('Chưa nhập từ vựng phụ')
+    expect(kiemTraFormTu({ word: '苹果', meaning_vi: 'quả táo' })).toBe('Chưa nhập từ vựng phụ')
   })
 })
 
@@ -103,6 +111,11 @@ describe('docThayDoi', () => {
 
   it('ô trống → ghi null, KHÔNG ghi chuỗi rỗng', () => {
     expect(docThayDoi(cu, { ...cu, collocation: '' })).toEqual({ collocation: null })
+  })
+
+  it('M26d — xoá trắng secondary_word KHÔNG bao giờ ra null (cột NOT NULL, như word/meaning_vi)', () => {
+    const coPhu = tu({ secondary_word: 'apple' })
+    expect(docThayDoi(coPhu, { ...coPhu, secondary_word: '' })).toEqual({ secondary_word: '' })
   })
 
   it('bỏ khoảng trắng thừa trước khi so sánh và lưu', () => {
@@ -148,5 +161,19 @@ describe('NHAN_STAGE & locTheoStage (M10 — màn Tất cả từ vựng)', () =
     const khongStage: { id: string; stage?: 'new' }[] = [{ id: '9' }]
     expect(locTheoStage(khongStage, 'new')).toEqual([])
     expect(locTheoStage(khongStage, 'tat-ca')).toHaveLength(1)
+  })
+})
+
+describe('Từ vựng phụ (M26)', () => {
+  it('TV-M26a — tìm theo từ phụ: gõ "review" ra 复习', () => {
+    const ds = [tu({ id: 'a', word: '复习', secondary_word: 'review; revise' }), tu({ id: 'b', word: '苹果', secondary_word: 'apple' })]
+    expect(locTu(ds, 'review').map((t) => t.id)).toEqual(['a'])
+  })
+  it('TV-M26b — từ chưa có từ phụ (null) không làm hỏng tìm kiếm', () => {
+    expect(locTu([tu({ secondary_word: null })], 'zzz')).toEqual([])
+  })
+  it('TV-M26c — nhãn ô phụ theo ngôn ngữ của từ chính', () => {
+    expect(nhanPhu('zh').tu).toBe('Từ tiếng Anh')
+    expect(nhanPhu('en').tu).toBe('Từ tiếng Trung')
   })
 })

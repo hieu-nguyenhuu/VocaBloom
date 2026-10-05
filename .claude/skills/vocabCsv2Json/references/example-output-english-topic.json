@@ -14,7 +14,12 @@
       "collocation_meaning_vi": "một giáo viên tiểu học",
       "example_sentence": "She wants to become a teacher.",
       "example_meaning_vi": "Cô ấy muốn trở thành giáo viên.",
-      "lang": "en"
+      "lang": "en",
+      "secondary_word": "老师; 教师",
+      "secondary_phonetic": "lǎoshī; jiàoshī",
+      "secondary_collocation": "小学老师",
+      "secondary_example": "她想当老师。",
+      "secondary_note": "老师 dùng khi gọi/nói chuyện hằng ngày; 教师 trang trọng, hay gặp trong văn bản."
     },
     {
       "temp_id": "v2",
@@ -26,7 +31,12 @@
       "collocation_meaning_vi": "đi khám bác sĩ",
       "example_sentence": "He works as a doctor at the hospital.",
       "example_meaning_vi": "Anh ấy làm bác sĩ tại bệnh viện.",
-      "lang": "en"
+      "lang": "en",
+      "secondary_word": "医生; 大夫",
+      "secondary_phonetic": "yīshēng; dàifu",
+      "secondary_collocation": "看医生",
+      "secondary_example": "他在医院当医生。",
+      "secondary_note": "医生 phổ thông; 大夫 là khẩu ngữ (miền Bắc TQ)."
     }
   ],
   "exercises": [
@@ -110,7 +120,7 @@
       "vocab_temp_id": "v1",
       "type": "select_on_describe",
       "payload": {
-        "description": "Người làm công việc giảng dạy kiến thức cho học sinh ở trường học.",
+        "description": "A person whose job is to teach students at a school.",
         "distractors": [
           {
             "word": "doctor",
@@ -131,7 +141,7 @@
       "vocab_temp_id": "v2",
       "type": "select_on_describe",
       "payload": {
-        "description": "Người khám và chữa bệnh cho bệnh nhân tại bệnh viện hoặc phòng khám.",
+        "description": "A person who examines and treats sick people at a hospital or clinic.",
         "distractors": [
           {
             "word": "teacher",
@@ -299,6 +309,66 @@
         "given_sentence_zh": "The nurse called your name.",
         "given_sentence_pinyin": null
       }
+    },
+    {
+      "vocab_temp_id": "v1",
+      "type": "near_synonym",
+      "payload": {
+        "sentence": "My ___ explained the grammar again after class.",
+        "sentence_pinyin": null,
+        "sentence_secondary": "下课后，我的老师又讲了一遍语法。",
+        "answer_note_vi": "teacher: người dạy học trên lớp.",
+        "distractors": [
+          {
+            "word": "coach",
+            "pinyin": null,
+            "secondary": "教练",
+            "note_vi": "huấn luyện viên — dạy thể thao/kỹ năng, không giảng ngữ pháp"
+          },
+          {
+            "word": "principal",
+            "pinyin": null,
+            "secondary": "校长",
+            "note_vi": "hiệu trưởng — quản lý trường, không dạy bài trên lớp"
+          },
+          {
+            "word": "student",
+            "pinyin": null,
+            "secondary": "学生",
+            "note_vi": "học sinh — người học, không giảng bài"
+          }
+        ]
+      }
+    },
+    {
+      "vocab_temp_id": "v2",
+      "type": "near_synonym",
+      "payload": {
+        "sentence": "I have a fever, so I need to see a ___.",
+        "sentence_pinyin": null,
+        "sentence_secondary": "我发烧了，所以得去看医生。",
+        "answer_note_vi": "doctor: bác sĩ khám chữa bệnh — \"see a doctor\" là cụm cố định.",
+        "distractors": [
+          {
+            "word": "nurse",
+            "pinyin": null,
+            "secondary": "护士",
+            "note_vi": "y tá — chăm sóc bệnh nhân, không nói \"see a nurse\" khi đi khám"
+          },
+          {
+            "word": "pharmacist",
+            "pinyin": null,
+            "secondary": "药剂师",
+            "note_vi": "dược sĩ — bán/pha thuốc, không khám bệnh"
+          },
+          {
+            "word": "dentist",
+            "pinyin": null,
+            "secondary": "牙医",
+            "note_vi": "nha sĩ — chỉ chữa răng"
+          }
+        ]
+      }
     }
   ],
   "dialogue": {
@@ -308,7 +378,8 @@
         "text_zh": "What do you want to be in the future?",
         "pinyin": "",
         "text_vi": "Sau này bạn muốn làm nghề gì?",
-        "highlight_vocab_temp_ids": []
+        "highlight_vocab_temp_ids": [],
+        "text_secondary": "你以后想做什么工作？"
       },
       {
         "speaker": "B",
@@ -317,21 +388,24 @@
         "text_vi": "Tôi muốn trở thành giáo viên.",
         "highlight_vocab_temp_ids": [
           "v1"
-        ]
+        ],
+        "text_secondary": "我想当老师。"
       },
       {
         "speaker": "A",
         "text_zh": "That's a great choice! Teaching is very meaningful.",
         "pinyin": "",
         "text_vi": "Lựa chọn tuyệt vời đấy! Dạy học rất ý nghĩa.",
-        "highlight_vocab_temp_ids": []
+        "highlight_vocab_temp_ids": [],
+        "text_secondary": "这个选择很好！教书很有意义。"
       },
       {
         "speaker": "B",
         "text_zh": "What about you?",
         "pinyin": "",
         "text_vi": "Còn bạn thì sao?",
-        "highlight_vocab_temp_ids": []
+        "highlight_vocab_temp_ids": [],
+        "text_secondary": "你呢？"
       },
       {
         "speaker": "A",
@@ -340,7 +414,8 @@
         "text_vi": "Tôi đang dự định trở thành bác sĩ.",
         "highlight_vocab_temp_ids": [
           "v2"
-        ]
+        ],
+        "text_secondary": "我打算当医生。"
       },
       {
         "speaker": "B",
@@ -349,14 +424,16 @@
         "text_vi": "Làm bác sĩ cũng là một công việc cao quý.",
         "highlight_vocab_temp_ids": [
           "v2"
-        ]
+        ],
+        "text_secondary": "当医生也是一份很高尚的工作。"
       },
       {
         "speaker": "A",
         "text_zh": "I hope we both achieve our dreams.",
         "pinyin": "",
         "text_vi": "Hy vọng cả hai chúng ta đều đạt được ước mơ.",
-        "highlight_vocab_temp_ids": []
+        "highlight_vocab_temp_ids": [],
+        "text_secondary": "希望我们都能实现梦想。"
       }
     ]
   },

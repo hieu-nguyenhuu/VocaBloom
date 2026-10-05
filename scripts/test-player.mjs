@@ -14,7 +14,7 @@ const V = '00000000-0000-4000-8000-00000000a4a1' // uuid cố định của từ
 const nhung = (obj) => (obj === null ? 'null' : `$vb$${JSON.stringify(obj)}$vb$::jsonb`)
 
 const SEED = `
-  insert into vocab (id, word, meaning_vi, lang) values ('${V}', '测试', 'kiểm thử', 'zh');
+  insert into vocab (id, word, meaning_vi, lang, secondary_word) values ('${V}', '测试', 'kiểm thử', 'zh', 'test');
   insert into word_state (vocab_id, stage, next_review_date, cycle_points, cycle_completed_exercises, total_points)
     values ('${V}', 'new', (now() at time zone 'Asia/Ho_Chi_Minh')::date, 0, '[]', 0);
 `

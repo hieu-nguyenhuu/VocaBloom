@@ -45,7 +45,7 @@ describe('validateImportFile', () => {
     expect(kq.tom_tat).toEqual({
       ten_topic: 'Trái cây',
       so_tu: 5,
-      so_bai_tap: 47,
+      so_bai_tap: 52,
       so_dong_hoi_thoai: 9,
       so_ngu_phap: 0,
     })
@@ -281,7 +281,7 @@ describe('validateImportFile — siết shape (M13)', () => {
       select_on_describe: 'payloadSelectOnDescribe', select_sentence: 'payloadSelectSentence',
       arrange_words: 'payloadArrangeWords', trans_sentence: 'payloadTransSentence',
       complete_situation: 'payloadCompleteSituation', select_dialog: 'payloadSelectDialog',
-      fill_dialog: 'payloadFillDialog',
+      fill_dialog: 'payloadFillDialog', near_synonym: 'payloadNearSynonym',
     }
     for (const [loai, def] of Object.entries(ten)) {
       const canCo: string[] = schema.$defs[def].required ?? []
@@ -290,6 +290,82 @@ describe('validateImportFile — siết shape (M13)', () => {
         const kq = sua1((d) => { delete bai(d, loai)?.payload?.[f] })
         expect(kq.hop_le, `${loai}.${f} bị xoá mà validator vẫn cho qua`).toBe(false)
       }
+    }
+  })
+})
+
+/** M26 — từ vựng phụ song ngữ + dạng near_synonym (DESIGN M26 §2). */
+describe('validateImportFile — song ngữ (M26)', () => {
+  const sua1 = (ham: (d: any) => void) => validateImportFile(sua(ham))
+  const bai = (d: any, loai: string) => d.exercises.find((x: any) => x.type === loai)
+
+  it('SN1 — secondary_word / secondary_collocation / secondary_example thiếu hoặc rỗng thì CHẶN', () => {
+    for (const f of ['secondary_word', 'secondary_collocation', 'secondary_example']) {
+      expect(sua1((d) => { delete d.vocab[0][f] }).hop_le, `xoá ${f}`).toBe(false)
+      expect(sua1((d) => { d.vocab[0][f] = ' ' }).hop_le, `${f} rỗng`).toBe(false)
+    }
+  })
+
+  it('SN2 — secondary_phonetic / secondary_note: thiếu KEY thì chặn, null hợp lệ, sai kiểu thì chặn', () => {
+    for (const f of ['secondary_phonetic', 'secondary_note']) {
+      expect(sua1((d) => { delete d.vocab[0][f] }).hop_le, `xoá ${f}`).toBe(false)
+      expect(sua1((d) => { d.vocab[0][f] = null }).hop_le, `${f} null`).toBe(true)
+      expect(sua1((d) => { d.vocab[0][f] = 5 }).hop_le, `${f} = 5`).toBe(false)
+    }
+  })
+
+  it('SN3 — 3 file mẫu: mỗi từ có đúng 1 bài near_synonym', () => {
+    for (const ten of TEN_FILE) {
+      const d = doc(ten) as any
+      for (const v of d.vocab) {
+        const n = d.exercises.filter((e: any) => e.type === 'near_synonym' && e.vocab_temp_id === v.temp_id).length
+        expect(n, `${ten} ${v.word}`).toBe(1)
+      }
+    }
+  })
+
+  it('SN4 — near_synonym: distractors phải đúng 3 object { word, pinyin, secondary, note_vi }', () => {
+    expect(sua1((d) => { bai(d, 'near_synonym').payload.distractors.pop() }).hop_le).toBe(false)
+    expect(sua1((d) => { bai(d, 'near_synonym').payload.distractors = ['a', 'b', 'c'] }).hop_le).toBe(false)
+    expect(sua1((d) => { delete bai(d, 'near_synonym').payload.distractors[0].secondary }).hop_le).toBe(false)
+    expect(sua1((d) => { bai(d, 'near_synonym').payload.distractors[1].note_vi = '' }).hop_le).toBe(false)
+  })
+
+  it('SN5 — near_synonym: câu phải có ĐÚNG 1 chỗ ___', () => {
+    expect(sua1((d) => { bai(d, 'near_synonym').payload.sentence = '没有空格。' }).hop_le).toBe(false)
+    expect(sua1((d) => { bai(d, 'near_synonym').payload.sentence = '___和___' }).hop_le).toBe(false)
+  })
+
+  it('SN6 — near_synonym: đáp án nhiễu trùng chính từ đang ôn, hoặc trùng nhau, thì CHẶN', () => {
+    expect(sua1((d) => {
+      const b = bai(d, 'near_synonym')
+      b.payload.distractors[0].word = d.vocab.find((v: any) => v.temp_id === b.vocab_temp_id).word
+    }).hop_le).toBe(false)
+    expect(sua1((d) => {
+      const ds = bai(d, 'near_synonym').payload.distractors
+      ds[1].word = ds[0].word
+    }).hop_le).toBe(false)
+  })
+
+  it('SN7 — dialogue: dòng thiếu / rỗng text_secondary thì CHẶN', () => {
+    expect(sua1((d) => { delete d.dialogue.lines[0].text_secondary }).hop_le).toBe(false)
+    expect(sua1((d) => { d.dialogue.lines[2].text_secondary = '' }).hop_le).toBe(false)
+  })
+
+  it('SN8 — từ thiếu near_synonym chỉ CẢNH BÁO (dạng khuyến nghị), không chặn', () => {
+    const kq = sua1((d) => { d.exercises = d.exercises.filter((e: any) => e.type !== 'near_synonym') })
+    expect(kq.hop_le).toBe(true)
+    expect(kq.canh_bao.some((c) => c.thong_diep.includes('near_synonym'))).toBe(true)
+  })
+
+  it('SN9 — CHỐNG LỆCH: field bắt buộc của vocabItem + dialogueLine trong JSON Schema đều bị validator TS đòi', () => {
+    const schema = JSON.parse(readFileSync(`${THU_MUC}/import-schema.json`, 'utf8'))
+    for (const f of schema.$defs.vocabItem.required as string[]) {
+      expect(sua1((d) => { delete d.vocab[0][f] }).hop_le, `vocab.${f}`).toBe(false)
+    }
+    for (const f of schema.$defs.dialogueLine.required as string[]) {
+      if (f === 'highlight_vocab_temp_ids' || f === 'pinyin' || f === 'text_vi') continue // app cho phép vắng — giữ hành vi cũ (M13)
+      expect(sua1((d) => { delete d.dialogue.lines[0][f] }).hop_le, `dialogue.${f}`).toBe(false)
     }
   })
 })

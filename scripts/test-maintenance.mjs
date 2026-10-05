@@ -26,7 +26,7 @@ const DON_SACH = `
 /** Seed 1 từ + word_state. updated_at lùi 2 ngày để không dính chốt chống-phạt-chồng. */
 function motTu({ ten, stage, due, diem, onLuc = 'null', cycle = 0 }) {
   return `
-    insert into vocab (word, meaning_vi, lang) values ('${ten}', 'x', 'zh');
+    insert into vocab (word, meaning_vi, lang, secondary_word) values ('${ten}', 'x', 'zh', 'x');
     insert into word_state (vocab_id, stage, next_review_date, total_points,
                             cycle_points, last_reviewed_at, updated_at)
     select id, '${stage}', ${due}, ${diem}, ${cycle}, ${onLuc}, now() - interval '2 days'
@@ -37,8 +37,8 @@ function motTu({ ten, stage, due, diem, onLuc = 'null', cycle = 0 }) {
 /** Seed n từ trong hàng đợi chờ (next_review_date NULL), added_at so le để kiểm FIFO. */
 function hangDoi(n) {
   return `
-    insert into vocab (word, meaning_vi, lang)
-    select 'q' || i, 'x', 'zh' from generate_series(1, ${n}) i;
+    insert into vocab (word, meaning_vi, lang, secondary_word)
+    select 'q' || i, 'x', 'zh', 'x' from generate_series(1, ${n}) i;
     insert into word_state (vocab_id, stage, next_review_date, added_at, updated_at)
     select v.id, 'new', null,
            now() - (${n} - (substring(v.word from 2))::int) * interval '1 hour',
@@ -133,7 +133,7 @@ const CAC_CA = [
     ma: 'T9',
     ten: 'daily_retry_queue: dòng hôm qua bị xoá, dòng hôm nay giữ lại',
     seed: `
-      insert into vocab (word, meaning_vi, lang) values ('w1', 'x', 'zh');
+      insert into vocab (word, meaning_vi, lang, secondary_word) values ('w1', 'x', 'zh', 'x');
       insert into daily_retry_queue (vocab_id, reason, queue_date)
       select id, 'below_threshold', ${HOM_QUA} from vocab where word = 'w1';
       insert into daily_retry_queue (vocab_id, reason, queue_date)

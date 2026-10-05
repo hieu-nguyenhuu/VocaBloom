@@ -36,12 +36,18 @@ begin
   -- B2-B4. Vocab -> map temp_id->uuid -> word_state -> vocab_topics
   for phan_tu in select * from jsonb_array_elements(coalesce(du_lieu -> 'vocab', '[]'::jsonb))
   loop
+    -- M26: 5 cột từ vựng PHỤ (Trung ↔ Anh) — xem 0016_song_ngu.sql
     insert into vocab (word, pinyin, meaning_vi, collocation, collocation_pinyin,
-                       collocation_meaning_vi, example_sentence, example_meaning_vi, lang)
+                       collocation_meaning_vi, example_sentence, example_meaning_vi, lang,
+                       secondary_word, secondary_phonetic, secondary_collocation,
+                       secondary_example, secondary_note)
     values (phan_tu ->> 'word', phan_tu ->> 'pinyin', phan_tu ->> 'meaning_vi',
             phan_tu ->> 'collocation', phan_tu ->> 'collocation_pinyin',
             phan_tu ->> 'collocation_meaning_vi', phan_tu ->> 'example_sentence',
-            phan_tu ->> 'example_meaning_vi', phan_tu ->> 'lang')
+            phan_tu ->> 'example_meaning_vi', phan_tu ->> 'lang',
+            phan_tu ->> 'secondary_word', phan_tu ->> 'secondary_phonetic',
+            phan_tu ->> 'secondary_collocation', phan_tu ->> 'secondary_example',
+            phan_tu ->> 'secondary_note')
     returning id into v_id;
 
     map := map || jsonb_build_object(phan_tu ->> 'temp_id', v_id::text);

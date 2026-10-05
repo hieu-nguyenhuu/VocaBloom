@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { chamMatching, xaoTron, type VocabDb } from '../../../lib/player.ts'
+import { ngonNguPhu, nhanGhepCap } from '../../../lib/songNgu.ts'
 
 /**
  * Pattern 4 — ghép cặp (mockup 05): 2 cột × N, vận hành trên cả session nên KHÔNG có ring/dots.
  * Chọn trái (tint tím) → chọn phải; đúng → cả 2 ô xanh mờ + khoá; sai → ô phải đỏ 600ms rồi bỏ chọn.
  * Điểm: mỗi từ đúng nếu lần chạm ĐẦU TIÊN tới nó là đúng (chamMatching, thuần).
+ * M26c: cột phải = nghĩa tiếng Anh (`nhanGhepCap` — trùng nhãn thì kèm nghĩa Việt; thiếu từ phụ ⇒ nghĩa Việt).
  */
 type Props = { dsTu: VocabDb[]; onXong: (kq: Record<string, boolean>) => void }
 
@@ -19,7 +21,8 @@ export default function Matching({ dsTu, onXong }: Props) {
   // Xáo 1 lần khi mount (cùng lỗi với TracNghiem: `dsTu` là mảng mới mỗi render của Player)
   const [trai] = useState(() => xaoTron(dsTu, Math.random))
   const [phai] = useState(() => xaoTron(dsTu, Math.random))
-  const dapAn = useMemo(() => Object.fromEntries(dsTu.map((v) => [v.id, v.meaning_vi])), [dsTu])
+  const dapAn = useMemo(() => nhanGhepCap(dsTu), [dsTu])
+  const nhanCua = (v: VocabDb) => dapAn[v.id] ?? v.meaning_vi
 
   const [chonTrai, setChonTrai] = useState<string | null>(null)
   const [daGhep, setDaGhep] = useState<Set<string>>(new Set())
@@ -28,9 +31,9 @@ export default function Matching({ dsTu, onXong }: Props) {
 
   function chamPhai(v: VocabDb) {
     if (!chonTrai || daGhep.has(v.id) || saiTam) return
-    const luotMoi = [...luot, { trai: chonTrai, phai: v.meaning_vi }]
+    const luotMoi = [...luot, { trai: chonTrai, phai: nhanCua(v) }]
     setLuot(luotMoi)
-    if (dapAn[chonTrai] === v.meaning_vi) {
+    if (dapAn[chonTrai] === nhanCua(v)) {
       // M17 — tiếng "tách" rất ngắn cho mỗi cặp đúng; cặp sai dùng âm "sai" chung
       phatAmThanh('ghep_cap')
       const moi = new Set(daGhep).add(chonTrai)
@@ -78,11 +81,12 @@ export default function Matching({ dsTu, onXong }: Props) {
           <button
             key={v.id}
             type="button"
+            lang={v.secondary_word ? ngonNguPhu(v.lang) : 'vi'}
             disabled={daGhep.has(v.id)}
             onClick={() => chamPhai(v)}
             className={`${daGhep.has(v.id) ? O_XONG : saiTam === v.id ? O_SAI : O_TRUNG_TINH} min-w-0 break-words text-15`}
           >
-            {v.meaning_vi}
+            {nhanCua(v)}
           </button>
         ))}
       </div>

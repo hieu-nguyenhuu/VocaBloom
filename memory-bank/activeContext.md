@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-02** (M25: chọn sai thì chọn lại đến khi đúng)
+> Cập nhật lần cuối: **2026-10-05** (**M28 XONG** — Select Dialog gỡ từ đã điền + nút "Kiểm tra")
 
 ## Trạng thái hiện tại
 
@@ -40,9 +40,196 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M23 (Bổ sung bài hội thoại cho mọi từ) — ✅ XONG 2026-10-01.**
 **M24 (Ngưỡng Mastered 30 → 36) — ✅ XONG 2026-10-02.**
 **M25 (Chọn sai thì chọn lại đến khi đúng / Bỏ qua) — ✅ XONG 2026-10-02.**
+**M26a (Nền dữ liệu song ngữ Trung ↔ Anh) — ✅ XONG 2026-10-03.**
+**M27 (Bộ HSK3 giao tiếp mới) — ✅ XONG 2026-10-05.**
+**M26b (Bổ sung dữ liệu song ngữ) — ✅ ĐÓNG 2026-10-05 (T11).**
+**M26c (4 dạng Trung–Anh không payload + vá `de_bai`) — ✅ XONG 2026-10-05 (MB-48).**
+**M26d (màn Phân biệt từ gần nghĩa + điểm 15/12/39 + NOT NULL) — ✅ XONG 2026-10-05 (MB-49)** · ảnh bố cục ✅ duyệt ⇒ **M26 ĐÓNG**.
+**M28 (Select Dialog: gỡ từ đã điền + chấm khi bấm "Kiểm tra") — ✅ XONG 2026-10-05 (MB-50).**
+**Tiếp theo:** chưa có milestone mới — chờ người dùng ra lệnh. Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
+lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
+`du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
 
-> ⚠️ M21 đã commit (`0413b73 fix bug`). **M22 + M23 + M24 + M25 CHƯA commit** (người dùng tự commit).
+### ✅ M28 vừa xong (2026-10-05) — MB-50 · Design `design.m28.md` · Plan `design.m28a.md`
+- Lỗi người dùng báo: chọn chip ở Select Dialog không gỡ/chọn lại được (đủ ô là tự chấm ngay).
+- `player.ts` +`ChipTrongO` · `dienChip` · `goO` · `oGoLui` (DC1–DC5 ĐỎ trước). `HoiThoai.tsx`: chip theo chỉ số, chip đang dùng
+  `invisible` giữ chỗ, từ trong câu là nút gỡ (`accent-tint`), nút "Kiểm tra" chung 2 chế độ, Enter/Backspace/1–4.
+- Vá kèm: Select bấm Gợi ý không còn in đáp án A vào câu (chỉ ẩn chip sai).
+- Kiểm chứng: `npm test` 479/479 · build · lint exit 0 · CDP trang tạm 58/58 (4 khung × 14 ca + gợi ý + 0 request supabase.co).
+  Trang tạm `tam-m28.*` đã xoá; ảnh ở scratchpad phiên `m28-*.png`.
+- Chưa xem trong Player thật (0 từ stage1 đến hạn).
+
+### ✅ M26d vừa xong (2026-10-05) — MB-49 · Plan `design.m26d.md`
+- Chốt: **D1** câu Anh CHỈ hiện SAU khi đúng (DB cho thấy câu Anh hay chứa nguyên văn nghĩa Anh của đáp án) · **D2** không mockup,
+  duyệt qua ảnh · **D3** X lúc xem bảng ⇒ không ghi log.
+- `srs.ts`: +`near_synonym` stage2/intensive, `MAX_CYCLE` 15, `NGUONG` 12, `MAX_TICH_LUY` 4/12/27/39, `MASTER_THRESHOLD` **39**.
+  Test mới: P3b · X1b (= tổng MAX_CYCLE) · X3 (mẫu số health = cộng dồn — đã chứng minh đỏ khi chỉ sửa MAX_CYCLE) · N1.
+- `player.ts`: `PayloadGanNghia`, `Man`, `CAN_RECORD`, `THU_TU_MAN`, nhánh `xepBai` (NS1–3). `bangGanNghia` ở **`songNgu.ts`** (GN1–2) —
+  lần đầu đặt ở `player.ts` bị test X-player chặn (chỉ được import `srs.ts`) ⇒ chuyển chứ không nới cổng.
+- Màn `PhanBietGanNghia.tsx` (+X2/X5) · `case 'near_synonym'` ở `PlayerPage` (gợi ý · bỏ qua · giải thích AI).
+  Sau khi đúng, pinyin câu cũng điền pinyin đáp án thay `___` (phát hiện khi xem ảnh).
+- DB: `0017_song_ngu_not_null.sql` (chặn trước nếu còn dòng thiếu) · `check:schema` thêm mục NOT NULL (ĐỎ trước) · 3 script test
+  thêm `secondary_word` vào insert. `kiemTraFormTu` bắt buộc từ phụ, `docThayDoi` không ghi null cho cột này.
+- Kiểm chứng: `npm test` **474/474** · build · lint 0 lỗi · `db:migrate` ×2 · `check:schema` xanh · `test:db` 9 · `test:player` 4 ·
+  `test:nhatky` 5 · `test:import` 10 · `test:ruby` 6 (rollback) · CDP trang tạm **17/17** (payload thật 测试/顺便, 0 request
+  supabase.co) · dữ liệu thật chỉ đọc **5/5** (chủ đề 46: 5 khối stage2 đúng thứ tự, 5 màn near_synonym, mỗi từ 5 dạng khả dụng).
+- Bẫy script: `innerText` của phần tử `visibility:hidden` là RỖNG ⇒ ca "gợi ý không ẩn đáp án" xanh giả; dùng `textContent`.
+- Ảnh bố cục: scratchpad phiên 2026-10-05 `m26d-*.png` (PC/Mobile × Sáng/Tối, trước/sau).
+- Chưa kiểm trong Player thật — chưa có từ stage2 (740 từ đang `new`); sớm nhất ~2 vòng ôn sau khi cron kích hoạt.
+
+### ✅ M26c vừa xong (2026-10-05) — MB-48 · Plan `design.m26c.md`
+- `songNgu.ts` +`nhanGhepCap` (NG1–5) · +`deDienTu` (DT1–4). `aiCore.ts` +`deBaiCua` · +`taoItemCham` · `KetQuaCham.secondary_feedback`
+  · `LUAT_SONG_NGU` (chỉ make_sentence) · prompt trans/complete nhắc `"de_bai"` · `promptGiaiThich` nhắc `secondary_word` (AI1–7).
+- UI: Ghép cặp cột phải tiếng Anh (trùng nhãn ⇒ kèm nghĩa Việt) · Dịch từ/cụm ra đề tiếng Anh + nghĩa Việt · Đặt câu thêm ô
+  câu Anh tuỳ chọn (Enter ô Trung ⇒ nhảy ô Anh, Enter ô Anh ⇒ nộp) + thẻ đề `复习 (ôn tập · review)` · ChamAI hiện câu Anh + khối
+  nhận xét TRUNG TÍNH. Mọi màn: thiếu dữ liệu phụ ⇒ y hệt bản cũ.
+- ⭐ **Lỗi cũ M5 đã vá (C2):** `ItemCham.de_bai` khai báo từ M5 nhưng CHƯA TỪNG được gán ⇒ AI chấm trans_sentence/complete_situation
+  không thấy đề. Nay `PlayerPage` lưu `deBaiTuLuan` lúc nộp. Kiểm thật: dịch lệch đề ⇒ `fail`, phản hồi trích đúng đề.
+- Kiểm chứng:
+  - `npm test` **464/464** (16 ca mới, đều ĐỎ trước) · build xanh · lint 0 lỗi (9 cảnh báo cũ).
+  - CDP trang tạm **22/22** (PC + Mobile 390 × Sáng/Tối, 0 request Supabase). Trang tạm đã xoá.
+  - AI thật **5/5** (model `deepseek/deepseek-v4.1-flash`): câu Anh sai ⇒ verdict vẫn `good` + có `secondary_feedback`; không câu Anh ⇒
+    không có khoá; dịch lệch đề ⇒ `fail`.
+- ⚠️ Bẫy script CDP: lọc request bằng `'supabase'` bắt nhầm module `/src/lib/supabase.ts` của Vite ⇒ phải lọc `'supabase.co'`.
+- ⚠️ Script Python thay chuỗi tiếng Việt trong `aiCore.ts` KHÔNG khớp (dù chuỗi trông giống hệt) ⇒ dùng công cụ Edit cho file có
+  nhiều tiếng Việt có dấu. (Matching/DienTu thì Python khớp bình thường.)
+- Chưa kiểm trong Player thật (không có từ stage1–3 đến hạn) — các màn đã kiểm qua component + test.
+
+> ⚠️ Git sạch lúc mở phiên 2026-10-03 (M22–M25 đã commit: `17b3687`, `bb9468d`). **M26a CHƯA commit** (người dùng tự commit).
 > `npm run seed:test` vẫn hỏng từ trước — chưa sửa.
+
+### ✅ M27 — Bộ "HSK3 giao tiếp" MỚI (thay 20 bộ H3 cũ, học TRƯỚC H4) — 2026-10-05
+- **Thiết kế `design.m27.md` (✅ duyệt) · Plan `design.m27a.md` (✅ duyệt, thi công xong).**
+- Người dùng chốt:
+  - 15 chủ đề × ~20 từ.
+  - Hư từ: liên từ/phó từ/giới từ có nghĩa Anh rõ thì VÀO SRS; trợ từ thuần (了着过 的得地 吧呢吗) và cả 把/被 (không có nghĩa Anh) thì vào **ngữ pháp chủ đề** 2–3 điểm/chủ đề.
+  - **KHÔNG lấy HSK 2.0 cấp 1–2** (虽然/但是/因为/所以 là HSK2 ⇒ loại; 才/跟 là HSK3 ⇒ giữ).
+  - Loại mọi từ trùng H4.
+  - Sau import: dời `added_at` của H4 ra sau bộ H3 mới.
+- Thứ tự ở M27d CHỈ khi người dùng ra lệnh: **xoá 20 chủ đề H3 cũ → import 15 mới → dời added_at H4 (chỉ khi 438 từ H4 vẫn `next_review_date IS NULL`)**.
+  - Lý do xoá trước: tránh 163 từ H3 cũ còn trong hàng đợi được kích hoạt trước bộ mới.
+- **M26b Đợt 3 HUỶ** (bộ H3 cũ sẽ bị xoá).
+- Thư mục `du-lieu-import/hsk3-giao-tiep/`:
+  - CSV 4 cột, **15 chủ đề · 302 từ · 73 hư từ**, 0 lỗi / 0 cảnh báo.
+  - `tham-chieu/hsk12.txt` (danh sách loại), `tham-chieu/hu-tu.txt` (đếm; dòng "Bổ sung" = hư từ HSK 3.0 / lửng lơ cấp độ).
+  - `nguon/dung_h3.py` + `test_dung_h3.py` (12 test K1–K7, B1–B5) + `test-fixture/99.txt`.
+- Builder là lớp ghép mỏng: `hsk.doc_nguon`/`hsk.dung` (16 dạng H4) + `sn.dung_tu` (5 trường phụ + near_synonym).
+  - Nguồn H4 thêm khoá IPA/COL/EX/NOTE/NS/NSEN/OK/ND trong khối W; `S:` = định nghĩa TIẾNG ANH; dòng DL = `câu | Việt | Anh`.
+  - secondary_word lấy từ cột TuPhu.
+  - Luật `不 了` ⇒ `了{liǎo}` áp cho MỌI câu (`ep_bu_liao`).
+  - ⚠️ Python `re` không nhận look-behind dài thay đổi ⇒ dùng nhóm bắt.
+- Fixture qua đủ 3 cổng: ajv `valid` · Python 0 lỗi · `import:file --dry-run` hợp lệ.
+- 157/302 từ mới trùng bộ H3 CŨ trong DB (bình thường, sẽ xoá bộ cũ); 0 trùng H4.
+- ✅ Cổng 1: danh sách từ ĐÃ DUYỆT 2026-10-05 (giữ cả 92 từ `*` ngoài HSK 2.0 cấp 3).
+- **M27b (plan `design.m27b.md` ✅):** `nguon/01.txt` soạn xong.
+  - Kết quả: 20 từ · 206 bài · G 6 · NOTE 6 · 10+10 cặp hội thoại (mỗi từ có mặt ở cả 2 dạng, bạn cặp khác nhau) · hội thoại 10 câu dùng 16 từ.
+  - 3 cổng validate sạch; `import-01-*.json` CHƯA import.
+  - Rà pinyin bắt thêm 1 lỗi builder: token nhiễu `S:` / `DD:` có ép âm `{}` bị lọt vào `word`; validator không bắt được.
+  - Đã vá ở `dung_chu_de` (bóc `{…}` bằng `hsk.chu_cua`); test **B6** đỏ trước rồi xanh ⇒ 13/13.
+  - Bẫy mới: tên riêng giữa câu (小 王{Wáng}, 汉字{Hànzì}, 广东{Guǎngdōng}, 韩国{Hánguó}, 华为{Huáwéi}, 阿明{Āmíng}) · câu sai cố ý cũng ép âm cho đúng (过{guò}).
+  - ✅ **Cổng 2: văn phong chủ đề 01 ĐÃ DUYỆT 2026-10-05** ⇒ chuẩn cho 02–15.
+- **M27c (plan `design.m27c.md` ✅) — XONG CẢ 2 ĐỢT 2026-10-05.**
+  - 01–08 = 162 từ; 3 cổng validate sạch 8/8.
+  - Builder 15/15 test. Thêm B7: bảng đọc riêng H3 nạp vào `hsk.MAC_DINH_DON` / `hsk.EP_TU` (脏 zāng, 照片 zhàopiàn). Thêm B8: khoá `NSLAP: <lý do>` cho câu NS buộc lộ đáp án (越…越…).
+  - Phải sửa 1 dòng `song-ngu/dung_song_ngu.py` (`if w in cau and not r.get('NSLAP')`); kiểm lại bo-sung-60 md5 không đổi.
+  - Script rà pinyin dùng lại: scratchpad `ra_pinyin.py NN` (in pinyin V/SS/CS/SE/FI/NS/DL/NP + "LỌT ÉP ÂM").
+  - Bẫy pinyin mới:
+    - Phát âm: 脏 zāng (pypinyin ra zàng) · 照片 zhàopiàn · 过去 danh từ = 过去{guòqù}, kể cả trong S/ND · 小{Xiǎo} 王{Wáng} giữa câu · 怪不得{guàibude} · 谈谈{tántan} · 问问{wènwen}.
+    - Bổ ngữ: 起不来 / 搬不动 / 放不下 / 看不出 / 测不过 → ép cả cụm hoặc 不{bu}. `不 了 ，` = "không nữa" → 了{le} (tránh luật 不了→liǎo).
+    - Tên riêng: 德国{Déguó} · 台湾{Táiwān} · 华为{Huáwéi} · 河内 工业{Gōngyè} 大学{Dàxué}.
+  - Builder chặn đúng nhiều lần DESC lộ nghĩa phụ ("place", "next", "to", "worried") ⇒ khi viết S tiếng Anh phải tránh mọi từ trong TuPhu, kể cả "to", "so", "but", "for".
+  - **Đợt 2 (09–15) XONG.** Tổng 15 file `du-lieu-import/hsk3-giao-tiep/import-01…15-*.json`:
+    - 302 từ · 3100 bài: 8 dạng/từ × 302, near_synonym 302, select_dialog 152, fill_dialog 152, grammar 78.
+    - 31 điểm ngữ pháp chủ đề · 150 câu hội thoại · "LỌT ÉP ÂM" rỗng cả 15.
+    - 3 cổng: ajv 15/15 · `validate_import.py` 15/15 · `import:file --dry-run` 15/15.
+    - Dry-run cảnh báo "từ đã có trong DB" là ĐÚNG (H3 cũ chưa xoá).
+    - Builder 15/15 (B7 thêm 电子邮件 = diànzǐyóujiàn, đã kiểm ngược: bỏ ép thì ra diànzi) · `npm test` 448/448.
+  - Bẫy đợt 2:
+    - Phát âm: 剩下{shèngxia} · 尝尝 / 逛逛 / 走走 thanh nhẹ · 消息 xiāoxi.
+    - Bổ ngữ: 联系不{bu}上 · 打印不{bu}出来 · 买不起 / 扣不上 / 闻不到.
+    - Số thứ tự: 第三 dì-sān.
+- **M27d XONG 2026-10-05** (lệnh "chạy m27d" → người dùng xem danh sách → gõ "xóa"):
+  - **Sao lưu trước khi xoá:** `du-lieu-import/hsk3-giao-tiep/sao-luu-h3-cu-2026-10-05.json` (1,4 MB). Gồm 20 topics, 240 vocab, word_state, 742 review_log, 2231 exercises, hội thoại, ngữ pháp.
+  - **Xoá:** gọi RPC `xoa_chu_de` cho đúng 20 id `3. %` → 240 từ xoá, 0 từ gỡ.
+    - Mất 76 từ đang học và toàn bộ 742 dòng `review_log` (thống kê theo từ về 0).
+    - Streak/phút học vẫn còn ở `nhat_ky_ngay` (11 ngày).
+  - **Import 15 file** (01→15): `added_at` H3 mới 10:05:05→10:05:27 UTC.
+  - **Dời H4:** `added_at = max(H3 mới) + 1 phút + (added_at − min H4)`, có điều kiện an toàn 438 từ / 0 đang học ngay trong câu UPDATE. Thứ tự nội bộ H4 giữ nguyên như lúc import 09-30.
+  - **Verify:**
+    - DB còn 35 topics · 740 vocab · 740 word_state · 0 mồ côi · 0 vai B treo.
+    - H3: 15 chủ đề · 302 từ · 3100 bài · 302 near_synonym · 31 ngữ pháp · 15 hội thoại.
+    - H4: 438 từ · 4462 bài.
+    - 0 từ thiếu `secondary_word` ⇒ điều kiện M26d đã đủ.
+    - 302 từ đầu hàng đợi FIFO đều là H3.
+  - Hiện **0 từ đang học**: cron sẽ kích hoạt dần theo FIFO, bắt đầu từ chủ đề 01. Audio TTS của 302 từ mới vẫn còn tồn (app tự gọi như H4).
+  - **Tiếp theo:** ~~M26 T11 + đóng M26b~~ ✅ → **M26c** → M26d.
+
+### ✅ M26 T11 — Kiểm chứng tổng, M26b ĐÓNG (2026-10-05)
+- Đích đối chiếu đổi theo M27: **740 từ / 35 chủ đề** (không còn 678/40). CLI chỉ chạy lại 20 file H4 (H3 mới vào qua import).
+- SQL chỉ đọc (scratchpad `t11_sql.mjs`):
+  - 740/740 có `secondary_word` + `collocation` + `example`.
+  - 740 `near_synonym`, đúng 1 bài/từ.
+  - 0/740 mô tả `select_on_describe` còn ký tự riêng của tiếng Việt.
+  - 35/35 chủ đề có hội thoại · 350/350 dòng có `text_secondary` · 0 vocab mồ côi · 0 thiếu `word_state`.
+  - 3 từ `secondary_phonetic = null` là CỐ Ý, vì là cụm nhiều từ: 顺便 · 打包 · 属.
+  - 180 từ có `secondary_note`.
+- Mốc md5 `word_state` mới (sau M27d): `295f3018…` (740 dòng, 740 `new`, max updated_at 2026-10-05 10:05:27 UTC). Mốc cũ `0319e619…` hết hiệu lực.
+- CLI `bo-sung:song-ngu --dry-run` 20/20 file H4 ⇒ **0 thay đổi** cả 20.
+- `npm test` 448/448 · build xanh · lint 0 lỗi (9 cảnh báo cũ).
+- CDP chỉ đọc 7/7 (PC 1280 + Mobile 390, 0 lệnh ghi): chủ đề 46 có 24 từ · tìm "test" ra 测试/重测 khớp DB · hội thoại 16 dòng Anh · form sửa có khối "Từ vựng phụ", giá trị khớp DB, Esc đóng không lưu · Mobile không tràn.
+- ⚠️ **Mặt sau Flashcard CHƯA xem được trên dữ liệu thật.** Chế độ chủ đề cố ý không có Flashcard (`dangChoPhep = boBaiCua(...)` chỉ gồm dạng tính điểm), còn ôn hằng ngày đang 0 từ đến hạn. Component đã kiểm ở M26a (CDP 53/53 với fixture). Xem lại khi cron kích hoạt từ mới.
+
+### 🚧 M26 — Từ vựng phụ song ngữ (Trung ↔ Anh) — đang làm, 4 milestone
+- **Thiết kế tổng: `Design.m26.md`** (đã duyệt) · Plan từng milestone: `design.m26a.md` (xong) · `design.m26b/c/d.md` (viết khi
+  tới lượt). `DESIGN.md` nay chỉ là trang chỉ mục (người dùng yêu cầu tách file 2026-10-03).
+- Người dùng chốt: mục tiêu (b) **chủ động dùng được tiếng Anh** · từ phụ là THUỘC TÍNH của `vocab` (không SRS riêng) ·
+  5 cột `secondary_word/phonetic/collocation/example/note` (**không audio**) · thay 5 dạng sang Trung–Anh giữ điểm
+  (matching · translate Anh→Trung kèm nghĩa Việt · select_on_describe định nghĩa tiếng Anh · trans_collocation Anh→Trung ·
+  make_sentence song ngữ — điểm theo câu Trung, câu Anh tuỳ chọn) · **GIỮ `select_sentence`** · `near_synonym` là dạng MỚI
+  tính điểm ở stage2/intensive ⇒ max 15, ngưỡng **12/15**, `MASTER_THRESHOLD` **39** (bật ở M26d) · hội thoại mỗi dòng có
+  câu Anh LUÔN hiện · CSV 4 cột `TuVung, TuPhu, Nghia, Topic` (TuPhu trống ⇒ skill tự sinh).
+- Thứ tự: **M26a ✅ → M26b ✅ (đóng 2026-10-05) → M26c ✅ (2026-10-05) → M26d ✅ (2026-10-05) ⇒ M26 ĐÓNG** (điều kiện M26d nay là 740/740 có `near_synonym` — ĐÃ ĐỦ).
+- Kiểm DB 03/10: 53 từ học dở đều ở đầu vòng, retry rỗng ⇒ **không xoá từ nào**; đổi 36→39 chỉ đổi kết cục của 复习 (max 38).
+
+### 🚧 M26b đang làm (2026-10-03) — Plan `design.m26b.md`
+- Công cụ: `boSungSongNgu.ts` (thuần, BN1–BN10) · `scripts/chup-song-ngu.mjs` (snapshot chỉ đọc → `du-lieu-import/song-ngu/chu-de-db.json`)
+  · builder `du-lieu-import/song-ngu/dung_song_ngu.py [NN]` đọc `nguon/NN.txt` · CLI `npm run bo-sung:song-ngu -- <file…> [--dry-run]`
+  (PATCH theo id + POST near_synonym, đọc lại phải 0 thay đổi). `kiemNhieuGanNghia` export từ `importValidate.ts` (dùng chung).
+- Người dùng duyệt văn phong đợt thử 46 + chốt **IPA Anh-Mỹ** (memory `english-pronunciation-american`). Đã ghi 46 vào DB.
+- ⚠️ Cú pháp ép âm `字{pinyin}` KHÔNG được có dấu cách trong ngoặc (tach_token cắt theo dấu cách ⇒ văng exception) — tách token.
+- ⚠️ Builder văng lỗi từng để lại JSON CŨ ⇒ dry-run chạy nhầm file cũ. Đã vá: builder xoá `bo-sung-NN-*.json` trước khi dựng.
+- Đáp án nhiễu đứng 1 mình phải ép âm đủ thanh (个{gè}, 过去{guòqù}); 一 trước ___ phải ép (一{yì}) như M23.
+- **Tiến độ:** 46 + Đợt 1 (41–45, 47–50) + **Đợt 2 (51–60, 213 từ) ĐÃ GHI 2026-10-05** — **438/678 từ (20/20 chủ đề H4)**.
+  Còn Đợt 3 (H3 01–20, 240 từ) rồi T11 (kiểm tra toàn bộ).
+- md5 `word_state` dùng câu cố định: `select md5(string_agg(w::text,'|' order by w::text)) from word_state w` — mốc Đợt 2
+  `0319e619…` (678 dòng, max updated_at 2026-10-04 18:00 UTC) trước = sau khi ghi. (Mốc `2483a4bb…` của Đợt 1 là câu khác.)
+- Builder có luật tự động mới: `了` ngay sau `不` ⇒ `了{liǎo}` (上不了网). CLI có thêm `ganNghiaSua` (PATCH near_synonym
+  đã có theo id khi payload khác) — dùng để VÁ 4 câu pinyin sai đã ghi ở Đợt 1: 修改 (得 děi) · 排除 (重装 chóngzhuāng) ·
+  信号/电路板 (不了 bù liǎo); dry-run lại 41–50 = 0 thay đổi.
+- Bẫy pinyin Đợt 2: tên riêng giữa câu bị viết thường (西湖{Xīhú}, 故宫{Gùgōng}, 湖南人, 微信{Wēixìn}) · 早点儿{zǎodiǎnr}
+  (không ép ra "zǎodiǎn'ér") · 吐{tù} (nôn) · 大夫{dàifu} · 一{yī} 号 (ngày) · 数{shǔ} · 女朋友{nǚpéngyou} · 过去{guòqù}.
+- Bẫy pinyin gặp thêm ở Đợt 1: `一个一个` / `一步一步` bị builder hiểu là V一V ⇒ 一 thứ 2 thành thanh nhẹ — viết
+  `一 个 一{yí} 个`; distractor thanh nhẹ cần ép (回来{huílái}, 网吧{wǎngbā}, 力气{lìqi}, 位置{wèizhì}, 部分{bùfèn},
+  照片{zhàopiàn}, 长{zhǎng} khi muốn đối chiếu cùng âm với 涨); 量 động từ = 量{liáng}; 行 (dòng) = 行{háng}; 英文{Yīngwén}.
+- Builder chặn thật 2 lần ở Đợt 1: DESC lộ nghĩa phụ (方案 'proposal') và câu NS chứa sẵn đáp án (插座 chứa 插).
+
+### M26a vừa xong (2026-10-03) — MB-47
+- Migration **`0016_song_ngu.sql`**: 5 cột `secondary_*` **nullable** + enum `near_synonym` (18 nhãn). `0007` sửa tại chỗ ghi 5 cột.
+- `src/lib/songNgu.ts` (thuần, 5 test): `ngonNguPhu` · `tachNghiaPhu` · `hienNghiaPhu` · `nhanNgonNguPhu`.
+- **3 cổng validate đổi cùng lúc** (TS app · JSON Schema · Python): 5 field vocab (word/collocation/example không rỗng;
+  phonetic/note key bắt buộc, được null) · `near_synonym` (đúng 1 `___`, 3 nhiễu `{word,pinyin,secondary,note_vi}` khác nhau
+  và ≠ từ đang ôn) · `text_secondary` mọi dòng hội thoại. Test SN1–SN9 (+S11). ⚠️ JSON Schema KHÔNG chặn được "nhiễu trùng
+  chính từ" (đối chiếu chéo) — chỉ TS + Python chặn, đúng giới hạn đã ghi trong schema.
+- UI: Flashcard mặt sau (chip `EN`/`中` + từ phụ + IPA, cụm, câu, ghi chú) · hội thoại 2 màn (câu phụ dưới pinyin) · form
+  sửa từ +5 ô "Từ vựng phụ" · tìm kiếm khớp từ phụ. Mọi phần phụ **ẩn khi null** — 678 từ cũ chưa có dữ liệu.
+- Skill: CSV 4 cột · 9 dạng bắt buộc (+`near_synonym`) · `description` = định nghĩa tiếng Anh · `text_secondary`. 3 file mẫu
+  đã bổ sung (diff lớn chỉ do định dạng — đã kiểm phần cũ giống hệt 100%).
+- ⚠️ **File JSON cũ trong `du-lieu-import/**` KHÔNG import lại được nữa** (thiếu field mới) — dữ liệu cũ đi đường CLI M26b.
+- ⭐ **Bài học kiểm thử:** sau khi file mẫu có `near_synonym`, mọi ca "phải chặn" đều **xanh giả** (cả file đã bị chặn sẵn vì
+  dạng chưa hợp lệ). Đã chứng minh 6 luật bằng **phá-luật-từng-cái** (mutation) — mỗi lần phá đúng 1 ca đỏ. Áp lại khuôn
+  này khi RED bị "nhiễm" bởi một lỗi chung.
+- CDP lần 1 đỏ vì trang nạp lần đầu chậm (Vite biên dịch) — chạy lại 53/53; chờ 1500ms đôi khi chưa đủ ở lượt đầu.
+- Ghi nhận: `word_state` đổi lúc 20:53 VN (53 → 61 từ đang học) là phiên học của người dùng + cron, TRƯỚC khi M26a thi công.
 
 ### M25 vừa xong (2026-10-02) — MB-46
 - 4 màn `TracNghiem` · `DienTu` · `SapXep` · `HoiThoai`: sai ⇒ đỏ **800ms** ⇒ chọn lại đến khi đúng (hoặc Bỏ qua). Trắc

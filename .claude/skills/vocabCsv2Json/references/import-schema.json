@@ -124,7 +124,12 @@
         "collocation_meaning_vi",
         "example_sentence",
         "example_meaning_vi",
-        "lang"
+        "lang",
+        "secondary_word",
+        "secondary_phonetic",
+        "secondary_collocation",
+        "secondary_example",
+        "secondary_note"
       ],
       "additionalProperties": false,
       "properties": {
@@ -164,6 +169,29 @@
         },
         "lang": {
           "$ref": "#/$defs/langEnum"
+        },
+        "secondary_word": {
+          "type": "string",
+          "minLength": 1,
+          "description": "M26 — từ tương đương ngôn ngữ phụ (zh ⇒ tiếng Anh, en ⇒ tiếng Trung). Nhiều nghĩa ngăn '; ', nghĩa đầu là nghĩa chính."
+        },
+        "secondary_phonetic": {
+          "$ref": "#/$defs/nullableString",
+          "description": "M26 — IPA (phụ là en) hoặc pinyin (phụ là zh). KEY bắt buộc, null khi chưa có."
+        },
+        "secondary_collocation": {
+          "type": "string",
+          "minLength": 1,
+          "description": "M26 — bản dịch tự nhiên của collocation."
+        },
+        "secondary_example": {
+          "type": "string",
+          "minLength": 1,
+          "description": "M26 — bản dịch của example_sentence."
+        },
+        "secondary_note": {
+          "$ref": "#/$defs/nullableString",
+          "description": "M26 — ghi chú phân biệt (tiếng Việt), CHỈ khi dễ nhầm giữa 2 ngôn ngữ; còn lại null."
         }
       },
       "allOf": [
@@ -196,7 +224,7 @@
       ]
     },
     "exerciseTypeEnum": {
-      "$comment": "CHỈ 11/17 giá trị — đúng field exercises[].type của app thật. 6 dạng 'không cần record' (flashcard, matching, translate, listen_fill, make_sentence, trans_collocation) tuyệt đối KHÔNG được xuất hiện ở đây (xem payload-schemas.md mục 2).",
+      "$comment": "CHỈ 12/18 giá trị — đúng field exercises[].type của app thật. 6 dạng 'không cần record' (flashcard, matching, translate, listen_fill, make_sentence, trans_collocation) tuyệt đối KHÔNG được xuất hiện ở đây (xem payload-schemas.md mục 2).",
       "enum": [
         "grammar",
         "selection",
@@ -208,7 +236,8 @@
         "select_sentence",
         "arrange_words",
         "trans_sentence",
-        "complete_situation"
+        "complete_situation",
+        "near_synonym"
       ]
     },
     "exerciseItem": {
@@ -404,6 +433,22 @@
             "properties": {
               "payload": {
                 "$ref": "#/$defs/payloadFillDialog"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "near_synonym"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "payload": {
+                "$ref": "#/$defs/payloadNearSynonym"
               }
             }
           }
@@ -638,6 +683,71 @@
         }
       }
     },
+    "wordPinyinSecondaryNote": {
+      "type": "object",
+      "required": [
+        "word",
+        "pinyin",
+        "secondary",
+        "note_vi"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "word": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pinyin": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "secondary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "note_vi": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "payloadNearSynonym": {
+      "$comment": "M26 — 'Phân biệt từ gần nghĩa'. Đáp án đúng = vocab.word, KHÔNG lặp trong payload.",
+      "type": "object",
+      "required": [
+        "sentence",
+        "sentence_pinyin",
+        "sentence_secondary",
+        "answer_note_vi",
+        "distractors"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sentence": {
+          "type": "string",
+          "pattern": "^(?!.*___.*___).*___.*$",
+          "description": "ĐÚNG 1 chỗ trống ___."
+        },
+        "sentence_pinyin": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "sentence_secondary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "answer_note_vi": {
+          "type": "string",
+          "minLength": 1
+        },
+        "distractors": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/$defs/wordPinyinSecondaryNote"
+          }
+        }
+      }
+    },
     "dialogueLine": {
       "type": "object",
       "required": [
@@ -645,7 +755,8 @@
         "text_zh",
         "pinyin",
         "text_vi",
-        "highlight_vocab_temp_ids"
+        "highlight_vocab_temp_ids",
+        "text_secondary"
       ],
       "additionalProperties": false,
       "properties": {
@@ -672,6 +783,11 @@
           "items": {
             "type": "string"
           }
+        },
+        "text_secondary": {
+          "type": "string",
+          "minLength": 1,
+          "description": "M26 — câu tương đương bằng ngôn ngữ phụ (zh ⇒ tiếng Anh, en ⇒ tiếng Trung)."
         }
       }
     },

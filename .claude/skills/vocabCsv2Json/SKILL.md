@@ -1,11 +1,11 @@
 ---
 name: vocabCsv2Json
-description: Chuyển 1 file CSV danh sách từ vựng (3 cột "TuVung", "Nghia", "Topic" — các khối topic ngăn nhau bằng dòng trống, dòng ngữ pháp đánh dấu "ngữ pháp" ở cột Nghia) thành các file JSON sẵn sàng import vào app VocaBloom, đúng 100% schema (topics/vocab/exercises/dialogue) cho toàn bộ 17 dạng bài tập. LUÔN dùng skill này khi người dùng đưa file CSV từ vựng và yêu cầu tạo dữ liệu bài tập, sinh nội dung ôn tập, hoặc chuẩn bị file để import vào VocaBloom — kể cả khi họ không nhắc từ "skill" hay "import". Xử lý được danh sách lớn (200-300+ dòng, nhiều topic) bằng cách tự động tách theo cột topic thành nhiều file JSON riêng biệt. Có 2 chế độ: MẶC ĐỊNH chỉ sinh và trả về file JSON; thêm cờ --import thì sau khi sinh sẽ tự nạp thẳng vào database Supabase qua connector rồi trả về kết quả kiểm chứng. Luôn đọc references/payload-schemas.md trước khi sinh bất kỳ field nào — sai tên field sẽ khiến UI của app không hiển thị được dữ liệu.
+description: Chuyển 1 file CSV danh sách từ vựng (4 cột "TuVung", "TuPhu", "Nghia", "Topic" — các khối topic ngăn nhau bằng dòng trống, dòng ngữ pháp đánh dấu "ngữ pháp" ở cột Nghia) thành các file JSON sẵn sàng import vào app VocaBloom, đúng 100% schema (topics/vocab/exercises/dialogue) cho toàn bộ 18 dạng bài tập, kèm từ vựng phụ song ngữ Trung ↔ Anh. LUÔN dùng skill này khi người dùng đưa file CSV từ vựng và yêu cầu tạo dữ liệu bài tập, sinh nội dung ôn tập, hoặc chuẩn bị file để import vào VocaBloom — kể cả khi họ không nhắc từ "skill" hay "import". Xử lý được danh sách lớn (200-300+ dòng, nhiều topic) bằng cách tự động tách theo cột topic thành nhiều file JSON riêng biệt. Có 2 chế độ: MẶC ĐỊNH chỉ sinh và trả về file JSON; thêm cờ --import thì sau khi sinh sẽ tự nạp thẳng vào database Supabase qua connector rồi trả về kết quả kiểm chứng. Luôn đọc references/payload-schemas.md trước khi sinh bất kỳ field nào — sai tên field sẽ khiến UI của app không hiển thị được dữ liệu.
 ---
 
 # Vocab CSV → VocaBloom Import JSON
 
-Chuyển đổi 1 file CSV từ vựng thô thành bộ file JSON hoàn chỉnh, đúng schema, sẵn sàng import vào app VocaBloom (spaced-repetition, 17 dạng bài tập).
+Chuyển đổi 1 file CSV từ vựng thô thành bộ file JSON hoàn chỉnh, đúng schema, sẵn sàng import vào app VocaBloom (spaced-repetition, 18 dạng bài tập, từ vựng phụ song ngữ Trung ↔ Anh).
 
 ## 2 chế độ chạy
 
@@ -21,11 +21,12 @@ luôn vào database không?".
 
 ## Bước 0 — Đọc tài liệu tham chiếu TRƯỚC KHI làm bất cứ gì
 
-**Bắt buộc đọc `references/payload-schemas.md` trước** — đây là nguồn sự thật cho tên field của cả 17 dạng bài. Đừng gen field theo trí nhớ hay suy đoán; tên field sai (kể cả chỉ khác 1 ký tự, khác hoa/thường) khiến app hiển thị trống mà không báo lỗi.
+**Bắt buộc đọc `references/payload-schemas.md` trước** — đây là nguồn sự thật cho tên field của cả 18 dạng bài và 5 field từ vựng phụ `secondary_*`. Đừng gen field theo trí nhớ hay suy đoán; tên field sai (kể cả chỉ khác 1 ký tự, khác hoa/thường) khiến app hiển thị trống mà không báo lỗi.
 
 ## Bước 1 — Đọc & rà soát CSV input
 
-File CSV có header, đúng **3 cột**: `TuVung`, `Nghia`, `Topic` (vẫn chấp nhận tên cũ
+File CSV có header, **4 cột**: `TuVung`, `TuPhu`, `Nghia`, `Topic` (M26). File CSV CŨ 3 cột (không có `TuPhu`)
+vẫn nhận — coi như `TuPhu` trống ở mọi dòng. Vẫn chấp nhận tên cột cũ
 `vocab` / `meaning` / `topic`; không phân biệt hoa/thường).
 
 **Cách đọc — KHÁC với bản trước, đọc kỹ:**
@@ -38,6 +39,8 @@ File CSV có header, đúng **3 cột**: `TuVung`, `Nghia`, `Topic` (vẫn chấ
 | **Dòng NGỮ PHÁP** | Cột `Nghia` ghi đúng chữ `ngữ pháp` ⇒ dòng đó là **ngữ pháp CỦA CHỦ ĐỀ**: đưa vào mảng `grammar` ở gốc file (xem Bước 3.4). **KHÔNG tạo `vocab`, KHÔNG tạo `exercises` cho dòng này.** Thường nằm ở 1–2 dòng cuối khối, và **có thể không có**. |
 | **`Nghia` có nội dung khác** | Dùng **nguyên văn** làm `meaning_vi` — đây là nghĩa đặc biệt người dùng muốn ôn, KHÔNG tự sinh lại. |
 | **`Nghia` trống** | Tự sinh nghĩa tiếng Việt phù hợp. |
+| **`TuPhu` có nội dung** | Dùng **nguyên văn** làm `secondary_word` (từ tương đương người dùng muốn học). |
+| **`TuPhu` trống** | Tự sinh từ tương đương ở **ngôn ngữ phụ** (từ chính `zh` ⇒ tiếng Anh, `en` ⇒ tiếng Trung). Nhiều nghĩa ngăn bằng `"; "`, nghĩa thông dụng nhất đứng ĐẦU (app lấy nghĩa đầu làm nghĩa chính). |
 
 - `TuVung` = từ vựng gốc → field `word`.
 - Xác định `lang` cho từng từ: `word` chứa ký tự Hán (CJK) → `"zh"`; toàn ký tự Latin → `"en"`. Với `lang="en"`, để `pinyin` là `null`.
@@ -67,16 +70,40 @@ Với mỗi từ trong nhóm: gán `temp_id` tuần tự `"v1"`, `"v2"`... rồi
 - `collocation`, `example_sentence` phải TỰ NHIÊN, đúng ngữ pháp, thực sự dùng được (không phải câu máy móc).
 - Với `lang="zh"`: mọi câu tiếng Trung đều PHẢI có phiên âm pinyin đi kèm (có dấu thanh, VD `píngguǒ` không viết `pingguo`).
 
+**5 field từ vựng PHỤ (M26 — song ngữ Trung ↔ Anh, chi tiết ở mục 0 của `payload-schemas.md`).** Ngôn ngữ phụ suy ra từ
+`lang`: từ chính `zh` ⇒ phụ là tiếng Anh; từ chính `en` ⇒ phụ là tiếng Trung. Người học dùng phần này để **chủ động dùng
+được cả 2 ngôn ngữ**, nên phải tự nhiên như người bản ngữ nói, không dịch máy.
+
+| Field | Nội dung | Lỗi hay gặp |
+|---|---|---|
+| `secondary_word` | **Bắt buộc.** Từ tương đương; nhiều nghĩa ngăn `"; "`, nghĩa thông dụng nhất đứng đầu (`review; revise`) | Liệt kê quá nhiều nghĩa hiếm — tối đa 3 |
+| `secondary_phonetic` | IPA **Anh-Mỹ** kiểu Cambridge US `/rɪˈvjuː/`, `/ˈwɑː.t̬ɚ/` (người dùng phát âm Anh-Mỹ; phụ là zh thì là pinyin có dấu). Không chắc ⇒ `null` | Bịa IPA; bỏ hẳn KEY (phải có key, giá trị `null`) |
+| `secondary_collocation` | Bản dịch **tự nhiên** của `collocation` (`复习课文` ⇒ `review the lesson`) | Dịch từng chữ (`review text`) |
+| `secondary_example` | Bản dịch của `example_sentence` | Dịch sát chữ, sai thì/sai số |
+| `secondary_note` | CHỈ khi có điểm **dễ nhầm giữa 2 ngôn ngữ** (1 từ Anh ↔ nhiều từ Trung, nghĩa rộng/hẹp khác nhau). ≤ 2 câu tiếng Việt. Còn lại `null` | Gắn ghi chú cho mọi từ — giống lỗi "từ nào cũng có ngữ pháp" (M12) |
+
 ### 3.3 `exercises`
-Với **mỗi từ vựng**, sinh đủ **8 dạng bài bắt buộc** (đọc kỹ field name ở mục 3 của `payload-schemas.md`, KHÔNG được thiếu field, KHÔNG được thêm field thừa):
+Với **mỗi từ vựng**, sinh đủ **9 dạng bài bắt buộc** (đọc kỹ field name ở mục 3 của `payload-schemas.md`, KHÔNG được thiếu field, KHÔNG được thêm field thừa):
 
 ```
 selection, audio_recognition, fast_decision,
 select_on_describe, select_sentence, arrange_words,
-trans_sentence, complete_situation
+trans_sentence, complete_situation, near_synonym
 ```
 
-### ⚠️ `grammar` (ngữ pháp CỦA TỪ) — dạng CÓ ĐIỀU KIỆN, KHÔNG nằm trong 8 dạng bắt buộc
+**`select_on_describe.description` (M26):** viết **định nghĩa đơn ngữ bằng ngôn ngữ phụ** (từ chính `zh` ⇒ định nghĩa
+tiếng Anh kiểu từ điển Anh–Anh, ~1 câu) — không nêu thẳng từ, không dịch thẳng nghĩa.
+
+**`near_synonym` — "Phân biệt từ gần nghĩa" (M26, dạng 18, đặc tả ở mục 3.12 `payload-schemas.md`):**
+- Câu ngữ cảnh có **ĐÚNG 1 `___`**, mà **chỉ ĐÚNG 1** trong 4 lựa chọn (đáp án + 3 nhiễu) điền vào là tự nhiên.
+- 3 đáp án nhiễu ưu tiên **từ gần nghĩa THẬT** — cùng 1 nghĩa tiếng Anh hoặc cùng trường nghĩa và người học hay nhầm
+  (`test` ⇒ 测试 / 检测 / 考试 / 试验). Từ không có từ gần nghĩa thật (鼻子, 西瓜…) ⇒ lấy từ **cùng trường nghĩa** (眼睛/嘴/脸)
+  và cài manh mối ngữ cảnh rõ (lượng từ, đặc điểm) để vẫn chỉ có 1 đáp án đúng.
+- Đáp án nhiễu khác nhau và **khác chính từ đang ôn** — validator chặn cứng.
+- `note_vi` của từng nhiễu nêu **vì sao SAI ở câu này** (không chỉ dịch nghĩa); `answer_note_vi` nêu nét nghĩa riêng của đáp án.
+- `sentence_secondary` = bản dịch câu sang ngôn ngữ phụ (được phép chứa nghĩa của đáp án — người học vẫn phải chọn đúng từ).
+
+### ⚠️ `grammar` (ngữ pháp CỦA TỪ) — dạng CÓ ĐIỀU KIỆN, KHÔNG nằm trong 9 dạng bắt buộc
 
 Bản trước của skill này liệt kê `grammar` vào nhóm bắt buộc, khiến **từ nào cũng có một thẻ ngữ
 pháp** — kể cả `猫`, `水`, `书` vốn chẳng có gì để nói. Người học phải bấm qua một thẻ vô nghĩa ở
@@ -128,6 +155,9 @@ Các dòng CSV có cột `Nghia` = `ngữ pháp` (Bước 1) → mỗi dòng th�
 ### 3.5 `dialogue`
 7–10 câu hội thoại (xen kẽ speaker A/B), dùng CÀNG NHIỀU từ trong topic càng tốt, đánh dấu đúng `highlight_vocab_temp_ids` cho câu nào chứa từ vựng nào (câu đệm không chứa từ thì để mảng rỗng `[]`).
 
+**M26:** mỗi dòng thêm `text_secondary` = câu tương đương bằng ngôn ngữ phụ (tiếng Anh cho topic `zh`), tự nhiên như hội
+thoại thật — app hiện câu này LUÔN, ngay dưới pinyin.
+
 ### 3.6 Ràng buộc từ `SPECIFICATION.md` phải tuân thủ (dễ quên nhất)
 
 | # | Ràng buộc | Hậu quả nếu sai |
@@ -142,6 +172,8 @@ Các dòng CSV có cột `Nghia` = `ngữ pháp` (Bước 1) → mỗi dòng th�
 | 8 | **`dialogue.lines`: 7–10 câu, `speaker` chỉ `A` hoặc `B`, mọi câu phải có `text_zh` không rỗng** | Chặn cứng (M13) |
 | 9 | **Không tạo 2 bài CÙNG dạng cho CÙNG 1 từ** | Player dựng 2 màn trùng (validator cảnh báo) |
 | 10 | **6 dạng KHÔNG được có record** (`flashcard, matching, translate, listen_fill, make_sentence, trans_collocation`) — Player đọc thẳng từ `vocab` (DEC-22) | Chặn cứng, reject cả file |
+| 11 | **`near_synonym`: đúng 1 `___`, 3 đáp án nhiễu khác nhau và ≠ từ đang ôn** (M26) | Validator app + Python chặn cứng |
+| 12 | **Mọi dòng `dialogue.lines` có `text_secondary` không rỗng; mọi `vocab` có đủ 5 KEY `secondary_*`** (M26) | Chặn cứng |
 
 ⚠️ **Validator của app đã được siết ngang JSON Schema (M13).** Trước đây file sai shape vẫn import
 được rồi hỏng ở Player; nay `distractors` là mảng chuỗi thay vì `{word,pinyin}`, `tokens` dùng khoá
@@ -306,7 +338,7 @@ Phải **0 dòng** (trừ topic chỉ có 1 từ).
 
 ## Tài liệu đi kèm
 
-- `references/payload-schemas.md` — **đọc bắt buộc trước khi sinh dữ liệu**, chứa đặc tả field chính xác cho cả 17 dạng bài + checklist tự kiểm tra.
+- `references/payload-schemas.md` — **đọc bắt buộc trước khi sinh dữ liệu**, chứa đặc tả field chính xác cho cả 18 dạng bài + checklist tự kiểm tra.
 - `references/import-schema.json` — **JSON Schema chính thức (Draft 2020-12)**, validate cấu trúc/kiểu dữ liệu tự động bằng công cụ chuẩn (ajv/jsonschema). Đã kiểm thử: bắt đúng lỗi thiếu field, sai enum, sai độ dài mảng, field thừa, vi phạm điều kiện `lang=zh → pinyin bắt buộc`.
 - `references/example-output.json` — file mẫu HOÀN CHỈNH (3-5 từ tiếng Trung chủ đề "Trái cây"), có cả `select_dialog` lẫn `fill_dialog`, dùng làm ví dụ đối chiếu khi không chắc cấu trúc.
 - `references/example-output-english-topic.json` — ví dụ topic `lang="en"` (chủ đề "Nghề nghiệp"), minh họa cách để `pinyin`=null và cách dùng field `text_zh`/`given_sentence_zh` cho nội dung tiếng Anh.

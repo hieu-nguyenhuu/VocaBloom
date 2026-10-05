@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Icon } from '../../components/icons.tsx'
 import { chiaDam, type DongHoiThoai } from '../../lib/hoiThoai.ts'
+import { ngonNguPhu } from '../../lib/songNgu.ts'
 
 /**
  * M20 — Hội thoại CỦA CHỦ ĐỀ ở màn Từ vựng (khối tra cứu, không tính điểm, không phát âm).
@@ -64,6 +65,12 @@ export default function HoiThoaiChuDe({ dong, lang }: { dong: DongHoiThoai[]; la
                   )}
                 </p>
                 {d.pinyin && <div className="mt-0.5 text-12 text-content-muted">{d.pinyin}</div>}
+                {/* M26 — câu phụ (Trung ↔ Anh) LUÔN hiện; không in đậm từ vựng (Design.m26.md §7) */}
+                {d.phu && (
+                  <div lang={ngonNguPhu(lang)} className={`${ngonNguPhu(lang) === 'zh' ? 'font-han ' : ''}mt-0.5 text-13 text-content-muted`}>
+                    {d.phu}
+                  </div>
+                )}
                 {hienNghia && d.nghia && <div className="mt-1 text-13 text-content-nav">{d.nghia}</div>}
               </div>
             )

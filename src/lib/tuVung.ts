@@ -34,6 +34,12 @@ export type DongTu = {
   example_sentence: string | null
   example_meaning_vi: string | null
   audio_url: string | null
+  /** M26 — từ vựng PHỤ (Trung ↔ Anh), null khi chưa bổ sung. Xem `songNgu.ts`. */
+  secondary_word: string | null
+  secondary_phonetic: string | null
+  secondary_collocation: string | null
+  secondary_example: string | null
+  secondary_note: string | null
   /** Ghép từ `word_state` khi hiển thị danh sách (M10) — không phải cột của bảng `vocab`. */
   stage?: Stage
 }
@@ -47,6 +53,12 @@ export const FIELD_SUA = [
   'collocation_meaning_vi',
   'example_sentence',
   'example_meaning_vi',
+  // M26 — từ vựng phụ
+  'secondary_word',
+  'secondary_phonetic',
+  'secondary_collocation',
+  'secondary_example',
+  'secondary_note',
 ] as const
 
 export type FieldSua = (typeof FIELD_SUA)[number]
@@ -61,11 +73,11 @@ export function boDau(s: string): string {
     .toLowerCase()
 }
 
-/** Lọc phía client (chỉ vài chục từ): khớp chữ / pinyin / nghĩa tiếng Việt. */
+/** Lọc phía client (chỉ vài chục từ): khớp chữ / pinyin / nghĩa tiếng Việt / từ phụ (M26). */
 export function locTu(ds: readonly DongTu[], tuKhoa: string): DongTu[] {
   const k = boDau(tuKhoa.trim())
   if (k === '') return [...ds]
-  return ds.filter((t) => [t.word, t.pinyin ?? '', t.meaning_vi].some((x) => boDau(x).includes(k)))
+  return ds.filter((t) => [t.word, t.pinyin ?? '', t.meaning_vi, t.secondary_word ?? ''].some((x) => boDau(x).includes(k)))
 }
 
 /** Nhãn ô đầu của form — DB đang có cả từ `zh` lẫn `en`. */
@@ -73,9 +85,17 @@ export function nhanTu(lang: 'zh' | 'en'): string {
   return lang === 'zh' ? 'Từ (Hán tự)' : 'Từ (tiếng Anh)'
 }
 
+/** M26 — nhãn 5 ô từ vựng PHỤ: từ chính zh thì phụ là tiếng Anh, và ngược lại. */
+export function nhanPhu(lang: 'zh' | 'en') {
+  return lang === 'zh'
+    ? { tu: 'Từ tiếng Anh', phienAm: 'Phiên âm IPA', cum: 'Cụm từ tiếng Anh', viDu: 'Câu ví dụ tiếng Anh', ghiChu: 'Ghi chú phân biệt' }
+    : { tu: 'Từ tiếng Trung', phienAm: 'Pinyin', cum: 'Cụm từ tiếng Trung', viDu: 'Câu ví dụ tiếng Trung', ghiChu: 'Ghi chú phân biệt' }
+}
+
 export function kiemTraFormTu(f: Partial<DongTu>): string | null {
   if (!(f.word ?? '').trim()) return 'Chưa nhập từ'
   if (!(f.meaning_vi ?? '').trim()) return 'Chưa nhập nghĩa tiếng Việt'
+  if (!(f.secondary_word ?? '').trim()) return 'Chưa nhập từ vựng phụ' // M26d — NOT NULL từ 0017
   return null
 }
 
@@ -88,6 +108,8 @@ export function canXoaAudio(cu: string, moi: string): boolean {
 }
 
 /** Chỉ trả về field THỰC SỰ đổi (ô trống ⇒ `null`, không phải chuỗi rỗng). */
+const COT_BAT_BUOC: ReadonlySet<FieldSua> = new Set(['word', 'meaning_vi', 'secondary_word'])
+
 export function docThayDoi(cu: DongTu, moi: Partial<DongTu>): Partial<Record<FieldSua, string | null>> {
   const thay: Partial<Record<FieldSua, string | null>> = {}
   for (const k of FIELD_SUA) {
@@ -95,8 +117,8 @@ export function docThayDoi(cu: DongTu, moi: Partial<DongTu>): Partial<Record<Fie
     const v = (moi[k] ?? '').trim()
     const goc = (cu[k] ?? '').trim()
     if (v === goc) continue
-    // `word` và `meaning_vi` là NOT NULL trong schema §2 ⇒ không bao giờ ghi null cho 2 cột này
-    thay[k] = v === '' && k !== 'word' && k !== 'meaning_vi' ? null : v
+    // Cột NOT NULL (`word`, `meaning_vi` — §2; `secondary_word` — 0017/M26d) ⇒ không bao giờ ghi null
+    thay[k] = v === '' && !COT_BAT_BUOC.has(k) ? null : v
   }
   return thay
 }

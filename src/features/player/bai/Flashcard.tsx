@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Icon } from '../../../components/icons.tsx'
 import { phatAmThanh } from '../../../lib/amThanh.ts'
+import { hienNghiaPhu, ngonNguPhu, nhanNgonNguPhu } from '../../../lib/songNgu.ts'
 import type { VocabDb } from '../../../lib/player.ts'
 
 /**
@@ -11,6 +13,9 @@ import type { VocabDb } from '../../../lib/player.ts'
  * hoặc đang gõ IME.
  *
  * M19: mặt sau LUÔN hiện pinyin; nút 拼 chỉ điều khiển mặt trước.
+ *
+ * M26: mặt sau thêm từ vựng PHỤ (Trung ↔ Anh) — từ + phiên âm, cụm, câu, ghi chú (Design.m26.md §6).
+ * Mặt trước KHÔNG đổi (không lộ nghĩa). Field nào null thì không vẽ — 678 từ cũ chưa có dữ liệu phụ.
  */
 type Props = { vocab: VocabDb; hienPhienAm: boolean; onChon: (nut: 'good' | 'hard' | 'again') => void }
 
@@ -18,6 +23,8 @@ const PHIM_NUT = { 1: 'again', 2: 'hard', 3: 'good' } as const
 
 export default function Flashcard({ vocab, hienPhienAm, onChon }: Props) {
   const [lat, setLat] = useState(false)
+  const langPhu = ngonNguPhu(vocab.lang)
+  const fontPhu = langPhu === 'zh' ? 'font-han' : ''
 
   /** M17 — chặn lật lại thẻ ĐÃ lật: bấm vào thẻ đã mở không được kêu thêm lần nữa. */
   function latThe() {
@@ -67,12 +74,28 @@ export default function Flashcard({ vocab, hienPhienAm, onChon }: Props) {
             </div>
             <div className="mt-2 text-28 font-semibold text-content-primary">{vocab.meaning_vi}</div>
             {vocab.pinyin && <div className="mt-1 text-14 text-content-muted">{vocab.pinyin}</div>}
-            {vocab.collocation && (
-              <div className="mt-4 text-15 text-content-muted">
-                <span lang={vocab.lang} className="font-han">
-                  {vocab.collocation}
+            {vocab.secondary_word && (
+              <div className="mt-3 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1">
+                <span className="rounded-8 border border-border-input px-1.5 py-0.5 text-11 font-semibold text-content-muted">
+                  {nhanNgonNguPhu(vocab.lang)}
                 </span>
-                {vocab.collocation_meaning_vi ? ` · ${vocab.collocation_meaning_vi}` : ''}
+                <span lang={langPhu} className={`${fontPhu} text-17 font-medium text-content-primary`}>
+                  {hienNghiaPhu(vocab.secondary_word)}
+                </span>
+                {vocab.secondary_phonetic && <span className="text-13 text-content-muted">{vocab.secondary_phonetic}</span>}
+              </div>
+            )}
+            {vocab.collocation && (
+              <div className="mt-4">
+                <div className="text-15 text-content-muted">
+                  <span lang={vocab.lang} className="font-han">
+                    {vocab.collocation}
+                  </span>
+                  {vocab.collocation_meaning_vi ? ` · ${vocab.collocation_meaning_vi}` : ''}
+                </div>
+                {vocab.secondary_collocation && (
+                  <div lang={langPhu} className={`${fontPhu} mt-1 text-14 text-content-muted`}>{vocab.secondary_collocation}</div>
+                )}
               </div>
             )}
             {vocab.example_sentence && (
@@ -83,6 +106,15 @@ export default function Flashcard({ vocab, hienPhienAm, onChon }: Props) {
                 {vocab.example_meaning_vi && (
                   <div className="mt-1 text-14 text-content-muted">{vocab.example_meaning_vi}</div>
                 )}
+                {vocab.secondary_example && (
+                  <div lang={langPhu} className={`${fontPhu} mt-1 text-14 text-content-muted`}>{vocab.secondary_example}</div>
+                )}
+              </div>
+            )}
+            {vocab.secondary_note && (
+              <div className="mt-4 flex items-start gap-2 rounded-12 bg-surface-sunken px-4 py-3 text-left text-13 text-content-nav">
+                <Icon ten="goi-y" size={14} className="mt-0.5 shrink-0 text-content-muted" />
+                <span>{vocab.secondary_note}</span>
               </div>
             )}
           </>

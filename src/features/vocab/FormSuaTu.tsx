@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { docThayDoi, kiemTraFormTu, nhanTu, type DongTu, type FieldSua } from '../../lib/tuVung.ts'
+import { ngonNguPhu } from '../../lib/songNgu.ts'
+import { docThayDoi, kiemTraFormTu, nhanPhu, nhanTu, type DongTu, type FieldSua } from '../../lib/tuVung.ts'
 
 /**
  * Form sửa từ (mockup 14 PC modal 480px) — `<dialog>` native, 0 package.
  * M9/Q5: LUÔN căn giữa cả PC lẫn Mobile (bỏ kiểu bottom-sheet của mockup 15 — người dùng yêu cầu,
  * vì sheet bị đẩy sát mép trên và cắt mất phần đầu trên màn 390px).
  * ĐỦ 8 field cơ bản (`UI_DESIGN` §8.4); mockup chỉ vẽ 5 ô nên 2 field sẽ không bao giờ sửa được.
+ * M26: + nhóm "Từ vựng phụ" 5 field (Trung ↔ Anh); nhãn đổi theo ngôn ngữ của từ chính.
  * KHÔNG sửa payload bài tập ở đây — muốn đổi bài tập phải import file mới.
  */
 const NHAN = 'mb-1 block text-11 font-semibold text-content-muted'
@@ -38,6 +40,10 @@ export default function FormSuaTu({ tu, onDong, onLuu }: Props) {
 
   // Ô chứa chữ Hán dùng font Noto; từ tiếng Anh giữ font thân
   const O_HAN = tu.lang === 'zh' ? `${O} font-han` : O
+  // M26 — từ phụ ngược ngôn ngữ: từ chính en thì từ phụ là chữ Hán
+  const O_PHU = tu.lang === 'en' ? `${O} font-han` : O
+  const langPhu = ngonNguPhu(tu.lang)
+  const p = nhanPhu(tu.lang)
 
   return (
     <dialog
@@ -90,6 +96,38 @@ export default function FormSuaTu({ tu, onDong, onLuu }: Props) {
           <div>
             <label className={NHAN} htmlFor="f-vdm">Nghĩa câu ví dụ</label>
             <input id="f-vdm" className={O} value={form.example_meaning_vi ?? ''} onChange={dat('example_meaning_vi')} />
+          </div>
+
+          <div className="mt-1 border-t border-border-card pt-3 text-11 font-semibold uppercase tracking-wide text-content-subtle">
+            Từ vựng phụ
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <label className={NHAN} htmlFor="f-phu">{p.tu}</label>
+              <input id="f-phu" lang={langPhu} className={O_PHU} value={form.secondary_word ?? ''}
+                     onChange={dat('secondary_word')} placeholder="vd: review; revise" />
+            </div>
+            <div>
+              <label className={NHAN} htmlFor="f-phu-pa">{p.phienAm}</label>
+              <input id="f-phu-pa" className={O} value={form.secondary_phonetic ?? ''} onChange={dat('secondary_phonetic')} />
+            </div>
+          </div>
+
+          <div>
+            <label className={NHAN} htmlFor="f-phu-cum">{p.cum}</label>
+            <input id="f-phu-cum" lang={langPhu} className={O_PHU} value={form.secondary_collocation ?? ''}
+                   onChange={dat('secondary_collocation')} />
+          </div>
+
+          <div>
+            <label className={NHAN} htmlFor="f-phu-vd">{p.viDu}</label>
+            <input id="f-phu-vd" lang={langPhu} className={O_PHU} value={form.secondary_example ?? ''}
+                   onChange={dat('secondary_example')} />
+          </div>
+
+          <div>
+            <label className={NHAN} htmlFor="f-phu-gc">{p.ghiChu}</label>
+            <textarea id="f-phu-gc" rows={2} className={O} value={form.secondary_note ?? ''} onChange={dat('secondary_note')} />
           </div>
 
           <p className="text-12 text-content-muted">

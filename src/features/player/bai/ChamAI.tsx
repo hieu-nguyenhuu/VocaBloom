@@ -3,13 +3,16 @@ import { dungTuVerdict, type KetQuaCham, type Verdict } from '../../../lib/aiCor
 import { phatAmThanh } from '../../../lib/amThanh.ts'
 import { amKhiCham } from '../../../lib/amThanhCore.ts'
 import type { VocabDb } from '../../../lib/player.ts'
+import { ngonNguPhu, tachNghiaPhu } from '../../../lib/songNgu.ts'
 
 /**
  * Pattern 8 — phần PHẢN HỒI (mockup 09 nửa dưới). Màn này ứng với 1 lần gọi AI cho cả nhóm câu
  * cùng dạng (DEC-14). Vào màn → "Đang chấm…" → hiện lần lượt từng thẻ, mỗi thẻ 1 nút "Tiếp theo".
  * Lỗi mạng / parse fail / AI thiếu `vocab_id` (§7.4) → thẻ lỗi nhẹ + "Chấm lại", câu đã nhập giữ nguyên.
+ * M26c — câu song ngữ: hiện câu phụ dưới câu chính; `secondary_feedback` là khối trung tính (không mang màu
+ * verdict vì không ảnh hưởng điểm).
  */
-type MucCham = { vocab: VocabDb; cau: string; kq?: KetQuaCham | undefined }
+type MucCham = { vocab: VocabDb; cau: string; cauPhu?: string | undefined; kq?: KetQuaCham | undefined }
 
 type Props = {
   trangThai: 'dang_cham' | 'xong' | 'loi'
@@ -71,6 +74,8 @@ export default function ChamAI({ trangThai, loi, ds, chiSo, onTiep, onChamLai }:
   if (!muc) return null
   const kq = muc.kq
   const k = kq ? KIEU[kq.verdict] : null
+  const langPhu = ngonNguPhu(muc.vocab.lang)
+  const nghiaPhu = tachNghiaPhu(muc.vocab.secondary_word)[0]
 
   return (
     <div className="flex flex-col gap-[18px]">
@@ -78,7 +83,14 @@ export default function ChamAI({ trangThai, loi, ds, chiSo, onTiep, onChamLai }:
         <b lang={muc.vocab.lang} className="font-han">
           {muc.vocab.word}
         </b>{' '}
-        ({muc.vocab.meaning_vi})
+        ({muc.vocab.meaning_vi}
+        {nghiaPhu && (
+          <>
+            {' · '}
+            <span lang={langPhu}>{nghiaPhu}</span>
+          </>
+        )}
+        )
       </div>
 
       <div
@@ -87,6 +99,12 @@ export default function ChamAI({ trangThai, loi, ds, chiSo, onTiep, onChamLai }:
       >
         {muc.cau || <span className="font-body text-15 text-content-subtle">(bỏ qua)</span>}
       </div>
+
+      {muc.cauPhu && (
+        <div lang={langPhu} className="rounded-14 border border-border-input bg-surface-sunken p-[18px] text-15 text-content-nav">
+          {muc.cauPhu}
+        </div>
+      )}
 
       {k && kq ? (
         <div className={`rounded-16 border p-[18px] ${k.vien} ${k.nen}`}>
@@ -97,6 +115,12 @@ export default function ChamAI({ trangThai, loi, ds, chiSo, onTiep, onChamLai }:
           {kq.improved_sentence && (
             <div className={`mt-[10px] text-14 italic opacity-90 ${k.chu}`}>
               Gợi ý: “{kq.improved_sentence}”
+            </div>
+          )}
+          {kq.secondary_feedback && (
+            <div className="mt-[12px] rounded-12 bg-surface-card p-[12px] text-13 leading-normal text-content-nav">
+              <span className="font-semibold">Câu {langPhu === 'en' ? 'tiếng Anh' : 'tiếng Trung'}:</span>{' '}
+              {kq.secondary_feedback}
             </div>
           )}
         </div>

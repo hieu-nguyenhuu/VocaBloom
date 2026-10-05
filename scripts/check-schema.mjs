@@ -24,6 +24,15 @@ const KEY_SETTINGS = [
   'tts_voice', 'tts_voice_en', 'low_queue_alert_enabled',
 ]
 
+// M26 — enum dạng bài và 5 cột từ vựng phụ: liệt kê TÊN, không đếm cứng (luật M12a).
+const ENUM_BAI = [
+  'flashcard', 'grammar', 'matching', 'selection', 'audio_recognition', 'fast_decision',
+  'translate', 'select_dialog', 'listen_fill', 'select_on_describe',
+  'fill_dialog', 'select_sentence', 'arrange_words', 'trans_collocation',
+  'make_sentence', 'trans_sentence', 'complete_situation', 'near_synonym',
+]
+const COT_PHU = ['secondary_word', 'secondary_phonetic', 'secondary_collocation', 'secondary_example', 'secondary_note']
+
 const INDEX = [
   'idx_word_state_due', 'idx_word_state_queue', 'idx_retry_queue_date',
   'idx_exercises_vocab_type', 'idx_exercises_blank_b', 'idx_review_log_daily',
@@ -48,6 +57,14 @@ const { rows } = await chaySql(`
       where t.typname = 'word_stage')::int as nhan_word_stage,
     (select count(*) from pg_enum e join pg_type t on t.oid = e.enumtypid
       where t.typname = 'exercise_type')::int as nhan_exercise_type,
+    (select count(*) from unnest(array[${ENUM_BAI.map((e) => `'${e}'`)}]) e
+      where exists (select 1 from pg_enum x join pg_type t on t.oid = x.enumtypid
+                     where t.typname = 'exercise_type' and x.enumlabel = e))::int as so_nhan_bai,
+    (select count(*) from information_schema.columns
+      where table_schema = 'public' and table_name = 'vocab'
+        and column_name = any(array[${COT_PHU.map((c) => `'${c}'`)}]))::int as so_cot_phu,
+    (select is_nullable from information_schema.columns
+      where table_schema = 'public' and table_name = 'vocab' and column_name = 'secondary_word') as tu_phu_nullable,
     (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
       where n.nspname = 'public' and c.relrowsecurity
         and c.relname = any(array[${BANG.map((t) => `'${t}'`)}]))::int as so_bang_bat_rls,
@@ -69,7 +86,10 @@ const r = rows[0] ?? {}
 bao(r.so_bang === BANG.length, `Đủ ${BANG.length} bảng`, `thấy ${r.so_bang}`)
 bao(r.so_index === INDEX.length, `Đủ ${INDEX.length} index`, `thấy ${r.so_index}`)
 bao(r.nhan_word_stage === 6, 'Enum word_stage đủ 6 nhãn', `thấy ${r.nhan_word_stage}`)
-bao(r.nhan_exercise_type === 17, 'Enum exercise_type đủ 17 nhãn', `thấy ${r.nhan_exercise_type}`)
+bao(r.so_nhan_bai === ENUM_BAI.length && r.nhan_exercise_type === ENUM_BAI.length,
+    `Enum exercise_type đủ ${ENUM_BAI.length} nhãn (kể cả near_synonym)`, `khớp ${r.so_nhan_bai}, tổng ${r.nhan_exercise_type}`)
+bao(r.so_cot_phu === COT_PHU.length, `vocab đủ ${COT_PHU.length} cột secondary_*`, `thấy ${r.so_cot_phu}`)
+bao(r.tu_phu_nullable === 'NO', 'vocab.secondary_word NOT NULL (M26d, 0017)', `is_nullable = ${r.tu_phu_nullable}`)
 bao(r.so_bang_bat_rls === BANG.length, `RLS bật trên cả ${BANG.length} bảng`, `thấy ${r.so_bang_bat_rls}`)
 bao(r.so_policy === BANG.length, `Đủ ${BANG.length} policy authenticated_full_access`, `thấy ${r.so_policy}`)
 bao(r.so_settings === KEY_SETTINGS.length,

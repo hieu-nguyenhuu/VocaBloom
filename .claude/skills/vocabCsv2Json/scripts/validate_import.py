@@ -18,6 +18,7 @@ VALID_TYPES = {
     "translate", "select_dialog", "listen_fill", "select_on_describe",
     "fill_dialog", "select_sentence", "arrange_words", "trans_collocation",
     "make_sentence", "trans_sentence", "complete_situation",
+    "near_synonym",  # M26 — dạng 18
 }
 
 NO_PAYLOAD_TYPES = {
@@ -40,6 +41,8 @@ PAYLOAD_REQUIRED_FIELDS = {
                       "blank_a_answer", "blank_b_vocab_id", "distractors"},
     "fill_dialog": {"dialog_a", "dialog_a_pinyin", "dialog_b", "dialog_b_pinyin",
                     "blank_a_answer", "blank_b_vocab_id"},
+    # M26 — 'Phân biệt từ gần nghĩa'; đáp án đúng = vocab.word, không lặp trong payload
+    "near_synonym": {"sentence", "sentence_pinyin", "sentence_secondary", "answer_note_vi", "distractors"},
 }
 
 # type -> (field chứa list, độ dài bắt buộc)
@@ -48,12 +51,15 @@ LIST_LENGTH_RULES = {
     "audio_recognition": ("distractors", 3),
     "select_on_describe": ("distractors", 3),
     "select_dialog": ("distractors", 2),
+    "near_synonym": ("distractors", 3),
 }
 
 VOCAB_REQUIRED_FIELDS = {
     "temp_id", "word", "pinyin", "meaning_vi",
     "collocation", "collocation_pinyin", "collocation_meaning_vi",
     "example_sentence", "example_meaning_vi", "lang",
+    # M26 — từ vựng phụ (Trung ↔ Anh); phonetic/note được null nhưng KEY phải có
+    "secondary_word", "secondary_phonetic", "secondary_collocation", "secondary_example", "secondary_note",
 }
 
 # M12/Q1: `grammar` (ngữ pháp CỦA TỪ) đã được BỎ khỏi danh sách bắt buộc — nó là dạng
@@ -63,6 +69,7 @@ RECOMMENDED_COVERAGE = {
     "selection", "audio_recognition", "fast_decision",
     "select_on_describe", "select_sentence", "arrange_words",
     "trans_sentence", "complete_situation",
+    "near_synonym",  # M26
 }
 
 # M12 — ngữ pháp CỦA CHỦ ĐỀ (khoá "grammar" ở gốc file, ngang hàng "dialogue"). Tuỳ chọn.
@@ -119,6 +126,7 @@ def validate_file(path):
 
     # --- Exercises ---
     coverage = {tid: set() for tid in temp_ids}
+    words = {v.get("temp_id"): v.get("word") for v in vocab_list}
     for i, e in enumerate(exercises):
         etype = e.get("type")
         vtid = e.get("vocab_temp_id")
@@ -153,6 +161,15 @@ def validate_file(path):
             if isinstance(ws, list) and len(ws) != 3:
                 errors.append(f"{label}: payload.wrong_sentences phải có đúng 3 phần tử, hiện có {len(ws)}")
 
+        if etype == "near_synonym":
+            if str(payload.get("sentence", "")).count("___") != 1:
+                errors.append(f"{label}: payload.sentence phải có ĐÚNG 1 chỗ trống ___")
+            ds = [x.get("word") for x in payload.get("distractors", []) if isinstance(x, dict)]
+            if len(set(ds)) != len(ds):
+                errors.append(f"{label}: 3 đáp án nhiễu phải khác nhau")
+            if words.get(vtid) in ds:
+                errors.append(f"{label}: đáp án nhiễu trùng chính từ đang ôn")
+
         # Cross-reference blank_b_vocab_id
         if etype in ("select_dialog", "fill_dialog"):
             b_id = payload.get("blank_b_vocab_id")
@@ -166,6 +183,8 @@ def validate_file(path):
     if not (7 <= len(dialogue_lines) <= 10):
         warnings.append(f"dialogue.lines có {len(dialogue_lines)} câu (khuyến nghị 7-10 câu)")
     for i, line in enumerate(dialogue_lines):
+        if not str(line.get("text_secondary") or "").strip():
+            errors.append(f"dialogue.lines[{i}]: thiếu text_secondary (câu tương đương bằng ngôn ngữ phụ)")
         for vid in line.get("highlight_vocab_temp_ids", []):
             if vid not in temp_ids:
                 errors.append(f"dialogue.lines[{i}]: highlight_vocab_temp_ids chứa temp_id không tồn tại: '{vid}'")

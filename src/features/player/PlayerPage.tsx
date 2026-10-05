@@ -25,7 +25,7 @@ import {
   type TrangThaiTu,
 } from '../../lib/srs.ts'
 import { chamBaiTuLuan, giaiThichBai } from '../../lib/ai.ts'
-import { dungTuVerdict, type GiaiThich as NoiDungGiaiThich, type KetQuaCham } from '../../lib/aiCore.ts'
+import { deBaiCua, dungTuVerdict, taoItemCham, type GiaiThich as NoiDungGiaiThich, type KetQuaCham } from '../../lib/aiCore.ts'
 import { docCaiDat, MAC_DINH } from '../../lib/settings.ts'
 import { supabase } from '../../lib/supabase.ts'
 import ExerciseShell, { type Ghost } from './ExerciseShell.tsx'
@@ -38,6 +38,7 @@ import Flashcard from './bai/Flashcard.tsx'
 import Grammar from './bai/Grammar.tsx'
 import HoiThoai from './bai/HoiThoai.tsx'
 import Matching from './bai/Matching.tsx'
+import PhanBietGanNghia from './bai/PhanBietGanNghia.tsx'
 import SapXep from './bai/SapXep.tsx'
 import TracNghiem, { type CheDoTracNghiem } from './bai/TracNghiem.tsx'
 import TuLuan from './bai/TuLuan.tsx'
@@ -114,6 +115,9 @@ export default function PlayerPage() {
   const daOnGiDo = useRef(false) // đã hoàn thành ≥1 từ trong lượt này → thoát/hết thì về Tổng kết
   // M5 — tự luận: câu trả lời gom vào đệm, chỉ chấm ở màn `cham_ai` (DEC-14: 3 request/session)
   const dapAnTuLuan = useRef<Record<string, string>>({})
+  // M26c — câu song ngữ (ngôn ngữ phụ, tuỳ chọn) + đề bài gửi kèm cho AI (C2)
+  const cauPhuTuLuan = useRef<Record<string, string>>({})
+  const deBaiTuLuan = useRef<Record<string, string | undefined>>({})
   const [chamTt, setChamTt] = useState<{ b: 'dang_cham' | 'xong' | 'loi'; loi?: string; chiSo: number }>({ b: 'dang_cham', chiSo: 0 })
   const ketQuaAI = useRef<Record<string, KetQuaCham>>({})
   /**
@@ -434,12 +438,18 @@ export default function PlayerPage() {
       setChamTt({ b: 'dang_cham', chiSo: 0 })
       const dau = vocabRef.current[m.vocab_ids[0] ?? '']
       if (!dau) return
-      const items = m.vocab_ids.map((id) => ({
-        vocab_id: id,
-        word: vocabRef.current[id]?.word ?? '',
-        meaning_vi: vocabRef.current[id]?.meaning_vi ?? '',
-        user_answer: dapAnTuLuan.current[id] ?? '',
-      }))
+      const items = m.vocab_ids.map((id) => {
+        const t = vocabRef.current[id]
+        return taoItemCham({
+          vocab_id: id,
+          word: t?.word ?? '',
+          meaning_vi: t?.meaning_vi ?? '',
+          secondary_word: t?.secondary_word ?? null,
+          user_answer: dapAnTuLuan.current[id] ?? '',
+          secondary_sentence: cauPhuTuLuan.current[id],
+          de_bai: deBaiTuLuan.current[id],
+        })
+      })
       const kq = await chamBaiTuLuan({ dang: m.dang, target_lang: dau.lang, items })
       if ('loi' in kq) {
         setChamTt({ b: 'loi', loi: kq.loi, chiSo: 0 })
@@ -560,6 +570,7 @@ export default function PlayerPage() {
     const ds = man.vocab_ids.map((id) => ({
       vocab: vocab[id]!,
       cau: dapAnTuLuan.current[id] ?? '',
+      cauPhu: cauPhuTuLuan.current[id],
       kq: ketQuaAI.current[id],
     }))
     const stChinh = tt.trang_thai[man.vocab_ids[0] ?? '']
@@ -598,6 +609,7 @@ export default function PlayerPage() {
         dap_an: man.payload.blank_a_answer,
         word: tuChinh.word,
         meaning_vi: tuChinh.meaning_vi,
+        ...(tuChinh.secondary_word ? { secondary_word: tuChinh.secondary_word } : {}),
       }),
     }
     return (
@@ -659,7 +671,10 @@ export default function PlayerPage() {
         ...ghostChung,
         goiY: () => setSoGoiY((k) => k + 1),
         boQua: () => void traLoi(v.id, man.loai, false, false, man.la_bai_cuoi_cua_tu),
-        giaiThich: nutGiaiThich(v.id, man.loai, false, { cau_hoi: tn.moTa ?? v.word, dap_an: tn.dapAn, word: v.word, meaning_vi: v.meaning_vi }),
+        giaiThich: nutGiaiThich(v.id, man.loai, false, {
+          cau_hoi: tn.moTa ?? v.word, dap_an: tn.dapAn, word: v.word, meaning_vi: v.meaning_vi,
+          ...(v.secondary_word ? { secondary_word: v.secondary_word } : {}),
+        }),
       }
       return (
         <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={600} dots={dots} soTuPhien={soTuPhien}>
@@ -699,6 +714,7 @@ export default function PlayerPage() {
         ...ghostChung,
         boQua: () => {
           dapAnTuLuan.current[v.id] = ''
+          cauPhuTuLuan.current[v.id] = ''
           dispatch({ loai: 'sang_man' })
         },
       }
@@ -711,8 +727,10 @@ export default function PlayerPage() {
             cheDo={man.loai}
             {...(man.payload ? { payload: man.payload } : {})}
             hienPhienAm={hienPhienAm}
-            onNop={(cau) => {
+            onNop={(cau, cauPhu) => {
               dapAnTuLuan.current[v.id] = cau
+              cauPhuTuLuan.current[v.id] = cauPhu
+              deBaiTuLuan.current[v.id] = deBaiCua(man.loai, man.payload)
               dispatch({ loai: 'sang_man' })
             }}
           />
@@ -729,6 +747,7 @@ export default function PlayerPage() {
           dap_an: man.payload.tokens.map((t) => t.text).join(''),
           word: v.word,
           meaning_vi: v.meaning_vi,
+          ...(v.secondary_word ? { secondary_word: v.secondary_word } : {}),
         }),
       }
       return (
@@ -736,6 +755,25 @@ export default function PlayerPage() {
           {bannerLoi}
           <SapXep key={tt.chi_so} vocab={v} payload={man.payload} hienPhienAm={hienPhienAm} soGoiY={soGoiY}
             onTraLoi={(dung, goiY) => void traLoi(v.id, 'arrange_words', dung, goiY, man.la_bai_cuoi_cua_tu)} />
+        </ExerciseShell>
+      )
+    }
+    case 'near_synonym': {
+      // M26d — Phân biệt từ gần nghĩa (Design.m26.md §5, design.m26d.md D1–D3)
+      const ghost: Ghost = {
+        ...ghostChung,
+        goiY: () => setSoGoiY((k) => k + 1),
+        boQua: () => void traLoi(v.id, 'near_synonym', false, false, man.la_bai_cuoi_cua_tu),
+        giaiThich: nutGiaiThich(v.id, 'near_synonym', false, {
+          cau_hoi: man.payload.sentence, dap_an: v.word, word: v.word, meaning_vi: v.meaning_vi,
+          ...(v.secondary_word ? { secondary_word: v.secondary_word } : {}),
+        }),
+      }
+      return (
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={600} dots={dots} soTuPhien={soTuPhien}>
+          {bannerLoi}
+          <PhanBietGanNghia key={tt.chi_so} vocab={v} payload={man.payload} hienPhienAm={hienPhienAm} soGoiY={soGoiY}
+            onTraLoi={(dung, goiY) => void traLoi(v.id, 'near_synonym', dung, goiY, man.la_bai_cuoi_cua_tu)} />
         </ExerciseShell>
       )
     }

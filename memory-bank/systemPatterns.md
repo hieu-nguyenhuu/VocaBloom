@@ -143,9 +143,14 @@ sử học; streak/số phút phải nằm ở nơi cascade không với tới. 
 dạng CÓ ĐIỀU KIỆN — chỉ gắn khi từ dễ dùng sai); bảng `topic_grammar` là ngữ pháp **CỦA CHỦ ĐỀ**
 (không gắn từ nào, không tính điểm, không vào SRS).
 
-Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `exercise_type` = 17 giá trị.
+Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `exercise_type` = **18 giá trị** (M26 +`near_synonym`,
+tính điểm stage2/intensive từ M26d).
 
-**Hằng số nghiệp vụ (gom 1 chỗ, không rải rác):** `MASTER_THRESHOLD = 36` (MB-45; ring import đúng hằng này); ngưỡng cycle 3/4 · 6/8 · 9/12; điểm mỗi bài 1 · 2 · 3 · 4; gap gốc 1 · 2 · 4 · 7 ngày; `gap_factor` 100% / 70% / 50% theo health; phạt −1…−5 theo stage (mastered miễn nhiễm); dùng gợi ý → điểm ×50% làm tròn xuống.
+**`vocab` có 5 cột từ vựng PHỤ (M26, `0016`):** `secondary_word/phonetic/collocation/example/note` — Trung ↔ Anh, ngôn ngữ phụ
+SUY RA từ `lang` (zh ⇒ en). Nhiều nghĩa ngăn `"; "`, nghĩa đầu là nghĩa chính (`songNgu.ts`). Đang **nullable** (từ 2026-10-05 DB đã
+740/740 có dữ liệu; `NOT NULL` bật ở M26d) ⇒ mọi UI vẫn phải ẩn hẳn phần phụ khi null. `secondary_phonetic`/`note` null là hợp lệ. `topic_dialogues.content.lines[].text_secondary` = câu phụ hội thoại.
+
+**Hằng số nghiệp vụ (gom 1 chỗ, không rải rác):** `MASTER_THRESHOLD = 39` (M26d/MB-49, trước 36; ring import đúng hằng này; test X1b canh = tổng `MAX_CYCLE`); ngưỡng cycle 3/4 · 6/8 · **12/15** (stage2/intensive, +`near_synonym`) · stage3 9/12; mẫu số health 4 · 12 · 27 · 39 (X3 canh); điểm mỗi bài 1 · 2 · 3 · 4; gap gốc 1 · 2 · 4 · 7 ngày; `gap_factor` 100% / 70% / 50% theo health; phạt −1…−5 theo stage (mastered miễn nhiễm); dùng gợi ý → điểm ×50% làm tròn xuống.
 
 ## 7. Pattern nghiệp vụ dễ làm sai (ghi lại để khỏi vấp)
 
@@ -181,6 +186,17 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
 17. **Chọn lại đến khi đúng (M25):** màn bài tập KHÔNG chuyển màn khi sai — giữ đỏ `KHOANG_CHO_SAI_MS` (800) rồi cho làm
     lại; chỉ gọi `onTraLoi` **1 lần khi đúng**, với kết quả LẦN ĐẦU từ `chamLuot` (`player.ts`). Thêm màn bài tập mới ⇒
     theo cùng khuôn + thêm tên vào test X2. Bài nhiều chỗ trống: chỉ đưa vào `chamLuot` các ô THỰC CÓ (thiếu ô ⇒ kẹt).
+    **Select Dialog (M28):** KHÔNG tự chấm khi đủ ô — chỉ nút "Kiểm tra"/Enter mới là 1 lượt; chip theo CHỈ SỐ (`ChipTrongO`),
+    chip đang trong câu `invisible` giữ chỗ, bấm từ trong câu để gỡ (`dienChip`/`goO`/`oGoLui` ở `player.ts`).
+18. **Song ngữ ở màn bài tập (M26c):** mọi nhãn/đề tiếng Anh đi qua hàm thuần ở `songNgu.ts` (`nhanGhepCap`, `deDienTu`) và
+    LUÔN có nhánh dự phòng tiếng Việt khi `secondary_*` null. Item gửi AI chấm dựng bằng `taoItemCham` (khoá tuỳ chọn trống ⇒
+    bỏ hẳn); verdict CHỈ theo câu chính — câu phụ chỉ nhận `secondary_feedback`, không bao giờ đổi điểm. Thêm dạng AI mới có đề
+    ⇒ bổ sung `deBaiCua`, nếu không AI chấm mà không thấy đề (lỗi M5 đã vá).
+19. **Thêm 1 dạng bài tính điểm (khuôn M26d):** `srs.ts` (`DangBai` + `DANG_BAI_THEO_STAGE` + `MAX_CYCLE` + `NGUONG_CYCLE` +
+    `MAX_TICH_LUY` + `MASTER_THRESHOLD` — X2/X3/X1b tự bắt lệch) · `player.ts` (`Man`, `CAN_RECORD`, `THU_TU_MAN`, nhánh `xepBai`) ·
+    màn mới vào list X2 + X5 của `amThanhCore.test.ts` · `case` ở `PlayerPage`. ⚠️ `player.ts` CHỈ được import `srs.ts` (test
+    X-player) ⇒ helper song ngữ đặt ở `songNgu.ts` (0 import). Cột vocab đổi `NOT NULL` ⇒ sửa cả insert trong
+    `test-maintenance` / `test-nhat-ky` / `test-player`.
 
 ## 8. Chuẩn code & an toàn
 
@@ -236,6 +252,11 @@ Enum: `word_stage` = new / stage1 / stage2 / stage3 / intensive / mastered · `e
      chạy", phải kiểm **log request** chứ đừng suy từ trạng thái bảng mà mình vừa đụng vào.
 
 ## 10. Import — 3 bẫy đã trả giá (từ M2a, 2026-09-09) + mở rộng M12
+
+**M26 (2026-10-03):** file import BẮT BUỘC 5 key `secondary_*` mỗi từ, `text_secondary` mỗi dòng hội thoại; dạng
+`near_synonym` (đúng 1 `___`, 3 nhiễu khác nhau ≠ từ đang ôn). 3 cổng validate (TS · JSON Schema · Python) phải đổi CÙNG LÚC
+(test S11 + SN9 canh). JSON Schema không đối chiếu chéo được ⇒ luật "nhiễu ≠ từ đang ôn" chỉ ở TS + Python.
+⚠️ File JSON trước M26 không import lại được nữa — bổ sung dữ liệu cũ bằng CLI riêng.
 
 **M12 (2026-09-22):** file import thêm khoá **tuỳ chọn** `grammar` ở gốc (ngang hàng `dialogue`) →
 bảng `topic_grammar`. Màn Import nhận **nhiều file 1 lúc**, **mỗi file 1 transaction riêng**:

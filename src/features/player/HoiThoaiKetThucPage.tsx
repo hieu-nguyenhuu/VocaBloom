@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Icon } from '../../components/icons.tsx'
 import { chiaDam, docHoiThoai, type DongHoiThoai } from '../../lib/hoiThoai.ts'
+import { ngonNguPhu } from '../../lib/songNgu.ts'
 import { supabase } from '../../lib/supabase.ts'
 import { phatAm } from '../../lib/tts.ts'
 
@@ -94,6 +95,12 @@ export default function HoiThoaiKetThucPage() {
                   </button>
                 </div>
                 {d.pinyin && <div className="mt-1 text-12 text-content-muted">{d.pinyin}</div>}
+                {/* M26 — câu phụ (Trung ↔ Anh) LUÔN hiện; không in đậm từ vựng (Design.m26.md §7) */}
+                {d.phu && (
+                  <div lang={ngonNguPhu(lang)} className={`${ngonNguPhu(lang) === 'zh' ? 'font-han ' : ''}mt-1 text-13 text-content-muted`}>
+                    {d.phu}
+                  </div>
+                )}
                 {hienNghia && d.nghia && (
                   <div className="mt-1 text-13 text-content-nav">{d.nghia}</div>
                 )}

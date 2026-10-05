@@ -1,23 +1,42 @@
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import type { DangBaiAI, PayloadTuLuan, VocabDb } from '../../../lib/player.ts'
+import { ngonNguPhu, tachNghiaPhu } from '../../../lib/songNgu.ts'
 
 /**
  * Pattern 8 — tự luận AI chấm, phần NHẬP (mockup 09 nửa trên).
  * Nút Gợi ý ẩn HOÀN TOÀN ở 3 dạng này (§6.4) — `PlayerPage` không truyền `goiY`.
  * "Nộp bài" chỉ lưu câu vào bộ đệm rồi sang màn kế; việc chấm gom về màn `cham_ai`
  * để cả session chỉ tốn 3 request (DEC-14).
+ *
+ * M26c — `make_sentence` song ngữ: thêm ô câu NGÔN NGỮ PHỤ tuỳ chọn (điểm chỉ theo câu chính).
+ * Enter ở ô chính ⇒ nhảy xuống ô phụ; Enter ở ô phụ ⇒ nộp (C1). Từ thiếu từ phụ ⇒ màn y hệt bản cũ.
  */
 type Props = {
   vocab: VocabDb
   cheDo: DangBaiAI
   payload?: PayloadTuLuan | undefined
   hienPhienAm: boolean
-  onNop: (cau: string) => void
+  onNop: (cau: string, cauPhu: string) => void
 }
+
+/** M11/Q2: Enter = hành động chính; Shift+Enter = xuống dòng; bỏ qua khi đang chọn chữ IME. */
+const laEnter = (e: KeyboardEvent) => e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing
+
+const O_NHAP = 'rounded-14 border border-border-input bg-surface-sunken p-[18px] text-content-nav focus:border-accent focus:outline-none'
 
 export default function TuLuan({ vocab, cheDo, payload, hienPhienAm, onNop }: Props) {
   const [cau, setCau] = useState('')
+  const [cauPhu, setCauPhu] = useState('')
+  const oChinh = useRef<HTMLTextAreaElement>(null)
+  const oPhu = useRef<HTMLTextAreaElement>(null)
   const tenNgonNgu = vocab.lang === 'zh' ? 'tiếng Trung' : 'tiếng Anh'
+  const langPhu = ngonNguPhu(vocab.lang)
+  const tenNnPhu = langPhu === 'en' ? 'tiếng Anh' : 'tiếng Trung'
+  const nghiaPhu = tachNghiaPhu(vocab.secondary_word)[0] // C3
+  const coOPhu = cheDo === 'make_sentence' && nghiaPhu !== undefined
+  const nop = () => {
+    if (cau.trim()) onNop(cau, coOPhu ? cauPhu : '')
+  }
 
   const de = () => {
     if (cheDo === 'trans_sentence') {
@@ -58,7 +77,14 @@ export default function TuLuan({ vocab, cheDo, payload, hienPhienAm, onNop }: Pr
         <b lang={vocab.lang} className="font-han">
           {vocab.word}
         </b>{' '}
-        ({vocab.meaning_vi})
+        ({vocab.meaning_vi}
+        {nghiaPhu && (
+          <>
+            {' · '}
+            <span lang={langPhu}>{nghiaPhu}</span>
+          </>
+        )}
+        )
       </>
     )
   }
@@ -70,24 +96,48 @@ export default function TuLuan({ vocab, cheDo, payload, hienPhienAm, onNop }: Pr
       </div>
 
       <textarea
+        ref={oChinh}
         value={cau}
         onChange={(e) => setCau(e.target.value)}
-        // M11/Q2: Enter = gửi bài; Shift+Enter = xuống dòng. Bỏ qua khi đang chọn chữ IME.
         onKeyDown={(e) => {
-          if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return
+          if (!laEnter(e)) return
           e.preventDefault()
-          if (cau.trim()) onNop(cau)
+          if (!cau.trim()) return
+          if (coOPhu) oPhu.current?.focus()
+          else nop()
         }}
         lang={vocab.lang}
         autoFocus
-        placeholder="Nhập câu của bạn… (Enter để gửi, Shift+Enter xuống dòng)"
+        placeholder={
+          coOPhu
+            ? `Câu ${tenNgonNgu}… (Enter để sang câu ${tenNnPhu})`
+            : 'Nhập câu của bạn… (Enter để gửi, Shift+Enter xuống dòng)'
+        }
         aria-label="Câu trả lời"
-        className="min-h-[60px] rounded-14 border border-border-input bg-surface-sunken p-[18px] font-han text-17 text-content-nav focus:border-accent focus:outline-none"
+        className={`min-h-[60px] font-han text-17 ${O_NHAP}`}
       />
+
+      {coOPhu && (
+        <textarea
+          ref={oPhu}
+          value={cauPhu}
+          onChange={(e) => setCauPhu(e.target.value)}
+          onKeyDown={(e) => {
+            if (!laEnter(e)) return
+            e.preventDefault()
+            if (cau.trim()) nop()
+            else oChinh.current?.focus()
+          }}
+          lang={langPhu}
+          placeholder={`Câu ${tenNnPhu} (tuỳ chọn) — Enter để nộp`}
+          aria-label={`Câu ${tenNnPhu} (tuỳ chọn)`}
+          className={`min-h-[52px] text-15 ${O_NHAP}`}
+        />
+      )}
 
       <button
         type="button"
-        onClick={() => onNop(cau)}
+        onClick={nop}
         disabled={!cau.trim()}
         className="rounded-14 bg-accent py-[17px] text-16 font-semibold text-white disabled:opacity-60"
       >

@@ -105,14 +105,14 @@ describe('X-amthanh — chống lệch', () => {
   it('X2 — 4 màn bài tập vẫn chờ ĐÚNG khoảng mà âm thanh được thiết kế theo', () => {
     // Ai đổi khoảng chờ 600/1000 ở màn bài tập mà quên ở đây thì âm có thể đè lên tiếng phát âm.
     const mau = new RegExp(`\\?\\s*${KHOANG_CHO_DUNG_MS}\\s*:\\s*${KHOANG_CHO_SAI_MS}\\b`)
-    for (const f of ['TracNghiem', 'DienTu', 'SapXep', 'HoiThoai']) {
+    for (const f of ['TracNghiem', 'DienTu', 'SapXep', 'HoiThoai', 'PhanBietGanNghia']) {
       const src = readFileSync(`src/features/player/bai/${f}.tsx`, 'utf8')
       expect(src, `${f}.tsx không còn chờ ${KHOANG_CHO_DUNG_MS} : ${KHOANG_CHO_SAI_MS}`).toMatch(mau)
     }
   })
 
   it('X5 — cả 8 màn bài tập đều có gắn âm (ai xoá nhầm khi sửa màn thì test đỏ)', () => {
-    const ds = ['TracNghiem', 'DienTu', 'SapXep', 'HoiThoai', 'FastDecision', 'Matching', 'ChamAI', 'Flashcard']
+    const ds = ['TracNghiem', 'DienTu', 'SapXep', 'HoiThoai', 'FastDecision', 'Matching', 'ChamAI', 'Flashcard', 'PhanBietGanNghia']
     const thieu = ds.filter(
       (f) => !readFileSync(`src/features/player/bai/${f}.tsx`, 'utf8').includes('phatAmThanh('),
     )

@@ -108,7 +108,7 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 └───────────────────────────────────┘
 ```
 
-**Chi tiết ring:** hiển thị **MỌI dạng bài** (trừ Matching, Flashcard, Grammar — xem §6.2). Vẽ bằng SVG `stroke-dasharray` thể hiện đúng % (`min(total_points,36)/36` = `MASTER_THRESHOLD`, DEC-12 + MB-45) — KHÔNG phải vòng tròn đặc/luôn đầy. Màu viền và icon cây ở giữa đổi theo `stage` (MB-43).
+**Chi tiết ring:** hiển thị **MỌI dạng bài** (trừ Matching, Flashcard, Grammar — xem §6.2). Vẽ bằng SVG `stroke-dasharray` thể hiện đúng % (`min(total_points,39)/39` = `MASTER_THRESHOLD`, DEC-12 + MB-45 → M26d) — KHÔNG phải vòng tròn đặc/luôn đầy. Màu viền và icon cây ở giữa đổi theo `stage` (MB-43).
 
 ✅ **ĐÃ GIẢI QUYẾT (trước đây flag là "cần vẽ riêng"):** Bộ 6 icon cây (hạt giống→mầm→chồi→lá→hoa→quả) đã có sẵn dưới dạng SVG path tùy chỉnh trong `PcView.html`/`MobileView.html` (tìm trong khối "Khu vườn của bạn" ở màn Dashboard, hoặc trong ring ở đầu mỗi màn Player). **KHÔNG vẽ lại — trích xuất nguyên `<path>`/`<ellipse>`/`<circle>` từ file gốc**, biến thành component SVG dùng chung (VD `<GrowthStageIcon stage="sprout" />`). Toàn bộ icon trong app (nav sidebar, 3 nút tiện ích, 6 icon cây) đều theo phong cách vẽ tay nhất quán (viền `stroke-width:1.7-1.8`, `stroke-linecap:round`) — **không trộn lẫn với bất kỳ icon font nào** (Tabler, Lucide...) vì sẽ phá vỡ tính nhất quán nét vẽ.
 
@@ -140,11 +140,13 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 
 **Chi tiết layout từng pattern (đã validate bằng mockup):**
 
-- **Pattern 2 (Điền từ):** số ô trống = đúng số ký tự Hán của đáp án, mỗi ô 1 chữ. Ô đang gõ (focus) có viền `2px solid #4F46E5`; ô chưa gõ chỉ có gạch chân `2px solid #DCD6CC`, không viền đầy đủ 4 cạnh — phân biệt rõ vị trí con trỏ hiện tại.
+- **Pattern 2 (Điền từ):** số ô trống = đúng số ký tự Hán của đáp án, mỗi ô 1 chữ. Ô đang gõ (focus) có viền `2px solid #4F46E5`; ô chưa gõ chỉ có gạch chân `2px solid #DCD6CC`, không viền đầy đủ 4 cạnh — phân biệt rõ vị trí con trỏ hiện tại. **M26c:** Translate / Trans Collocation ra đề bằng ngôn ngữ PHỤ (dòng to 26px = `secondary_word` nối ` · ` / `secondary_collocation`), dòng nhỏ 15px muted = nghĩa Việt · "Nhập từ tiếng Trung" / "Nhập cụm từ". Từ thiếu dữ liệu phụ ⇒ đề tiếng Việt như cũ.
+- **Pattern 4 (Ghép cặp) — M26c:** cột phải = nghĩa tiếng Anh ĐẦU của `secondary_word`; 2 từ trùng nhãn Anh trong cùng phiên ⇒ CHỈ 2 ô đó kèm `(nghĩa Việt)`. Thiếu dữ liệu phụ ⇒ ô đó hiện nghĩa Việt.
 - **Pattern 3 (Sắp xếp từ):** hàng trên ("câu đang ghép") có nền `#FFF8F0`, các chip đã đưa vào tô tint chàm (`#EDE9FE` nền, `#4F46E5` viền, `#4338CA` chữ) để phân biệt với chip chưa chọn ở hàng dưới (nền trắng, viền `#E5E5E5` trung tính). Bấm 1 chip ở hàng dưới → chuyển lên hàng trên (đổi màu theo); bấm lại ở hàng trên → quay về hàng dưới.
 - **Pattern 6 (Fast Decision):** thanh đếm ngược ngang phía trên câu hỏi, nền `#F0EAE3`, phần đã trôi qua tô `#eab308`, co ngắn dần trong 4s. 2 nút "Sai"/"Đúng" tô sẵn màu theo đúng Ý NGHĨA NHÃN (Sai = tint đỏ, Đúng = tint xanh) — đây là quy ước nút Có/Không thông thường, KHÔNG phải lộ đáp án trước, vì bản thân 2 lựa chọn này vốn có ý nghĩa cố định không đổi (khác 4 đáp án trắc nghiệm trung tính ở Pattern 1).
-- **Pattern 7 (Hội thoại điền chỗ trống):** 2 khối câu A/B riêng biệt (không chung 1 khối), mỗi khối nền `#FFF8F0`, chỗ trống `___` tô màu `#4F46E5` đậm để dễ nhận ra giữa câu dài. Với Select Dialog: 4 chip đáp án bên dưới (nền trắng, viền trung tính), bấm để điền vào đúng chỗ trống tương ứng. Với Fill Dialog: thay 4 chip bằng 2 ô nhập tay đặt ngay tại vị trí `___`.
-- **Pattern 8 (Tự luận AI chấm):** hàng icon tiện ích ở header CHỈ CÓ 2 icon (phiên âm + bỏ qua) — không có icon Gợi ý, khác biệt duy nhất so với shell chung. Textarea nền trắng, viền `1px solid #E5E5E5`, min-height ~50px, placeholder mời nhập ("Nhập câu của bạn..."). Nút "Nộp bài" nền chàm sâu đặc.
+- **Pattern 7 (Hội thoại điền chỗ trống):** 2 khối câu A/B riêng biệt (không chung 1 khối), mỗi khối nền `#FFF8F0`, chỗ trống `___` tô màu `#4F46E5` đậm để dễ nhận ra giữa câu dài. Với Select Dialog: 4 chip đáp án bên dưới (nền trắng, viền trung tính), bấm để điền vào đúng chỗ trống tương ứng. **M28:** chip đã điền ẩn khỏi hàng nhưng giữ chỗ (hàng không nhảy); từ trong câu có nền `accent-tint` bo 8 = bấm để gỡ về hàng chip (ô đã chấm đúng thì khoá, mất nền); nút "Kiểm tra" tím đặc dưới hàng chip như Fill Dialog, chỉ bật khi đủ ô. Với Fill Dialog: thay 4 chip bằng 2 ô nhập tay đặt ngay tại vị trí `___`.
+- **Pattern 8 (Tự luận AI chấm):** hàng icon tiện ích ở header CHỈ CÓ 2 icon (phiên âm + bỏ qua) — không có icon Gợi ý, khác biệt duy nhất so với shell chung. Textarea nền trắng, viền `1px solid #E5E5E5`, min-height ~50px, placeholder mời nhập ("Nhập câu của bạn..."). Nút "Nộp bài" nền chàm sâu đặc. **M26c (Make Sentence song ngữ):** thẻ đề `复习 (ôn tập · review)`; thêm ô thứ 2 "Câu tiếng Anh (tuỳ chọn)" cùng kiểu, chữ body 15px. Enter ở ô Trung ⇒ nhảy xuống ô Anh, Enter ở ô Anh ⇒ nộp. Màn phản hồi: câu Anh trong ô xám dưới câu Trung; nhận xét câu Anh (`secondary_feedback`) là khối `surface-card` 13px TRUNG TÍNH nằm trong khối verdict — không mang màu verdict vì không ảnh hưởng điểm.
+- **Pattern 10 (Phân biệt từ gần nghĩa — M26d, KHÔNG CÓ MOCKUP, duyệt qua ảnh chụp):** biến thể Pattern 1 + thẻ câu Pattern 7, **0 màu mới**. Thẻ câu `surface-card` bo 20: nhãn 13px muted "Chọn từ đúng cho chỗ trống" → câu Trung 20px (Noto SC), `___` tím đậm → pinyin 12px muted theo nút 拼. 4 ô chữ Hán lưới 2×2 (kiểu ô y hệt Trắc nghiệm, pinyin dưới chữ theo nút 拼). Sai ⇒ luật M25. Đúng ⇒ chỗ trống điền từ (chữ xanh), **câu tiếng Anh hiện ra lúc này** (14px muted nghiêng — KHÔNG hiện trước, vì hay chứa nguyên văn nghĩa Anh của đáp án), lưới ô thay bằng bảng so sánh `surface-sunken` bo 16: mỗi hàng = chữ Hán 17 · pinyin 12 · nghĩa phụ 13 / ghi chú phân biệt 13 muted; hàng đáp án nền `success-bg` + ✓. Nút "Tiếp tục" tím đặc (Enter). Stage2 nay 5 khối ⇒ 6 chấm tiến độ tính cả Flashcard.
 - **Pattern 9 (Grammar):** không có ring ở header (khác mọi pattern khác — vì không chấm điểm), chỉ có nút phiên âm nếu cần. Nội dung: câu tiếng đích (Noto Sans SC) + bản dịch tiếng Việt bên dưới (chữ phụ, nhỏ hơn). Chỉ 1 nút "Tiếp theo" duy nhất, không có khu vực trả lời nào khác.
 
 **2 pattern phá vỡ shell — xử lý riêng:**
@@ -152,7 +154,7 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 | Pattern | Dạng bài | Khác biệt |
 |---|---|---|
 | 4. Ghép cặp | Matching | Không có ring (vận hành trên 5 từ cùng lúc, không phải 1 từ/lần). Layout 2 cột × 5 nút. Ghép đúng → tint xanh `#DCFCE7`/viền `#4ade80` + disable |
-| 5. Lật thẻ | Flashcard | Không có ring, không hint/skip. Nút Good/Hard/Again dùng đúng bộ đỏ/vàng/xanh feedback (§6.2) thay vì tạo màu mới |
+| 5. Lật thẻ | Flashcard | Không có ring, không hint/skip. Nút Good/Hard/Again dùng đúng bộ đỏ/vàng/xanh feedback (§6.2) thay vì tạo màu mới. **M26:** mặt sau thêm từ vựng PHỤ dưới pinyin — chip ngôn ngữ `EN`/`中` (viền trung tính, KHÔNG xanh dương/hồng) + từ phụ 17px + phiên âm 13px muted; bản dịch cụm từ và câu ví dụ 14px muted ngay dưới bản gốc; ghi chú phân biệt (nếu có) trong khối `surface-sunken` bo 12 kèm icon gợi ý. Mặt trước không đổi; field null thì không vẽ |
 
 ---
 
@@ -160,7 +162,7 @@ Nguyên tắc chung khi chuyển PC ↔ Mobile (áp dụng cho từng màn ở �
 
 Kế thừa DEC-12, áp dụng token thị giác Nhiệt đới:
 
-- **% viền** = `min(total_points, 36) / 36` (= `MASTER_THRESHOLD`, sửa 2026-10-02 MB-45 — đầy đúng lúc mastered), vẽ bằng SVG partial stroke, KHÔNG conic-gradient.
+- **% viền** = `min(total_points, 39) / 39` (= `MASTER_THRESHOLD`, sửa 2026-10-02 MB-45, 36 → 39 ở M26d — đầy đúng lúc mastered), vẽ bằng SVG partial stroke, KHÔNG conic-gradient.
 - **Icon giữa** = theo `stage` (6 icon cây, cần minh họa custom — xem §6.1).
 - **Màu viền theo `stage`** (6 mã ring-0..5, xem §3) — cùng màu chip Khu vườn (sửa 2026-10-01, MB-43; bản trước
   tô theo mốc `total_points` gây hiểu nhầm "lệch level").
@@ -192,6 +194,9 @@ Dùng đúng Exercise Shell + 9 pattern ở §6. Session gom theo stage (DEC-10)
 
 ### 8.3 Player — Ôn tập theo topic + Hội thoại kết thúc
 
+> **M26:** mỗi bong bóng thêm câu tương đương bằng ngôn ngữ phụ (`text_secondary`, 13px muted, LUÔN hiện) ngay dưới pinyin,
+> trên nghĩa tiếng Việt (vẫn ẩn/hiện bằng nút). Không in đậm từ vựng trong câu phụ. Áp cho cả khối hội thoại ở màn Từ vựng.
+
 Giống 8.2 về phần bài tập. Sau khi hoàn thành toàn bộ từ trong topic, chuyển sang màn hội thoại (đã validate): không ring, dạng bong bóng chat A/B (khác biệt bằng sắc độ be nhạt/đậm, KHÔNG dùng thêm hue mới), từ vựng học được tô **chàm sâu + đậm nét** trong câu, nút "Xong" (nền chàm sâu đặc) kết thúc.
 
 - **Mobile:** như mockup, full-width bong bóng chat.
@@ -199,7 +204,7 @@ Giống 8.2 về phần bài tập. Sau khi hoàn thành toàn bộ từ trong t
 
 ### 8.4 Quản lý từ vựng & topic
 
-3 phần: danh sách topic (thẻ trắng ấm, mỗi thẻ có **thanh phân bố theo % số từ ở mỗi stage**, dùng đúng màu ramp — KHÔNG dùng 6 icon riêng lẻ vì có thể có hàng chục topic) → bấm vào 1 topic → danh sách từ (có thanh tìm kiếm, mỗi dòng: chữ Hán/pinyin/nghĩa + icon sửa/xóa) → form sửa **CHỈ các field cơ bản** (`word, pinyin, meaning_vi, collocation, collocation_pinyin, collocation_meaning_vi, example_sentence, example_meaning_vi`) — **KHÔNG sửa được nội dung 17 dạng bài tập** (payload), phải import lại file mới để cập nhật bài tập. Không có nút "Thêm từ mới" thủ công nổi bật (nguồn nhập liệu chính là Import).
+3 phần: danh sách topic (thẻ trắng ấm, mỗi thẻ có **thanh phân bố theo % số từ ở mỗi stage**, dùng đúng màu ramp — KHÔNG dùng 6 icon riêng lẻ vì có thể có hàng chục topic) → bấm vào 1 topic → danh sách từ (có thanh tìm kiếm — M26: khớp cả từ phụ, gõ "review" ra 复习 — mỗi dòng: chữ Hán/pinyin/nghĩa + icon sửa/xóa) → form sửa **CHỈ các field cơ bản** (`word, pinyin, meaning_vi, collocation, collocation_pinyin, collocation_meaning_vi, example_sentence, example_meaning_vi` + **M26:** nhóm "Từ vựng phụ" 5 ô `secondary_word, secondary_phonetic, secondary_collocation, secondary_example, secondary_note`, nhãn đổi theo ngôn ngữ của từ chính) — **KHÔNG sửa được nội dung 17 dạng bài tập** (payload), phải import lại file mới để cập nhật bài tập. Không có nút "Thêm từ mới" thủ công nổi bật (nguồn nhập liệu chính là Import).
 
 - **Mobile:** 3 màn tách biệt, điều hướng bằng back arrow (topic list → word list → edit form dạng bottom sheet).
 - **PC:** bố cục master-detail 2 cột — topic list bên trái (cố định, cuộn riêng), word list bên phải; form sửa mở dạng modal overlay giữa màn hình (không phải trang riêng).

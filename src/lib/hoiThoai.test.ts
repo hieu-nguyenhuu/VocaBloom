@@ -21,6 +21,7 @@ describe('docHoiThoai', () => {
       text: '你今天吃苹果了吗？',
       pinyin: 'nǐ jīntiān chī píngguǒ le ma?',
       nghia: 'Hôm nay bạn ăn táo chưa?',
+      phu: '', // M26 — dòng cũ không có text_secondary
       tu_dam: ['苹果'],
     })
   })
@@ -89,5 +90,16 @@ describe('kỷ luật module', () => {
     const src = readFileSync(new URL('./hoiThoai.ts', import.meta.url), 'utf8')
     expect(src).not.toMatch(/from '(react|node:|@supabase)/)
     expect(src).not.toMatch(/\.\/supabase\.ts/)
+  })
+})
+
+describe('docHoiThoai — câu phụ song ngữ (M26)', () => {
+  it('HT-M26 — đọc text_secondary vào `phu`; dữ liệu cũ thiếu khoá ⇒ chuỗi rỗng', () => {
+    const [a, b] = docHoiThoai({ lines: [
+      { speaker: 'A', text_zh: '你好', pinyin: 'nǐ hǎo', text_vi: 'chào', text_secondary: 'Hello' },
+      { speaker: 'B', text_zh: '好', pinyin: 'hǎo', text_vi: 'ừ' },
+    ] }, {})
+    expect(a?.phu).toBe('Hello')
+    expect(b?.phu).toBe('')
   })
 })

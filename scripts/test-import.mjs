@@ -53,7 +53,7 @@ const CAC_CA = [
                 and (select count(*) from vocab) = 5
                 and (select count(*) from word_state) = 5
                 and (select count(*) from vocab_topics) = 5
-                and (select count(*) from exercises) = 47
+                and (select count(*) from exercises) = 52
                 and (select count(*) from topic_dialogues) = 1 as pass,
               format('topics=%s vocab=%s word_state=%s vocab_topics=%s exercises=%s dialogue=%s',
                 (select count(*) from topics), (select count(*) from vocab),
@@ -155,6 +155,22 @@ const CAC_CA = [
           delete from topics;`,
     assert: `select (select count(*) from topic_grammar) = 0 as pass,
               format('còn %s dòng topic_grammar', (select count(*) from topic_grammar)) as chi_tiet`,
+  },
+  {
+    ma: 'I10',
+    ten: 'M26 — 5 cột secondary_* + bài near_synonym + text_secondary đều vào DB',
+    sql: `select import_topic(${nhung(gocJson)});`,
+    assert: `select (select count(*) from vocab where secondary_word is not null
+                      and secondary_collocation is not null and secondary_example is not null) = 5
+                and (select secondary_word from vocab where word = '苹果') = 'apple'
+                and (select secondary_phonetic from vocab where word = '苹果') = '/ˈæp.əl/'
+                and (select secondary_note is not null from vocab where word = '橙子')
+                and (select count(*) from exercises where type = 'near_synonym') = 5
+                and (select bool_and(l ? 'text_secondary')
+                       from topic_dialogues, jsonb_array_elements(content -> 'lines') l) as pass,
+              format('co_phu=%s near_synonym=%s',
+                (select count(*) from vocab where secondary_word is not null),
+                (select count(*) from exercises where type = 'near_synonym')) as chi_tiet`,
   },
 ]
 

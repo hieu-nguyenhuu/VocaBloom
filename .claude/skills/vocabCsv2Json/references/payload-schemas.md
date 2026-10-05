@@ -1,4 +1,4 @@
-# Payload Schema Reference — VocaBloom Import (17 dạng bài + bảng vocab)
+# Payload Schema Reference — VocaBloom Import (18 dạng bài + bảng vocab)
 
 > Tài liệu này là **nguồn sự thật duy nhất** cho tên field. Sai tên field = UI không render được (không báo lỗi rõ ràng, chỉ hiển thị trống). Đọc kỹ trước khi sinh bất kỳ record `exercises` nào.
 >
@@ -22,21 +22,27 @@
 | `example_sentence` | string | ✅ | 1 câu ví dụ tự nhiên chứa `word`. |
 | `example_meaning_vi` | string | ✅ | Nghĩa tiếng Việt của `example_sentence`. |
 | `lang` | string | ✅ | Chỉ nhận `"zh"` hoặc `"en"`. |
+| `secondary_word` | string | ✅ | **M26 — từ vựng phụ.** Từ tương đương ở ngôn ngữ phụ (`lang="zh"` ⇒ tiếng Anh, `lang="en"` ⇒ tiếng Trung). Nhiều nghĩa ngăn `"; "`, nghĩa ĐẦU là nghĩa chính. Lấy nguyên văn cột `TuPhu` của CSV nếu có. |
+| `secondary_phonetic` | string \| null | ✅ (key luôn phải có mặt) | IPA **Anh-Mỹ** (Cambridge US: `/rɪˈvjuː/`, `/ˈwɑː.t̬ɚ/`) khi phụ là tiếng Anh; pinyin khi phụ là tiếng Trung. Không chắc ⇒ `null`. |
+| `secondary_collocation` | string | ✅ | Bản dịch TỰ NHIÊN của `collocation` sang ngôn ngữ phụ. |
+| `secondary_example` | string | ✅ | Bản dịch của `example_sentence` sang ngôn ngữ phụ. |
+| `secondary_note` | string \| null | ✅ (key luôn phải có mặt) | Ghi chú phân biệt (tiếng Việt, ≤ 2 câu) CHỈ khi dễ nhầm giữa 2 ngôn ngữ; còn lại `null`. |
 
 ---
 
-## 1. Danh sách 17 `exercise.type` — enum hợp lệ (chép chính xác, chữ thường, dấu gạch dưới)
+## 1. Danh sách 18 `exercise.type` — enum hợp lệ (chép chính xác, chữ thường, dấu gạch dưới)
 
 ```
 flashcard, grammar, matching, selection, audio_recognition, fast_decision,
 translate, select_dialog, listen_fill, select_on_describe,
 fill_dialog, select_sentence, arrange_words, trans_collocation,
-make_sentence, trans_sentence, complete_situation
+make_sentence, trans_sentence, complete_situation,
+near_synonym
 ```
 
-Bất kỳ giá trị nào khác 17 chuỗi trên (kể cả viết hoa, số ít/nhiều khác, dấu cách thay vì `_`) đều bị Import validator từ chối.
+Bất kỳ giá trị nào khác 18 chuỗi trên (kể cả viết hoa, số ít/nhiều khác, dấu cách thay vì `_`) đều bị Import validator từ chối.
 
-⚠️ **Lưu ý quan trọng:** đây là danh sách 17 dạng bài của TOÀN BỘ app, nhưng field `exercises[].type` trong FILE IMPORT chỉ được chấp nhận **11/17 giá trị** (xem mục 3) — 6 giá trị ở mục 2 (`flashcard, matching, translate, listen_fill, make_sentence, trans_collocation`) tuyệt đối KHÔNG được xuất hiện trong mảng `exercises`, Import validator của app **chặn cứng (reject enum)** nếu gặp, không phải chỉ cảnh báo.
+⚠️ **Lưu ý quan trọng:** đây là danh sách 18 dạng bài của TOÀN BỘ app, nhưng field `exercises[].type` trong FILE IMPORT chỉ được chấp nhận **12/18 giá trị** (xem mục 3) — 6 giá trị ở mục 2 (`flashcard, matching, translate, listen_fill, make_sentence, trans_collocation`) tuyệt đối KHÔNG được xuất hiện trong mảng `exercises`, Import validator của app **chặn cứng (reject enum)** nếu gặp, không phải chỉ cảnh báo.
 
 ---
 
@@ -53,9 +59,12 @@ Player đọc thẳng từ bảng `vocab`, không cần payload. **KHÔNG tạo 
 | `make_sentence` | Câu hỏi = `word` + `meaning_vi` |
 | `trans_collocation` | Đáp án = `collocation`, nghĩa = `collocation_meaning_vi`, phiên âm = `collocation_pinyin` |
 
+> M26: từ M26c, `matching`, `translate`, `trans_collocation` và `make_sentence` đọc thêm 5 field `secondary_*` của `vocab`
+> (ghép Trung–Anh, dịch Anh→Trung, câu song ngữ) — vẫn KHÔNG có record, chỉ cần `vocab` đủ field ở mục 0.
+
 ---
 
-## 3. Nhóm 11 dạng CẦN payload — chi tiết field-by-field
+## 3. Nhóm 12 dạng CẦN payload — chi tiết field-by-field
 
 Mỗi mục dưới đây = 1 object cần thêm vào mảng `exercises`, dạng:
 ```json
@@ -103,7 +112,7 @@ Cấu trúc **giống hệt** `selection`:
 
 | Field | Kiểu | Ghi chú |
 |---|---|---|
-| `description` | string | Đoạn mô tả TIẾNG VIỆT, dài hơn `meaning_vi`, gợi mở đặc điểm để người học đoán ra từ (không được nêu thẳng nghĩa). |
+| `description` | string | **M26: ĐỊNH NGHĨA ĐƠN NGỮ bằng ngôn ngữ phụ** (từ chính `zh` ⇒ tiếng Anh kiểu từ điển Anh–Anh, ~1 câu), gợi mở đặc điểm để người học đoán ra từ — không nêu thẳng từ, không dịch thẳng nghĩa. *(Dữ liệu trước M26 là mô tả tiếng Việt.)* |
 | `distractors` | array[object] | Đúng **3 phần tử**, mỗi phần tử `{ "word": "...", "pinyin": "..." }` — LÀ TỪ VỰNG (không phải nghĩa), vì đáp án của dạng này là từ. |
 
 *Đáp án đúng = `vocab.word` + `vocab.pinyin`.*
@@ -170,6 +179,37 @@ Field giống hệt `select_dialog` NHƯNG **bỏ hẳn field `distractors`**:
 }
 ```
 
+### 3.12 `near_synonym` — "Phân biệt từ gần nghĩa" (M26, dạng 18)
+
+Câu ngữ cảnh có 1 chỗ trống, người học chọn 1 trong 4 từ (đáp án + 3 nhiễu). Sau khi chọn đúng, app hiện bảng so sánh 4 từ
+(từ · nghĩa phụ · ghi chú) — đó là lúc học, nên `note_vi` phải viết kỹ.
+
+| Field | Kiểu | Ghi chú |
+|---|---|---|
+| `sentence` | string | Câu ngôn ngữ đích có **ĐÚNG 1** chỗ trống `___`; chỉ đáp án đúng điền vào là tự nhiên. |
+| `sentence_pinyin` | string \| null | **Key BẮT BUỘC.** Phiên âm cả câu (giữ `___`); `null` khi `lang="en"`. |
+| `sentence_secondary` | string | Bản dịch câu sang ngôn ngữ phụ. |
+| `answer_note_vi` | string | Nét nghĩa riêng của đáp án đúng (tiếng Việt, 1 câu). |
+| `distractors` | array[object] | Đúng **3 phần tử** `{ "word", "pinyin", "secondary", "note_vi" }` — `pinyin` key bắt buộc (null khi `en`); `secondary` = nghĩa ở ngôn ngữ phụ; `note_vi` = **vì sao SAI ở câu này**. 3 từ khác nhau và ≠ từ đang ôn. |
+
+*Đáp án đúng = `vocab.word` + `vocab.pinyin` + `vocab.secondary_word`, KHÔNG lặp trong payload.*
+
+```json
+{
+  "sentence": "上线前，我们要先___这个软件。",
+  "sentence_pinyin": "Shàngxiàn qián, wǒmen yào xiān ___ zhège ruǎnjiàn.",
+  "sentence_secondary": "Before release, we need to test this software first.",
+  "answer_note_vi": "测试: kiểm thử phần mềm/hệ thống theo quy trình.",
+  "distractors": [
+    { "word": "检测", "pinyin": "jiǎncè", "secondary": "test; inspect", "note_vi": "đo kiểm chất lượng/thông số của máy, mẫu vật — không dùng cho phần mềm" },
+    { "word": "考试", "pinyin": "kǎoshì", "secondary": "exam; test", "note_vi": "thi cử của người học" },
+    { "word": "试验", "pinyin": "shìyàn", "secondary": "experiment; trial", "note_vi": "làm thử để xem kết quả, không phải kiểm thử trước khi phát hành" }
+  ]
+}
+```
+
+Không có từ gần nghĩa thật ⇒ nhiễu là từ **cùng trường nghĩa**, câu phải có manh mối (lượng từ, đặc điểm) để chỉ 1 đáp án đúng.
+
 ---
 
 ## 4. Cấu trúc file JSON hoàn chỉnh (khung ngoài cùng)
@@ -187,6 +227,7 @@ Field giống hệt `select_dialog` NHƯNG **bỏ hẳn field `distractors`**:
         "text_zh": "...",
         "pinyin": "...",
         "text_vi": "...",
+        "text_secondary": "câu tương đương bằng ngôn ngữ phụ (M26)",
         "highlight_vocab_temp_ids": ["v1", "v3"]
       }
     ]
@@ -229,15 +270,18 @@ Mảng ở **gốc file**, ngang hàng `dialogue`. Đây là các mẫu ngữ ph
 ## 5. Checklist tự kiểm tra trước khi giao file (bắt buộc rà lại)
 
 - [ ] File là JSON hợp lệ (không thiếu dấu phẩy/ngoặc).
-- [ ] Mọi `exercise.type` trong mảng `exercises` thuộc đúng **11 giá trị ở mục 3** (KHÔNG phải 17 — 6 giá trị ở mục 2 tuyệt đối không được xuất hiện ở đây).
+- [ ] Mọi `exercise.type` trong mảng `exercises` thuộc đúng **12 giá trị ở mục 3** (KHÔNG phải 18 — 6 giá trị ở mục 2 tuyệt đối không được xuất hiện ở đây).
 - [ ] Mọi `vocab_temp_id` trong `exercises` khớp với 1 `temp_id` có thật trong mảng `vocab` CÙNG file.
 - [ ] Mọi `blank_b_vocab_id` (trong `select_dialog`/`fill_dialog`) khớp với 1 `temp_id` có thật.
 - [ ] Mọi `highlight_vocab_temp_ids` trong `dialogue.lines` khớp với `temp_id` có thật.
 - [ ] Không có field nào ngoài danh sách đã liệt kê ở mục 0 và mục 3 (không tự thêm field thừa như `id`, `difficulty`, `answer`...).
 - [ ] Mọi field phiên âm (`pinyin`, `collocation_pinyin` ở mục 0; `pinyin` trong `grammar`; `given_sentence_pinyin` trong `complete_situation`) đều có KEY xuất hiện trong object dù `lang="en"` (giá trị `null`, KHÔNG bỏ hẳn key).
-- [ ] `distractors` đúng số lượng bắt buộc: `selection`/`audio_recognition`=3, `select_on_describe`=3, `select_sentence`.wrong_sentences=3, `select_dialog`.distractors=2.
-- [ ] Mỗi từ vựng có đủ **8 dạng bài bắt buộc** (không tính `select_dialog`/`fill_dialog` — 2 dạng này theo cặp, kiểm ở dòng dưới): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation`.
+- [ ] `distractors` đúng số lượng bắt buộc: `selection`/`audio_recognition`=3, `select_on_describe`=3, `select_sentence`.wrong_sentences=3, `select_dialog`.distractors=2, `near_synonym`.distractors=3.
+- [ ] Mỗi từ vựng có đủ **9 dạng bài bắt buộc** (không tính `select_dialog`/`fill_dialog` — 2 dạng này theo cặp, kiểm ở dòng dưới): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation, near_synonym`.
+- [ ] (M26) Mọi `vocab` có đủ 5 KEY `secondary_*`; `secondary_word`/`secondary_collocation`/`secondary_example` không rỗng.
+- [ ] (M26) Mọi `near_synonym`: `sentence` có ĐÚNG 1 `___`; 3 nhiễu khác nhau, ≠ từ đang ôn, mỗi nhiễu có `note_vi` nói vì sao sai.
+- [ ] (M26) Mọi dòng `dialogue.lines` có `text_secondary`; `select_on_describe.description` viết bằng ngôn ngữ phụ.
 - [ ] Mỗi từ vựng xuất hiện ≥ 1 lần trong `select_dialog` VÀ ≥ 1 lần trong `fill_dialog` (vai A qua `vocab_temp_id` hoặc vai B qua `blank_b_vocab_id`) — trừ topic chỉ có 1 từ. Vai A của 1 dạng chỉ 1 lần/từ.
-- [ ] **`grammar` (ngữ pháp CỦA TỪ) KHÔNG nằm trong 8 dạng bắt buộc** — chỉ gắn cho từ có điểm dễ dùng sai (M12). Rà lại: nếu ≥ 50% số từ trong file có `grammar` thì gần như chắc chắn đang gắn tràn lan.
+- [ ] **`grammar` (ngữ pháp CỦA TỪ) KHÔNG nằm trong 9 dạng bắt buộc** — chỉ gắn cho từ có điểm dễ dùng sai (M12). Rà lại: nếu ≥ 50% số từ trong file có `grammar` thì gần như chắc chắn đang gắn tràn lan.
 - [ ] Dòng CSV đánh dấu `ngữ pháp` đã vào mảng `grammar` ở gốc file (mục 4b), **không** lọt vào `vocab`.
 - [ ] Mảng `grammar` (nếu có): mỗi mục đủ `content_target`/`pinyin`(key)/`content_vi`; chủ đề không có ngữ pháp thì bỏ hẳn khoá.
