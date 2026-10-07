@@ -978,3 +978,15 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
   - **Vá kèm:** Select bấm Gợi ý từng IN đáp án A vào câu (do `oGoiY` không xét chế độ) — trái comment "Select ẩn 1 chip sai". Nay Select chỉ ẩn chip sai; Fill giữ nguyên.
 - **Bằng chứng:** `npm test` 479/479 · build · lint exit 0 (0 cảnh báo ở file sửa) · CDP trang tạm **58/58** (PC 1280 + Mobile 390 × Sáng/Tối, 0 request supabase.co). SPEC §4.2 + UI_DESIGN §6.3 Pattern 7.
 - **Trạng thái:** ✅ Đã áp dụng. Chưa xem trong Player thật (0 từ stage1 đến hạn).
+
+### [2026-10-07] MB-51 — M29: Deploy bản Firebase Cloud Function cho mạng công ty
+- **Bối cảnh:** mạng công ty chặn Vercel, Firebase Hosting (`*.web.app`), `supabase.co`, `openrouter.ai`; chỉ mở `cloudfunctions.net` (và `run.app`).
+- **Quyết định (`design.m29.md` + plan `design.m29a.md`, người dùng duyệt):**
+  - 1 Cloud Function Gen 2 `vocabloom` (asia-southeast1, 256MiB, timeout 120s, maxInstances 2, invoker public) vừa phục vụ SPA vừa proxy 3 gốc cố định `/sb` `/or` `/tts` — không phải proxy mở, không giữ khoá bí mật (khoá AI/TTS vẫn từ bảng `settings`, MB-04 giữ nguyên).
+  - Làm **thẳng trên `main`**, không tạo nhánh (người dùng chốt): mọi thay đổi khoá sau `VITE_PROXY`; đã kiểm `dist/` bản Vercel không chứa `/vocabloom`.
+  - Server tự bỏ tiền tố `/vocabloom` ⇒ 1 bản build chạy ở cả URL cloudfunctions.net lẫn run.app.
+  - `audio_url` lưu URL gốc; `genAudioChoTu` ghép URL bằng `urlCongKhai` (P8 khớp `getPublicUrl` thật) thay vì `getPublicUrl` của client proxy.
+  - Giữ Google Fonts (người dùng cho rằng Google vào được; `system-ui` dự phòng). Không dùng Firebase Emulator (đường dẫn khác URL thật) ⇒ harness Express ở scratchpad.
+- **Bằng chứng:** `npm test` 487/487 (P1–P8 ĐỎ trước) · `test:functions` 9/9 (F1–F9 ĐỎ trước) · tsc · build cả 2 chế độ · lint exit 0 · CDP local (a)+(b) 8/8 ×2 · CDP cloud (a)+(b) 8/8 ×2 (đăng nhập, Dashboard, SPA fallback, count `content-range` 740, mp3, AI 200, **0 request trình duyệt tới supabase.co/openrouter.ai**, chặn `..`).
+- **Bẫy:** fetch Node tự giải nén ⇒ bỏ `content-encoding`/`content-length` khi trả · lần ĐẦU tạo function có ~1 phút 401 HTML của Google (IAM chưa lan) · Google front-end tự chuẩn hoá `%2e%2e` + 302.
+- **Trạng thái:** ✅ Đã deploy. ⏳ Chờ người dùng nghiệm thu từ mạng công ty (T12).

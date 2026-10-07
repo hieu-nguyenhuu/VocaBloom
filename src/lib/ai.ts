@@ -8,6 +8,7 @@ import {
   type ItemCham,
   type KetQuaCham,
 } from './aiCore.ts'
+import { GOC_OPENROUTER, gocQuaProxy } from './proxy.ts'
 import { supabase } from './supabase.ts'
 
 /**
@@ -16,7 +17,7 @@ import { supabase } from './supabase.ts'
  *
  * AI trong app chỉ làm 2 việc: chấm bài tự luận stage 3 (§7) và giải thích khi bấm nút (§8).
  */
-const URL_AI = 'https://openrouter.ai/api/v1/chat/completions'
+const URL_AI = `${gocQuaProxy(import.meta.env.VITE_PROXY ?? '', 'or', GOC_OPENROUTER)}/chat/completions`
 
 export const THIEU_KHOA =
   'Chưa có khoá OpenRouter. Thêm VITE_OPENROUTER_API_KEY và VITE_OPENROUTER_MODEL vào .env.local rồi khởi động lại dev server.'

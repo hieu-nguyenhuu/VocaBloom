@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { urlClientSupabase } from './proxy.ts'
 
 /**
  * Client Supabase DUY NHẤT của app (systemPatterns.md §2).
@@ -16,4 +17,8 @@ if (!url || !anonKey) {
   )
 }
 
-export const supabase = createClient(url, anonKey)
+// M29: bản Firebase trỏ client vào proxy cùng origin; `globalThis.location` vắng khi file bị import trong test Node.
+export const supabase = createClient(
+  urlClientSupabase(import.meta.env.VITE_PROXY ?? '', globalThis.location?.origin ?? '', url),
+  anonKey,
+)

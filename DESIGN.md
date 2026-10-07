@@ -15,4 +15,6 @@
 | [`design.m27b.md`](design.m27b.md) | Plan M27b — soạn chủ đề thử 01 đủ chuẩn → build → 3 cổng → duyệt văn phong (7 task) | ✅ Xong 2026-10-05 — văn phong ✅ duyệt |
 | [`design.m28.md`](design.m28.md) | **M28** — Select Dialog: gỡ từ đã điền khỏi câu, chip ẩn/hiện lại, chấm khi bấm "Kiểm tra" | ✅ Duyệt 2026-10-05 |
 | [`design.m28a.md`](design.m28a.md) | Plan M28a — 9 task: hàm thuần `dienChip/goO/oGoLui` (TDD) · `HoiThoai.tsx` · tài liệu · CDP | ✅ Xong 2026-10-05 (MB-50) — CDP 58/58 |
+| [`design.m29.md`](design.m29.md) | **M29** — Deploy lên Firebase Cloud Functions (giao diện + proxy Supabase/OpenRouter/TTS) để dùng từ mạng công ty; làm thẳng trên `main` | ✅ Duyệt 2026-10-07 |
+| [`design.m29a.md`](design.m29a.md) | Plan M29a — 13 task: `proxy.ts` (TDD) · cấu hình build · `functions/` proxy (TDD) · harness local + CDP · hướng dẫn Blaze/CLI · deploy | ✅ Xong 2026-10-07 (MB-51) — CDP local 2×8 + cloud 2×8 · ⏳ người dùng nghiệm thu ở công ty |
 | [`design.m27c.md`](design.m27c.md) | Plan M27c — soạn 14 chủ đề 02–15 theo chuẩn chủ đề 01, 2 đợt, validate 15/15 | ✅ Xong 2026-10-05 — 15/15 sạch · M27d đã chạy |

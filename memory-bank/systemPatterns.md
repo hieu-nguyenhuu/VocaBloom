@@ -14,6 +14,13 @@
 | AI chấm bài + giải thích | **OpenRouter** | Model + API key do người dùng cấu hình ở màn Cài đặt (lưu bảng `settings`) |
 | TTS | **Google Cloud TTS** giọng `cmn-CN-Neural2-*` | Gọi 1 lần/từ sau Import, cache mp3 vào Supabase Storage |
 | Fallback audio | **Web Speech API** | Dùng khi `vocab.audio_url` chưa sẵn sàng |
+| Hosting | **Vercel** (bản chính, build thường) + **Firebase Cloud Function `vocabloom`** (M29, Gen 2, `asia-southeast1`) | Bản Firebase dành cho mạng công ty: 1 function vừa trả `functions/web/` vừa chuyển tiếp `/sb` → Supabase, `/or` → OpenRouter, `/tts` → Google TTS. Bật bằng `VITE_PROXY=/vocabloom` (chỉ trong `.env.firebase`, `vite build --mode firebase`). Biến rỗng ⇒ bản Vercel y hệt cũ |
+
+**Luật M29 (proxy Firebase):**
+- Mọi URL ra ngoài ở client đi qua hàm thuần `src/lib/proxy.ts` — thêm lời gọi API ngoài MỚI thì phải thêm nhánh proxy + whitelist ở `functions/proxyCore.js`, nếu không bản Firebase sẽ hỏng ở mạng công ty.
+- `vocab.audio_url` trong DB LUÔN là URL `supabase.co` gốc (`urlCongKhai`) — chỉ đổi sang proxy lúc phát (`audioQuaProxy`).
+- Function không giữ khoá bí mật; không thêm `minInstances` (tốn tiền). Deploy: `npm run deploy:firebase`.
+- `functions/web/` là output build ⇒ đã `.gitignore` (nếu không oxlint quét cả bundle và báo lỗi).
 
 **Dependency gatekeeping (`ponytail`):** trước khi `npm install` bất cứ gì, phải xác nhận stack trên + HTML5/CSS3 native không giải quyết được, và nêu lý do 1 dòng. Ưu tiên `<dialog>`, `<input>` native, CSS Grid, `Intl`, `crypto.randomUUID()` hơn package ngoài.
 

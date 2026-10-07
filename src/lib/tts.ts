@@ -1,3 +1,4 @@
+import { audioQuaProxy, GOC_TTS, gocQuaProxy, urlCongKhai } from './proxy.ts'
 import { docCaiDat, type CaiDat } from './settings.ts'
 import { supabase } from './supabase.ts'
 import {
@@ -15,6 +16,7 @@ import {
  * Luôn huỷ âm đang phát trước — bấm loa liên tiếp không chồng tiếng.
  */
 let dangPhat: HTMLAudioElement | null = null
+const PROXY = import.meta.env.VITE_PROXY ?? ''
 
 export function phatAm(text: string, lang: 'zh' | 'en', audio_url?: string | null): void {
   dangPhat?.pause()
@@ -22,7 +24,7 @@ export function phatAm(text: string, lang: 'zh' | 'en', audio_url?: string | nul
   window.speechSynthesis?.cancel()
 
   if (audio_url) {
-    dangPhat = new Audio(audio_url)
+    dangPhat = new Audio(audioQuaProxy(audio_url, PROXY, import.meta.env.VITE_SUPABASE_URL))
     void dangPhat.play().catch(() => {
       /* autoplay bị chặn → người dùng bấm loa để phát lại */
     })
@@ -39,7 +41,7 @@ export function phatAm(text: string, lang: 'zh' | 'en', audio_url?: string | nul
 // Khoá đọc RUNTIME từ bảng `settings` (MB-04) — KHÔNG bao giờ đặt `VITE_GOOGLE_TTS_*`, vì Vite
 // sẽ nhúng thẳng vào `dist/assets/*.js`. Kiểm thật 2026-09-18: Google cho phép CORS từ browser.
 
-const URL_TTS = 'https://texttospeech.googleapis.com/v1/text:synthesize'
+const URL_TTS = `${gocQuaProxy(PROXY, 'tts', GOC_TTS)}/v1/text:synthesize`
 const BUCKET = 'audio'
 
 export async function layCauHinhTTS(): Promise<{ khoa: string; cd: CaiDat } | null> {
@@ -109,7 +111,7 @@ export async function genAudioChoTu(onTienDo?: (da: number, tong: number) => voi
           upsert: true,
         })
       if (up.error) throw up.error
-      const url = supabase.storage.from(BUCKET).getPublicUrl(n.duong_dan).data.publicUrl
+      const url = urlCongKhai(import.meta.env.VITE_SUPABASE_URL, BUCKET, n.duong_dan) // M29: luôn lưu URL GỐC
       const { error: e2 } = await supabase.from('vocab').update({ audio_url: url }).in('id', n.ids)
       if (e2) throw e2
       xong += 1

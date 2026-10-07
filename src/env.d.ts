@@ -10,6 +10,8 @@
 interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string
   readonly VITE_SUPABASE_ANON_KEY: string
+  /** M29 — chỉ có ở `.env.firebase` (`/vocabloom`). Rỗng ⇒ bản Vercel, mọi URL giữ nguyên. Không bí mật. */
+  readonly VITE_PROXY?: string
 
   /**
    * ⚠️ NGOẠI LỆ TẠM THỜI (M5, 2026-09-17) — khoá OpenRouter đọc từ env cho tiện khi chạy local.

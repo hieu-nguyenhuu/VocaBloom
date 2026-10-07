@@ -146,3 +146,17 @@ Ngoài các lệnh riêng ở trên, Claude Code có sẵn nhiều lệnh hữu 
    - 🔢 **Lỗi Logic** → `/logic-bug [Mô tả hiện tượng lỗi]`
    - 🖥️ **Lỗi hiển thị (Vỡ giao diện/Responsive)** → dán ảnh chụp màn hình + `/ui-bug [Mô tả vị trí lỗi]`
 3. Nếu sau 3 lần thử vẫn không ra, cân nhắc dùng `/effort high` hoặc `/effort max` để tăng độ suy luận sâu trước khi thử tiếp, theo đúng quy tắc "dừng và xem lại kiến trúc" đã định nghĩa trong `db-diagnostics.md` / `CLAUDE.md`.
+---
+
+## ☁️ VIII. DEPLOY BẢN FIREBASE (dùng từ mạng công ty) — M29
+
+Mạng công ty chặn Vercel/`supabase.co`/`openrouter.ai` nhưng mở `cloudfunctions.net` ⇒ 1 Cloud Function `vocabloom` phục vụ giao diện + chuyển tiếp API (chi tiết: `design.m29.md`, hướng dẫn từng bước: `design.m29a.md` T10–T12).
+
+| Việc | Lệnh |
+|---|---|
+| Deploy lại sau khi có tính năng mới trên `main` | `npm run deploy:firebase` (Vercel vẫn tự deploy khi push) |
+| Test phần proxy | `npm run test:functions` |
+| Gỡ bản Firebase | `firebase functions:delete vocabloom --region asia-southeast1` |
+
+- URL chính: https://asia-southeast1-vocabloom-helios.cloudfunctions.net/vocabloom/
+- URL dự phòng: https://vocabloom-1004632816026.asia-southeast1.run.app/vocabloom/

@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-05** (**M28 XONG** — Select Dialog gỡ từ đã điền + nút "Kiểm tra")
+> Cập nhật lần cuối: **2026-10-07** (**M29 XONG** — deploy bản Firebase cho mạng công ty; chờ nghiệm thu)
 
 ## Trạng thái hiện tại
 
@@ -46,9 +46,18 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M26c (4 dạng Trung–Anh không payload + vá `de_bai`) — ✅ XONG 2026-10-05 (MB-48).**
 **M26d (màn Phân biệt từ gần nghĩa + điểm 15/12/39 + NOT NULL) — ✅ XONG 2026-10-05 (MB-49)** · ảnh bố cục ✅ duyệt ⇒ **M26 ĐÓNG**.
 **M28 (Select Dialog: gỡ từ đã điền + chấm khi bấm "Kiểm tra") — ✅ XONG 2026-10-05 (MB-50).**
+**M29 (Deploy Firebase Cloud Function cho mạng công ty) — ✅ XONG 2026-10-07 (MB-51)** · ⏳ người dùng nghiệm thu ở công ty (T12).
 **Tiếp theo:** chưa có milestone mới — chờ người dùng ra lệnh. Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M29 vừa xong (2026-10-07) — MB-51 · Design `design.m29.md` · Plan `design.m29a.md`
+- URL: (a) https://asia-southeast1-vocabloom-helios.cloudfunctions.net/vocabloom/ · (b) https://vocabloom-1004632816026.asia-southeast1.run.app/vocabloom/
+- Project Firebase `vocabloom-helios` (gói Blaze, ngân sách cảnh báo 2 USD — người dùng đã đặt). CLI 15.32.1 đã login `nguyenhuuhieu9alv@gmail.com` trên máy này.
+- File mới: `src/lib/proxy.ts`(+test) · `.env.firebase` · `functions/{index.js,proxyCore.js,proxyCore.test.js,package.json,.env.vocabloom-helios}` · `firebase.json` · `.firebaserc`. Sửa: `vite.config.ts` · `main.tsx` · `env.d.ts` · `supabase.ts` · `ai.ts` · `tts.ts` · `.gitignore` · `package.json` (3 script) · `readme.md` §VIII.
+- **Mỗi khi có tính năng mới trên `main`: nhớ nhắc người dùng `npm run deploy:firebase`** (Vercel tự deploy, Firebase thì không).
+- Script kiểm dùng lại: scratchpad phiên 2026-10-07 `chay-local.mjs` (harness Express :8081 kiểu a / :8082 kiểu b) + `cdp-m29.mjs <BASE> <tên>` (L1–L8).
+- Treo: người dùng thử ở mạng công ty (Google Fonts/TTS có thể bị chặn — fonts rơi về `system-ui`, TTS đã có proxy `/tts`).
 
 ### ✅ M28 vừa xong (2026-10-05) — MB-50 · Design `design.m28.md` · Plan `design.m28a.md`
 - Lỗi người dùng báo: chọn chip ở Select Dialog không gỡ/chọn lại được (đủ ô là tự chấm ngay).
@@ -58,6 +67,13 @@ lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên 
 - Kiểm chứng: `npm test` 479/479 · build · lint exit 0 · CDP trang tạm 58/58 (4 khung × 14 ca + gợi ý + 0 request supabase.co).
   Trang tạm `tam-m28.*` đã xoá; ảnh ở scratchpad phiên `m28-*.png`.
 - Chưa xem trong Player thật (0 từ stage1 đến hạn).
+
+### 2026-10-05 — Kích hoạt tay 8 từ đầu hàng đợi (người dùng yêu cầu)
+- PATCH `word_state.next_review_date = 2026-10-05` cho 8 từ FIFO `added_at` (chủ đề H3 "3. Chào hỏi & giới thiệu bản thân"):
+  个子 · 聪明 · 热情 · 认真 · 爱好 · 城市 · 北方 · 年轻. Vẫn `stage='new'`, 0 điểm. = đúng việc cron B4 làm (`new_words_per_day` = 8).
+- Đọc lại 8/8 · tổng đến hạn 8. Cron 01:00 VN 06/10 sẽ kích hoạt tiếp 8 từ (B4 đếm theo ngày mới).
+- Lưu ý: cả 20 từ chủ đề 01 có CÙNG `added_at` (import 1 transaction) ⇒ thứ tự trong nhóm do Postgres trả, cron cũng vậy.
+- Script: scratchpad phiên `den-han-8.mjs` (bẫy: `{ headers, ...init }` để `init.headers` đè mất `apikey` ⇒ 401; phải spread init TRƯỚC).
 
 ### ✅ M26d vừa xong (2026-10-05) — MB-49 · Plan `design.m26d.md`
 - Chốt: **D1** câu Anh CHỈ hiện SAU khi đúng (DB cho thấy câu Anh hay chứa nguyên văn nghĩa Anh của đáp án) · **D2** không mockup,
