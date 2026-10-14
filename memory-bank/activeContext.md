@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-07** (**M29 XONG** — deploy bản Firebase cho mạng công ty; chờ nghiệm thu)
+> Cập nhật lần cuối: **2026-10-14** (**M30 XONG** — Sắp xếp câu: chip hàng dưới đứng yên; đã commit + push + deploy Firebase)
 
 ## Trạng thái hiện tại
 
@@ -47,9 +47,20 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M26d (màn Phân biệt từ gần nghĩa + điểm 15/12/39 + NOT NULL) — ✅ XONG 2026-10-05 (MB-49)** · ảnh bố cục ✅ duyệt ⇒ **M26 ĐÓNG**.
 **M28 (Select Dialog: gỡ từ đã điền + chấm khi bấm "Kiểm tra") — ✅ XONG 2026-10-05 (MB-50).**
 **M29 (Deploy Firebase Cloud Function cho mạng công ty) — ✅ XONG 2026-10-07 (MB-51)** · ⏳ người dùng nghiệm thu ở công ty (T12).
+**M30 (Sắp xếp câu: chip hàng dưới đứng yên + ô xám giữ chỗ) — ✅ XONG 2026-10-14 (MB-52).**
 **Tiếp theo:** chưa có milestone mới — chờ người dùng ra lệnh. Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M30 vừa xong (2026-10-14) — MB-52 · Design + Plan gộp `design.m30.md`
+- Lỗi người dùng báo: Arrange Words chọn 1 chip thì các chip còn lại dồn/nhảy ⇒ chọn sai.
+- 2 gốc: (1) chip đã chọn bị gỡ khỏi DOM ở hàng `flex-wrap justify-center`; (2) **phát hiện khi đo CDP** — khay trên cao dần
+  (64 → 87 → +59/dòng) đẩy CẢ hàng dưới xuống. Sửa: ô xám giữ chỗ (`CHIP_GIU_CHO`, disabled, tabIndex -1) + khay `grid` chồng
+  bản ma `invisible` của cả câu. Chỉ sửa `SapXep.tsx`, 0 màu mới, logic chấm không đổi.
+- Kiểm chứng: `npm test` 487/487 · build · lint exit 0 · CDP trang tạm 73/73 (PC/Mobile × Sáng/Tối × pinyin; gồm ca xếp ngược).
+  Script dùng lại: scratchpad phiên 2026-10-14 `cdp-m30.mjs` (Vite :5191 + Chrome :9231).
+- ⚠️ Bẫy: `TaskStop` tắt tiến trình bash bọc ngoài nhưng `npx vite` (node) vẫn sống ⇒ phải `Stop-Process` theo PID.
+- Người dùng cho phép agent tự commit + push + `deploy:firebase` cho task này (ngoại lệ luật git, chỉ áp cho M30).
 
 ### ✅ M29 vừa xong (2026-10-07) — MB-51 · Design `design.m29.md` · Plan `design.m29a.md`
 - URL: (a) https://asia-southeast1-vocabloom-helios.cloudfunctions.net/vocabloom/ · (b) https://vocabloom-1004632816026.asia-southeast1.run.app/vocabloom/

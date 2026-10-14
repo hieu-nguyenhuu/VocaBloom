@@ -990,3 +990,14 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
 - **Bằng chứng:** `npm test` 487/487 (P1–P8 ĐỎ trước) · `test:functions` 9/9 (F1–F9 ĐỎ trước) · tsc · build cả 2 chế độ · lint exit 0 · CDP local (a)+(b) 8/8 ×2 · CDP cloud (a)+(b) 8/8 ×2 (đăng nhập, Dashboard, SPA fallback, count `content-range` 740, mp3, AI 200, **0 request trình duyệt tới supabase.co/openrouter.ai**, chặn `..`).
 - **Bẫy:** fetch Node tự giải nén ⇒ bỏ `content-encoding`/`content-length` khi trả · lần ĐẦU tạo function có ~1 phút 401 HTML của Google (IAM chưa lan) · Google front-end tự chuẩn hoá `%2e%2e` + 302.
 - **Trạng thái:** ✅ Đã deploy. ⏳ Chờ người dùng nghiệm thu từ mạng công ty (T12).
+
+### [2026-10-14] MB-52 — M30: Arrange Words — chip hàng dưới đứng yên
+- **Bối cảnh:** người dùng báo chọn 1 chip thì các chip còn lại dồn/nhảy chỗ, khó nhìn, dễ chọn sai.
+- **Quyết định (`design.m30.md`, người dùng duyệt):**
+  - Hàng dưới luôn render đủ chip theo thứ tự xáo ban đầu; chip đã lên khay ⇒ **ô xám giữ chỗ** (`surface-sunken`, `content-muted`,
+    mờ 50%, disabled, tabIndex -1), giữ cả chữ + pinyin để không đổi bề rộng. Gỡ ở khay ⇒ sáng lại đúng chỗ (theo chỉ số, không theo chữ).
+  - **Lệch mockup 04 có chủ ý** (mockup ẩn chip đã chọn) — cùng hướng M28. 0 màu mới.
+  - Phát sinh khi đo: khay cao dần đẩy cả hàng dưới xuống ⇒ khay `grid` chồng **bản ma `invisible` của cả câu** ⇒ cao sẵn từ đầu.
+    Đánh đổi: khay trống cao bằng câu lúc mới vào bài.
+- **Bằng chứng:** `npm test` 487/487 · build · lint exit 0 · CDP trang tạm 73/73 (PC/Mobile × Sáng/Tối × pinyin, gồm xếp ngược), 0 request supabase.co.
+- **Trạng thái:** ✅ Đã áp dụng · commit + push + `deploy:firebase` theo lệnh người dùng.

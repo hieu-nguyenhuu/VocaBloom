@@ -6,7 +6,8 @@ import { chamArrange, chamLuot, xaoTron, type PayloadSapXep, type VocabDb } from
 
 /**
  * Pattern 3 — sắp xếp từ (mockup 04). Hàng dưới = chip chưa chọn (trung tính), khay trên = chip đã
- * chọn (tint tím). Bấm chip dưới → lên khay; bấm chip trên → trả về dưới. Đáp án đúng là thứ tự
+ * chọn (tint tím). Bấm chip dưới → lên khay; bấm chip trên → trả về dưới. M30: hàng dưới KHÔNG BAO GIỜ
+ * gỡ chip khỏi DOM — chip đã lên khay thành ô xám giữ chỗ, nên không chip nào nhảy vị trí. Đáp án đúng là thứ tự
  * `payload.tokens` GỐC; app chỉ xáo lúc hiển thị (§6.3 #13).
  * Gợi ý (DEC-19): mỗi lần bấm đưa đúng 1 chip tiếp theo vào khay.
  * M25: sai → viền khay đỏ 800ms rồi GIỮ chip trong khay để gỡ/xếp lại đến khi đúng (hoặc Bỏ qua).
@@ -23,6 +24,8 @@ type Props = {
 const CHIP = 'rounded-10 px-[18px] py-[10px] font-han text-18 transition-colors'
 const CHIP_CHUA = `${CHIP} border border-border-input bg-surface-raised text-content-primary`
 const CHIP_DA = `${CHIP} border-[1.5px] border-accent bg-accent-tint font-semibold text-accent-text`
+// M30 — chip đã lên khay vẫn GIỮ CHỖ ở hàng dưới (cùng viền 1px như CHIP_CHUA ⇒ không đổi bề rộng)
+const CHIP_GIU_CHO = `${CHIP} border border-border-input bg-surface-sunken text-content-muted opacity-50 cursor-default`
 
 export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }: Props) {
   const xao = useMemo(() => xaoTron(payload.tokens, Math.random), [payload.tokens])
@@ -74,28 +77,42 @@ export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }
         Sắp xếp thành câu: <b>{vocab.example_meaning_vi ?? vocab.meaning_vi}</b>
       </p>
 
-      <div className={`flex min-h-16 flex-wrap content-start gap-[10px] rounded-16 border bg-surface-card p-[18px] ${vienKhay}`}>
-        {khay.map((i) => (
-          <button key={i} type="button" disabled={kq !== null} onClick={() => setKhay((c) => c.filter((x) => x !== i))} className={CHIP_DA}>
-            {xao[i]!.text}
-            {hienPhienAm && xao[i]!.pinyin && (
-              <span className="ml-1.5 font-body text-11 font-normal opacity-70">{xao[i]!.pinyin}</span>
-            )}
-          </button>
-        ))}
+      <div className={`grid rounded-16 border bg-surface-card p-[18px] ${vienKhay}`}>
+        {/* M30 — bản ma VÔ HÌNH của cả câu, chồng cùng ô grid: khay cao sẵn bằng câu hoàn chỉnh ngay từ đầu
+            ⇒ chọn/gỡ chip không làm khay cao lên và đẩy hàng dưới xuống */}
+        <div aria-hidden className="invisible col-start-1 row-start-1 flex flex-wrap content-start gap-[10px]">
+          {payload.tokens.map((t, i) => (
+            <span key={i} className={CHIP_DA}>
+              {t.text}
+              {hienPhienAm && t.pinyin && <span className="ml-1.5 font-body text-11 font-normal">{t.pinyin}</span>}
+            </span>
+          ))}
+        </div>
+        <div className="col-start-1 row-start-1 flex flex-wrap content-start gap-[10px]">
+          {khay.map((i) => (
+            <button key={i} type="button" disabled={kq !== null} onClick={() => setKhay((c) => c.filter((x) => x !== i))} className={CHIP_DA}>
+              {xao[i]!.text}
+              {hienPhienAm && xao[i]!.pinyin && (
+                <span className="ml-1.5 font-body text-11 font-normal opacity-70">{xao[i]!.pinyin}</span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-wrap justify-center gap-[10px]">
-        {xao.map((t, i) =>
-          khay.includes(i) ? null : (
-            <button key={i} type="button" disabled={kq !== null} onClick={() => setKhay((c) => [...c, i])} className={CHIP_CHUA}>
+        {xao.map((t, i) => {
+          const daChon = khay.includes(i)
+          return (
+            <button key={i} type="button" disabled={kq !== null || daChon} tabIndex={daChon ? -1 : undefined}
+              onClick={() => setKhay((c) => [...c, i])} className={daChon ? CHIP_GIU_CHO : CHIP_CHUA}>
               {t.text}
               {hienPhienAm && t.pinyin && (
                 <span className="ml-1.5 font-body text-11 text-content-muted">{t.pinyin}</span>
               )}
             </button>
-          ),
-        )}
+          )
+        })}
       </div>
 
       <button
