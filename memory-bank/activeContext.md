@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-14** (**M30 XONG** — Sắp xếp câu: chip hàng dưới đứng yên; đã commit + push + deploy Firebase)
+> Cập nhật lần cuối: **2026-10-17** (**M30 sửa lần 2** — Sắp xếp câu: hàng chip lên trên khay + neo trên; bản 10-14 vẫn nhảy ở 18% câu mobile)
 
 ## Trạng thái hiện tại
 
@@ -47,7 +47,7 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M26d (màn Phân biệt từ gần nghĩa + điểm 15/12/39 + NOT NULL) — ✅ XONG 2026-10-05 (MB-49)** · ảnh bố cục ✅ duyệt ⇒ **M26 ĐÓNG**.
 **M28 (Select Dialog: gỡ từ đã điền + chấm khi bấm "Kiểm tra") — ✅ XONG 2026-10-05 (MB-50).**
 **M29 (Deploy Firebase Cloud Function cho mạng công ty) — ✅ XONG 2026-10-07 (MB-51)** · ⏳ người dùng nghiệm thu ở công ty (T12).
-**M30 (Sắp xếp câu: chip hàng dưới đứng yên + ô xám giữ chỗ) — ✅ XONG 2026-10-14 (MB-52).**
+**M30 (Sắp xếp câu: hàng chip đứng yên + ô xám giữ chỗ) — ✅ XONG 2026-10-14, SỬA LẦN 2 2026-10-17 (MB-52).**
 **Tiếp theo:** chưa có milestone mới — chờ người dùng ra lệnh. Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
@@ -61,6 +61,12 @@ lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên 
   Script dùng lại: scratchpad phiên 2026-10-14 `cdp-m30.mjs` (Vite :5191 + Chrome :9231).
 - ⚠️ Bẫy: `TaskStop` tắt tiến trình bash bọc ngoài nhưng `npx vite` (node) vẫn sống ⇒ phải `Stop-Process` theo PID.
 - Người dùng cho phép agent tự commit + push + `deploy:firebase` cho task này (ngoại lệ luật git, chỉ áp cho M30).
+- **❌ 2026-10-17 người dùng báo VẪN NHẢY.** Bản 10-14 (bản ma = câu ĐÚNG thứ tự) chỉ kiểm 1 câu 9 token. Quét 740 câu thật
+  trong `ExerciseShell` thật: hỏng 19 (PC) · 131 (Mobile 390) · 114 (Mobile 360) — câu xếp SAI xuống dòng khác, cần +1…+2 dòng;
+  shell căn giữa dọc khuếch đại. Người dùng chọn: **hàng chip LÊN TRÊN khay + `ExerciseShell neoTren`** (đứng yên theo cấu
+  trúc). Bỏ bản ma. Quét lại: 740/740 ở cả 3 khổ.
+- 📌 **Bài học:** kiểm bố cục phải dùng **dữ liệu thật + shell thật** (trang tạm 1 câu tự chế đã che mất lỗi). Script quét dùng lại:
+  scratchpad phiên 2026-10-14 `cdp-m30-quet.mjs [lan] [pc|mobile|mobile360]` + `tam-m30.tsx.bak` + `arrange-that.json`.
 
 ### ✅ M29 vừa xong (2026-10-07) — MB-51 · Design `design.m29.md` · Plan `design.m29a.md`
 - URL: (a) https://asia-southeast1-vocabloom-helios.cloudfunctions.net/vocabloom/ · (b) https://vocabloom-1004632816026.asia-southeast1.run.app/vocabloom/

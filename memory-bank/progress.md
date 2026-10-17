@@ -86,8 +86,9 @@
 - [x] **M28** (XONG 2026-10-05, MB-50) — Select Dialog: gỡ từ đã điền (bấm từ trong câu / Backspace), chip ẩn giữ chỗ, chấm khi
       bấm "Kiểm tra" · vá Gợi ý in lộ đáp án A. TDD DC1–DC5 (ĐỎ trước) · `npm test` 479/479 · build · lint exit 0 · CDP trang tạm 58/58.
 - [x] **M29** (XONG 2026-10-07, MB-51) — Deploy bản Firebase Cloud Function `vocabloom` (giao diện + proxy Supabase/OpenRouter/TTS) cho mạng công ty; Vercel không đổi. `npm run deploy:firebase`. CDP cloud 2×8. ⏳ Người dùng nghiệm thu ở công ty.
-- [x] **M30** (XONG 2026-10-14, MB-52) — Arrange Words: chip hàng dưới đứng yên, chip đã chọn thành ô xám giữ chỗ, khay cao sẵn
-      bằng câu (bản ma vô hình). `npm test` 487/487 · build · lint exit 0 · CDP trang tạm 73/73. Commit + push + `deploy:firebase`.
+- [x] **M30** (XONG 2026-10-14, SỬA LẦN 2 2026-10-17, MB-52) — Arrange Words: hàng chip đứng yên, chip đã chọn thành ô xám giữ chỗ.
+      Lần 1 (khay cao sẵn bằng câu đúng) hở 18% câu mobile ⇒ lần 2: hàng chip LÊN TRÊN khay + `ExerciseShell neoTren`.
+      `npm test` 487/487 · build · lint exit 0 · quét 740 câu thật × 3 thứ tự × 3 khổ = 740/740. Commit + push + `deploy:firebase`.
 
 ### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
 - [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.

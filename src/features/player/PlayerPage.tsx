@@ -751,7 +751,7 @@ export default function PlayerPage() {
         }),
       }
       return (
-        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={640} dots={dots} soTuPhien={soTuPhien}>
+        <ExerciseShell header={ring} ghost={ghost} thoat={thoat} rong={640} dots={dots} soTuPhien={soTuPhien} neoTren>
           {bannerLoi}
           <SapXep key={tt.chi_so} vocab={v} payload={man.payload} hienPhienAm={hienPhienAm} soGoiY={soGoiY}
             onTraLoi={(dung, goiY) => void traLoi(v.id, 'arrange_words', dung, goiY, man.la_bai_cuoi_cua_tu)} />

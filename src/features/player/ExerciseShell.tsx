@@ -34,12 +34,15 @@ type Props = {
   vienHeader?: boolean
   /** Số từ trong session hiện tại — lộ ra `data-so-tu-phien` để kiểm thử tự động đọc được (M11). */
   soTuPhien?: number | undefined
+  /** M30 — neo thân màn lên TRÊN thay vì căn giữa dọc: màn có phần tử cao dần (khay Sắp xếp câu) sẽ không
+   *  kéo những phần tử phía trên nó xê dịch theo. */
+  neoTren?: boolean
   children: ReactNode
 }
 
 const NUT_GHOST = 'flex flex-col items-center gap-1 text-10 font-medium'
 
-export default function ExerciseShell({ header, ghost, thoat, rong, dots, vienHeader = true, soTuPhien, children }: Props) {
+export default function ExerciseShell({ header, ghost, thoat, rong, dots, vienHeader = true, soTuPhien, neoTren = false, children }: Props) {
   return (
     <main className="flex min-h-[100dvh] flex-col bg-surface-page" data-so-tu-phien={soTuPhien}>
       <header
@@ -86,7 +89,7 @@ export default function ExerciseShell({ header, ghost, thoat, rong, dots, vienHe
         </div>
       </header>
 
-      <div className="flex flex-1 items-center justify-center px-5 py-6 md:p-10">
+      <div className={`flex flex-1 justify-center px-5 py-6 md:p-10 ${neoTren ? 'items-start' : 'items-center'}`}>
         <div className={`w-full ${MAX[rong]}`}>{children}</div>
       </div>
 

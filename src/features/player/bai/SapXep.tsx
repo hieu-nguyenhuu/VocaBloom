@@ -5,9 +5,13 @@ import { useDungPhim } from '../dungPhim.ts'
 import { chamArrange, chamLuot, xaoTron, type PayloadSapXep, type VocabDb } from '../../../lib/player.ts'
 
 /**
- * Pattern 3 — sắp xếp từ (mockup 04). Hàng dưới = chip chưa chọn (trung tính), khay trên = chip đã
- * chọn (tint tím). Bấm chip dưới → lên khay; bấm chip trên → trả về dưới. M30: hàng dưới KHÔNG BAO GIỜ
- * gỡ chip khỏi DOM — chip đã lên khay thành ô xám giữ chỗ, nên không chip nào nhảy vị trí. Đáp án đúng là thứ tự
+ * Pattern 3 — sắp xếp từ (mockup 04). Hàng chip = chip chưa chọn (trung tính), khay = chip đã chọn
+ * (tint tím). Bấm chip ở hàng → vào khay; bấm chip trong khay → trả về hàng.
+ * ⚠️ M30 — hàng chip phải ĐỨNG YÊN suốt bài (người dùng báo nhảy chỗ ⇒ chọn nhầm):
+ *  - chip đã vào khay KHÔNG gỡ khỏi DOM mà thành ô xám giữ chỗ;
+ *  - hàng chip đặt TRÊN khay (ngược mockup) + shell neo nội dung lên trên (`neoTren`). Khay xếp sai thứ tự
+ *    có thể cần thêm 1–2 dòng so với câu đúng (đo 740 câu thật) ⇒ mọi cách "dành sẵn chiều cao" cho khay
+ *    nằm trên đều hở; chỉ khi không có gì đổi cao ở phía trên thì hàng chip mới chắc chắn đứng yên. Đáp án đúng là thứ tự
  * `payload.tokens` GỐC; app chỉ xáo lúc hiển thị (§6.3 #13).
  * Gợi ý (DEC-19): mỗi lần bấm đưa đúng 1 chip tiếp theo vào khay.
  * M25: sai → viền khay đỏ 800ms rồi GIỮ chip trong khay để gỡ/xếp lại đến khi đúng (hoặc Bỏ qua).
@@ -24,7 +28,7 @@ type Props = {
 const CHIP = 'rounded-10 px-[18px] py-[10px] font-han text-18 transition-colors'
 const CHIP_CHUA = `${CHIP} border border-border-input bg-surface-raised text-content-primary`
 const CHIP_DA = `${CHIP} border-[1.5px] border-accent bg-accent-tint font-semibold text-accent-text`
-// M30 — chip đã lên khay vẫn GIỮ CHỖ ở hàng dưới (cùng viền 1px như CHIP_CHUA ⇒ không đổi bề rộng)
+// M30 — chip đã vào khay vẫn GIỮ CHỖ ở hàng chip (cùng viền 1px như CHIP_CHUA ⇒ không đổi bề rộng)
 const CHIP_GIU_CHO = `${CHIP} border border-border-input bg-surface-sunken text-content-muted opacity-50 cursor-default`
 
 export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }: Props) {
@@ -77,29 +81,7 @@ export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }
         Sắp xếp thành câu: <b>{vocab.example_meaning_vi ?? vocab.meaning_vi}</b>
       </p>
 
-      <div className={`grid rounded-16 border bg-surface-card p-[18px] ${vienKhay}`}>
-        {/* M30 — bản ma VÔ HÌNH của cả câu, chồng cùng ô grid: khay cao sẵn bằng câu hoàn chỉnh ngay từ đầu
-            ⇒ chọn/gỡ chip không làm khay cao lên và đẩy hàng dưới xuống */}
-        <div aria-hidden className="invisible col-start-1 row-start-1 flex flex-wrap content-start gap-[10px]">
-          {payload.tokens.map((t, i) => (
-            <span key={i} className={CHIP_DA}>
-              {t.text}
-              {hienPhienAm && t.pinyin && <span className="ml-1.5 font-body text-11 font-normal">{t.pinyin}</span>}
-            </span>
-          ))}
-        </div>
-        <div className="col-start-1 row-start-1 flex flex-wrap content-start gap-[10px]">
-          {khay.map((i) => (
-            <button key={i} type="button" disabled={kq !== null} onClick={() => setKhay((c) => c.filter((x) => x !== i))} className={CHIP_DA}>
-              {xao[i]!.text}
-              {hienPhienAm && xao[i]!.pinyin && (
-                <span className="ml-1.5 font-body text-11 font-normal opacity-70">{xao[i]!.pinyin}</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
+      {/* M30 — hàng chip đứng TRÊN khay: phía trên nó không có gì đổi chiều cao ⇒ không bao giờ bị đẩy */}
       <div className="flex flex-wrap justify-center gap-[10px]">
         {xao.map((t, i) => {
           const daChon = khay.includes(i)
@@ -113,6 +95,17 @@ export default function SapXep({ vocab, payload, hienPhienAm, soGoiY, onTraLoi }
             </button>
           )
         })}
+      </div>
+
+      <div className={`flex min-h-16 flex-wrap content-start gap-[10px] rounded-16 border bg-surface-card p-[18px] ${vienKhay}`}>
+        {khay.map((i) => (
+          <button key={i} type="button" disabled={kq !== null} onClick={() => setKhay((c) => c.filter((x) => x !== i))} className={CHIP_DA}>
+            {xao[i]!.text}
+            {hienPhienAm && xao[i]!.pinyin && (
+              <span className="ml-1.5 font-body text-11 font-normal opacity-70">{xao[i]!.pinyin}</span>
+            )}
+          </button>
+        ))}
       </div>
 
       <button

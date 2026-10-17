@@ -37,6 +37,17 @@ khoảng trống bằng chiều cao câu. Ca xếp ngược thứ tự (câu sai
 `npm test` 487/487 · build xanh · lint exit 0 (0 cảnh báo mới) · CDP trang tạm **73/73** (PC 1280 + Mobile 390 × Sáng/Tối ×
 pinyin bật/tắt; 9 ca mỗi cấu hình + 0 request supabase.co). Trang tạm `tam-m30.*` đã xoá.
 
+## 2d. ❌ Lần 2 (2026-10-17): người dùng vẫn thấy nhảy ⇒ bản ma KHÔNG đủ — đã thay
+
+- Trang tạm lần 1 chỉ có **1 câu 9 token**. Quét lại **740 câu thật** trong `ExerciseShell` thật (rộng 640, căn giữa dọc, pinyin bật
+  như Player mặc định): hàng chip xê dịch ở **19/740 câu (PC) · 131/740 (Mobile 390) · 114/740 (Mobile 360)**.
+- Gốc: bản ma đo câu xếp ĐÚNG thứ tự; câu đang xếp SAI xuống dòng khác ⇒ cần thêm dòng: đo 30 thứ tự ngẫu nhiên/câu ⇒ PC tối đa +1,
+  Mobile **+2 dòng**. Shell căn giữa dọc khuếch đại thêm. Mọi cách "dành sẵn chiều cao" đều không đảm bảo, và khay trống sẽ cao >500px.
+- **Người dùng chọn (2026-10-17):** đưa **hàng chip LÊN TRÊN khay** + shell **neo nội dung lên trên** (`ExerciseShell` prop
+  `neoTren`, chỉ màn này dùng). Phía trên hàng chip chỉ còn header + đề cố định ⇒ đứng yên **theo cấu trúc**, không theo phép đo.
+  Bỏ bản ma: khay về `min-h-16`, lớn dần, chỉ đẩy nút Kiểm tra. Ô xám giữ chỗ giữ nguyên.
+- Thứ tự mới NGƯỢC mockup 04 (mockup: khay trên, chip dưới) — lệch có chủ ý, đã ghi UI_DESIGN Pattern 3.
+
 ## 3. Plan
 
 **T1 — `SapXep.tsx`: thêm style giữ chỗ** (sau dòng `CHIP_DA`):

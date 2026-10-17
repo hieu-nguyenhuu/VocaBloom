@@ -1001,3 +1001,8 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
     Đánh đổi: khay trống cao bằng câu lúc mới vào bài.
 - **Bằng chứng:** `npm test` 487/487 · build · lint exit 0 · CDP trang tạm 73/73 (PC/Mobile × Sáng/Tối × pinyin, gồm xếp ngược), 0 request supabase.co.
 - **Trạng thái:** ✅ Đã áp dụng · commit + push + `deploy:firebase` theo lệnh người dùng.
+- **🔁 Sửa lần 2 (2026-10-17):** người dùng báo vẫn nhảy. Quét 740 câu thật trong shell thật: bản ma hở 19 (PC) / 131 (Mobile 390) /
+  114 (Mobile 360) câu — câu xếp SAI cần thêm 1–2 dòng so với câu đúng, shell căn giữa dọc khuếch đại. Dừng lại hỏi (luật 3 lần);
+  người dùng chọn **hàng chip LÊN TRÊN khay + `ExerciseShell` prop `neoTren`** (chỉ màn này), bỏ bản ma. Phương án loại: khay cao
+  cố định + cuộn trong; dành thêm 2 dòng (không đảm bảo, khay trống >500px). Bằng chứng: 487/487 · build · lint exit 0 ·
+  quét 740/740 × 3 thứ tự × 3 khổ.
