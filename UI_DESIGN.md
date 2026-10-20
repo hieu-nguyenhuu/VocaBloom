@@ -227,7 +227,7 @@ Dùng đúng Exercise Shell + 9 pattern ở §6. Session gom theo stage (DEC-10)
 
 ### 8.6 Cài đặt
 
-3 nhóm: **AI/OpenRouter** (API key ẩn dạng `sk-••••3f2a`, chọn model) → **Học tập** (số từ mới/ngày dạng stepper +/-, giọng đọc TTS) → **Thông báo** (toggle bật/tắt cảnh báo hàng đợi cạn, dùng switch nền chàm sâu khi bật).
+3 nhóm: **AI/OpenRouter** (API key ẩn dạng `sk-••••3f2a`, chọn model) → **Học tập** (**M32:** công tắc "Thêm từ mới hằng ngày" + dòng ghi chú 12px muted ngay dưới — tắt thì stepper số từ mới mờ 50% nhưng vẫn chỉnh được; số từ mới/ngày dạng stepper +/-, giọng đọc TTS) → **Thông báo** (toggle bật/tắt cảnh báo hàng đợi cạn, dùng switch nền chàm sâu khi bật).
 
 - **Mobile:** 1 cột, các nhóm xếp dọc như mockup.
 - **PC:** 2 cột (nhóm AI + Học tập bên trái, Thông báo bên phải) hoặc giữ 1 cột nhưng rộng hơn với label/input canh 2 bên trái-phải rõ ràng hơn — ưu tiên rộng rãi hơn vì đây là màn ít ghé thăm, không cần tối ưu mật độ.

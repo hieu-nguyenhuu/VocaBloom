@@ -1034,3 +1034,11 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
   < 100 để đoạn không bị độn); file đặt tên theo thứ tự snapshot (`02–15`, `h4-01–20`). Nạp bằng CLI M31a (chặn nạp chồng).
 - **Bằng chứng:** `kiem.mjs` 34/34 file 0 lỗi · CLI dry-run 34/34 · ghi 34 · chạy lại bị chặn · nghiệm thu 35/35, 175 đoạn, 478 câu.
 - **Trạng thái:** ✅ Đã áp dụng. M31c chưa làm.
+
+### [2026-10-21] MB-55 — M32: công tắc "Thêm từ mới hằng ngày"
+- **Bối cảnh:** người dùng muốn chủ động bật/tắt việc cron kích hoạt từ mới mỗi ngày.
+- **Quyết định (`design.m32.md`):** key `new_words_enabled` mặc định **bật** (Q2, giữ hành vi cũ) · tắt ⇒ bỏ B4 nhỏ giọt + B5 cảnh báo cạn (Q4) ·
+  bật giữa ngày có hiệu lực từ 01:00 sáng mai, không kích hoạt ngay (Q3) · từ đã kích hoạt không bị ảnh hưởng (Q1).
+- **Kỹ thuật:** seed bằng migration riêng `0019` (khuôn `0012`), hàm cron sửa tại chỗ ở `0005` (1 định nghĩa).
+- **Bằng chứng:** settings 3 ca + `test:db` T10/T11 + `check:schema` đều ĐỎ trước · CDP 12/12.
+- **Trạng thái:** ✅ Đã áp dụng · commit + push + `deploy:firebase` theo lệnh người dùng.

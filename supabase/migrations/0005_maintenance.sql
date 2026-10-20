@@ -20,6 +20,9 @@ declare
                                    from settings where key = 'new_words_per_day'), 5);
   bat_canh_bao boolean := coalesce((select (value #>> '{}')::boolean
                                    from settings where key = 'low_queue_alert_enabled'), true);
+  -- M32: công tắc "Thêm từ mới hằng ngày" ở Cài đặt (0019). Tắt ⇒ bỏ B4 + B5; thiếu key ⇒ bật.
+  bat_tu_moi   boolean := coalesce((select (value #>> '{}')::boolean
+                                   from settings where key = 'new_words_enabled'), true);
   da_kich_hoat int;
   con_lai      int;
 begin
@@ -57,7 +60,7 @@ begin
   select count(*) into da_kich_hoat
     from word_state where stage = 'new' and next_review_date = hom_nay;
 
-  if da_kich_hoat < so_tu_moi then
+  if bat_tu_moi and da_kich_hoat < so_tu_moi then
     update word_state set next_review_date = hom_nay, updated_at = now()
     where vocab_id in (
       select vocab_id from word_state
@@ -67,11 +70,11 @@ begin
     );
   end if;
 
-  -- B5. CẢNH BÁO HÀNG ĐỢI CẠN (§5.2).
+  -- B5. CẢNH BÁO HÀNG ĐỢI CẠN (§5.2). M32: đang tắt thêm từ mới thì hàng đợi không vơi ⇒ không cảnh báo.
   select count(*) into con_lai
     from word_state where next_review_date is null and stage = 'new';
 
-  if bat_canh_bao and con_lai < so_tu_moi * 3
+  if bat_tu_moi and bat_canh_bao and con_lai < so_tu_moi * 3
      and not exists (select 1 from notifications
                       where type = 'low_queue' and is_read = false
                         and created_at > now() - interval '24 hours') then

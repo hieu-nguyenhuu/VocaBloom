@@ -160,6 +160,9 @@ tính điểm stage2/intensive từ M26d).
 SUY RA từ `lang` (zh ⇒ en). Nhiều nghĩa ngăn `"; "`, nghĩa đầu là nghĩa chính (`songNgu.ts`). Đang **nullable** (từ 2026-10-05 DB đã
 740/740 có dữ liệu; `NOT NULL` bật ở M26d) ⇒ mọi UI vẫn phải ẩn hẳn phần phụ khi null. `secondary_phonetic`/`note` null là hợp lệ. `topic_dialogues.content.lines[].text_secondary` = câu phụ hội thoại.
 
+**Công tắc nhỏ giọt từ mới (M32):** `settings.new_words_enabled` (mặc định `true`) — `false` ⇒ cron bỏ B4 + B5. Thêm key settings
+mới ⇒ seed bằng migration riêng `on conflict do nothing` + thêm vào `KEY_SETTINGS` của `check-schema` + `docCaiDat` (chỉ nhận đúng kiểu jsonb).
+
 **Hằng số nghiệp vụ (gom 1 chỗ, không rải rác):** `MASTER_THRESHOLD = 39` (M26d/MB-49, trước 36; ring import đúng hằng này; test X1b canh = tổng `MAX_CYCLE`); ngưỡng cycle 3/4 · 6/8 · **12/15** (stage2/intensive, +`near_synonym`) · stage3 9/12; mẫu số health 4 · 12 · 27 · 39 (X3 canh); điểm mỗi bài 1 · 2 · 3 · 4; gap gốc 1 · 2 · 4 · 7 ngày; `gap_factor` 100% / 70% / 50% theo health; phạt −1…−5 theo stage (mastered miễn nhiễm); dùng gợi ý → điểm ×50% làm tròn xuống.
 
 ## 7. Pattern nghiệp vụ dễ làm sai (ghi lại để khỏi vấp)

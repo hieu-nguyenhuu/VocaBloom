@@ -21,7 +21,12 @@ const DON_SACH = `
            daily_retry_queue, word_state, exercises, vocab_topics, topic_dialogues cascade;
   update settings set value = '5'    where key = 'new_words_per_day';
   update settings set value = 'true' where key = 'low_queue_alert_enabled';
+  insert into settings (key, value) values ('new_words_enabled', 'true')
+    on conflict (key) do update set value = 'true';
 `
+
+/** M32 — tắt công tắc "Thêm từ mới hằng ngày" (trong giao dịch, rollback ở cuối). */
+const TAT_TU_MOI = "update settings set value = 'false' where key = 'new_words_enabled';"
 
 /** Seed 1 từ + word_state. updated_at lùi 2 ngày để không dính chốt chống-phạt-chồng. */
 function motTu({ ten, stage, due, diem, onLuc = 'null', cycle = 0 }) {
@@ -143,6 +148,22 @@ const CAC_CA = [
     assert: `select (select count(*) from daily_retry_queue) = 1
                 and (select queue_date from daily_retry_queue) = ${HOM_NAY} as pass,
                     'còn lại ' || (select count(*) from daily_retry_queue) || ' dòng' as chi_tiet`,
+  },
+  {
+    ma: 'T10',
+    ten: 'M32 — TẮT thêm từ mới: 12 từ hàng đợi → KHÔNG kích hoạt từ nào',
+    seed: TAT_TU_MOI + hangDoi(12),
+    goi: 1,
+    assert: `select (select count(*) from word_state where next_review_date = ${HOM_NAY}) = 0 as pass,
+                    'đã kích hoạt=' || (select count(*) from word_state where next_review_date = ${HOM_NAY}) as chi_tiet`,
+  },
+  {
+    ma: 'T11',
+    ten: 'M32 — TẮT thêm từ mới: hàng đợi 7 từ → KHÔNG gửi cảnh báo low_queue',
+    seed: TAT_TU_MOI + hangDoi(7),
+    goi: 1,
+    assert: `select (select count(*) from notifications where type = 'low_queue') = 0 as pass,
+                    'số notification=' || (select count(*) from notifications) as chi_tiet`,
   },
 ]
 

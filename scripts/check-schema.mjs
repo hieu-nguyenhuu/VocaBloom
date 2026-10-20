@@ -24,6 +24,7 @@ const KEY_SETTINGS = [
   'openrouter_api_key', 'openrouter_model', 'google_tts_api_key',
   'new_words_per_day', 'max_tu_moi_luot',
   'tts_voice', 'tts_voice_en', 'low_queue_alert_enabled',
+  'new_words_enabled', // M32
 ]
 
 // M26 — enum dạng bài và 5 cột từ vựng phụ: liệt kê TÊN, không đếm cứng (luật M12a).

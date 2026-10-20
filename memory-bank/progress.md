@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-18** (M31b — 35/35 chủ đề có đề đọc hiểu, đã deploy Firebase)
+> Cập nhật lần cuối: **2026-10-21** (M32 — công tắc "Thêm từ mới hằng ngày")
 
 ## ✅ Đã xong
 
@@ -98,6 +98,8 @@
 - [x] **M31b** (XONG 2026-10-18, MB-54) — soạn + nạp đề 34 chủ đề còn lại (`02–15.json`, `h4-01–20.json`), mỗi file validate 0 lỗi / phủ 100% từ,
       CLI dry-run rồi ghi. DB **35 chủ đề · 175 đoạn · 478 câu**, đọc lại qua `docBaiDoc` 35/35. `deploy:firebase` ✅.
 - [ ] **M31c** — khoá `readings` trong file import (3 cổng + RPC `import_topic` + skill `vocabCsv2Json`).
+- [x] **M32** (XONG 2026-10-21, MB-55) — công tắc "Thêm từ mới hằng ngày" ở Cài đặt: key `new_words_enabled` (`0019`, mặc định bật),
+      cron bỏ B4 + B5 khi tắt. `npm test` 494/494 · build · lint · `test:db` 11/11 · `check:schema` · CDP 12/12. Commit + push + deploy Firebase.
 
 ### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
 - [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.

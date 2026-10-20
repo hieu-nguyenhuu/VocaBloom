@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-18** (**M31b XONG** — 35/35 chủ đề có đề đọc hiểu: 175 đoạn · 478 câu; đã `deploy:firebase`)
+> Cập nhật lần cuối: **2026-10-21** (**M32 XONG** — công tắc "Thêm từ mới hằng ngày" ở Cài đặt; đã commit + push + deploy theo lệnh người dùng)
 
 ## Trạng thái hiện tại
 
@@ -50,9 +50,18 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M30 (Sắp xếp câu: hàng chip đứng yên + ô xám giữ chỗ) — ✅ XONG 2026-10-14, SỬA LẦN 2 2026-10-17 (MB-52).**
 **M31a (Ôn theo chủ đề = Đọc hiểu kiểu HSK) — ✅ XONG 2026-10-18 (MB-53).** ⏳ Cổng duyệt: ảnh bố cục + văn phong/độ khó chủ đề thử.
 **M31b (Soạn đề 34 chủ đề còn lại) — ✅ XONG 2026-10-18 (MB-54).**
+**M32 (Công tắc "Thêm từ mới hằng ngày") — ✅ XONG 2026-10-21 (MB-55).**
 **Tiếp theo:** M31c (khoá `readings` trong file import + skill `vocabCsv2Json`) khi người dùng ra lệnh. (cũ)  Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M32 vừa xong (2026-10-21) — MB-55 · Design + Plan gộp `design.m32.md`
+- Key `new_words_enabled` (jsonb boolean, seed `true` ở `0019_bat_tu_moi.sql`). `run_daily_maintenance()` sửa TẠI CHỖ ở `0005`:
+  tắt ⇒ bỏ B4 (nhỏ giọt từ mới) + B5 (cảnh báo hàng đợi cạn); B1–B3 không đổi; thiếu key ⇒ coi như bật. Hiệu lực ở lần cron kế tiếp (01:00).
+- UI: hàng công tắc đầu nhóm "Học tập" (tái dùng `CongTac`) + ghi chú 12px muted; tắt ⇒ stepper "Số từ mới/ngày" mờ 50% (vẫn chỉnh được).
+- Kiểm chứng: `npm test` 494/494 (3 ca settings ĐỎ trước) · build · lint exit 0 · `db:migrate` ×2 · `check:schema` (9 key, ĐỎ trước) ·
+  `test:db` 11/11 (T10/T11 ĐỎ trước) · CDP local 12/12 (PC + Mobile; DB ghi boolean, tải lại giữ; DB đã trả về `true`).
+- Người dùng cho phép agent tự commit + push + `deploy:firebase` cho task này (ngoại lệ luật git, chỉ áp cho M32).
 
 ### ✅ M31b vừa xong (2026-10-18) — MB-54 · Plan `design.m31b.md`
 - `deploy:firebase` ✅ (lần 1 lỗi "User code failed to load… Timeout after 10000" ⇒ `FUNCTIONS_DISCOVERY_TIMEOUT=60 npx firebase deploy --only functions:vocabloom` OK; bundle `index-B2ktfXXm.js` khớp cloud).
@@ -61,6 +70,10 @@ lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên 
 - DB: **35/35 chủ đề · 175 đoạn · 478 câu** — nghiệm thu chỉ đọc qua `docBaiDoc` (scratchpad `nghiem-thu-m31b.mjs`) sạch; `doc_hieu_log` = 0.
 - Bẫy soạn đề: từ ly hợp bị tách (请两天假, 上不了网, 值一天班, 放七天假, 换个班) ⇒ validator báo "không có trong đoạn" — viết liền (请假/值班/放假…) hoặc bỏ khỏi `highlight_words`.
 - Chưa làm: M31c (file import mới phải kèm `readings`). Chủ đề import MỚI hiện sẽ "Chưa có bài đọc" cho tới khi nạp bằng CLI.
+- 2026-10-20 người dùng báo "ôn theo chủ đề vẫn ôn từng từ, cả 2 bản". Kiểm: code 0 lối vào Player topic; bundle Firebase
+  `index-B2ktfXXm.js` đúng luồng mới; CDP trên URL Firebase thật (trình duyệt mới) đi Dashboard → Chọn chủ đề → Ngữ pháp → Đọc hiểu 1/5 ✓.
+  ⇒ Vercel cũ vì M31 CHƯA commit/push (người dùng tự commit); Firebase thấy cũ = tab mở từ trước deploy (JS cũ trong bộ nhớ) ⇒ tải lại trang.
+  Người dùng chốt GIỮ màn Ngữ pháp chủ đề trước Đọc hiểu.
 
 ### ✅ M31a vừa xong (2026-10-18) — MB-53 · Design `design.m31.md` · Plan `design.m31a.md` (25 task)
 - Chốt: đề sinh NGOÀI app (bảng `topic_readings`, CLI `bo-sung:doc-hieu`) · KHÔNG tính điểm SRS · luồng Ngữ pháp → Đọc hiểu → Kết quả

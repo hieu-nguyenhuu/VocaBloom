@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { anKhoa, chinhSoTuMoi, docCaiDat, MAC_DINH, chinhGioiHanLuot } from './settings.ts'
 
 describe('docCaiDat', () => {
-  it('đủ 8 key → đọc đúng kiểu', () => {
+  it('đủ 9 key → đọc đúng kiểu', () => {
     expect(
       docCaiDat([
         { key: 'openrouter_api_key', value: 'sk-abc' },
@@ -19,6 +19,7 @@ describe('docCaiDat', () => {
         { key: 'tts_voice', value: 'cmn-CN-Wavenet-C' },
         { key: 'tts_voice_en', value: 'en-US-Neural2-D' },
         { key: 'low_queue_alert_enabled', value: false },
+        { key: 'new_words_enabled', value: false },
       ]),
     ).toEqual({
       openrouter_api_key: 'sk-abc',
@@ -29,6 +30,7 @@ describe('docCaiDat', () => {
       tts_voice: 'cmn-CN-Wavenet-C',
       tts_voice_en: 'en-US-Neural2-D',
       low_queue_alert_enabled: false,
+      new_words_enabled: false,
     })
   })
 
@@ -42,6 +44,10 @@ describe('docCaiDat', () => {
   it('sai kiểu (số/boolean lưu thành chuỗi) → mặc định', () => {
     expect(docCaiDat([{ key: 'new_words_per_day', value: '7' }]).new_words_per_day).toBe(5)
     expect(docCaiDat([{ key: 'low_queue_alert_enabled', value: 'true' }]).low_queue_alert_enabled).toBe(true)
+    expect(docCaiDat([{ key: 'new_words_enabled', value: 'false' }]).new_words_enabled).toBe(true)
+  })
+  it('mặc định BẬT thêm từ mới hằng ngày (giữ hành vi cũ — M32/Q2)', () => {
+    expect(MAC_DINH.new_words_enabled).toBe(true)
   })
   it('key lạ → bỏ qua', () => {
     expect(docCaiDat([{ key: 'linh_tinh', value: 1 }])).toEqual(MAC_DINH)

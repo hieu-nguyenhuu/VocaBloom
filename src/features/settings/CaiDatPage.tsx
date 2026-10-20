@@ -250,7 +250,21 @@ export default function CaiDatPage() {
           </Nhom>
 
           <Nhom ten="Học tập">
+            {/* M32 — tắt ⇒ cron 01:00 không nhỏ giọt từ mới (B4) và không cảnh báo hàng đợi cạn (B5) */}
             <div className={HANG}>
+              <span className={NHAN}>Thêm từ mới hằng ngày</span>
+              <CongTac
+                bat={cd.new_words_enabled}
+                nhan="Thêm từ mới hằng ngày"
+                onDoi={(v) => void ghi('new_words_enabled', v)}
+              />
+            </div>
+            <p className="-mt-2 text-12 text-content-muted">
+              {cd.new_words_enabled
+                ? `Mỗi ngày lúc 01:00 thêm ${cd.new_words_per_day} từ từ hàng đợi. Thay đổi có hiệu lực từ 01:00 sáng mai.`
+                : 'Đang tạm dừng — không thêm từ mới, từ đã học vẫn ôn bình thường.'}
+            </p>
+            <div className={`${HANG} ${cd.new_words_enabled ? '' : 'opacity-50'}`}>
               <span className={NHAN}>Số từ mới/ngày</span>
               <div className="flex items-center gap-3">
                 <button type="button" aria-label="Giảm" onClick={() => void ghi('new_words_per_day', chinhSoTuMoi(cd.new_words_per_day, -1))} className={NUT_NHO}>
