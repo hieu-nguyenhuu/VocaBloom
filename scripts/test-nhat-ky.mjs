@@ -26,6 +26,15 @@ const DUNG_DU_LIEU = (ms) => `
   insert into review_log (vocab_id, exercise_type, is_correct, points, thoi_gian_ms)
     values ('00000000-0000-0000-0000-00000000bbb1'::uuid, 'selection', true, 1, ${ms});`
 
+/** M31 — 1 đề đọc hiểu + 1 dòng doc_hieu_log hôm nay (không cần vocab/review_log). */
+const DUNG_DOC_HIEU = (ms) => `
+  insert into topics (id, name) values ('00000000-0000-0000-0000-00000000aaa2'::uuid, 'ZZ doc') ;
+  insert into topic_readings (id, topic_id, kieu, content)
+    values ('00000000-0000-0000-0000-00000000ccc1'::uuid, '00000000-0000-0000-0000-00000000aaa2'::uuid, 'doan_van', '{}');
+  insert into doc_hieu_log (luot_id, topic_id, reading_id, so_cau, so_dung, thoi_gian_ms)
+    values (gen_random_uuid(), '00000000-0000-0000-0000-00000000aaa2'::uuid,
+            '00000000-0000-0000-0000-00000000ccc1'::uuid, 3, 2, ${ms});`
+
 const DON_SACH = `delete from nhat_ky_ngay; truncate vocab, topics cascade;`
 
 const CAC_CA = [
@@ -82,6 +91,23 @@ const CAC_CA = [
                       where table_name = 'nhat_ky_ngay' and constraint_type = 'FOREIGN KEY') = 0 as pass,
               format('%s khoá ngoại', (select count(*) from information_schema.table_constraints
                       where table_name = 'nhat_ky_ngay' and constraint_type = 'FOREIGN KEY')) as chi_tiet`,
+  },
+  {
+    ma: 'N6',
+    ten: 'M31 — ngày CHỈ đọc hiểu (0 review_log) vẫn ghi nhật ký với đúng số ms',
+    sql: `${DUNG_DOC_HIEU(240000)}
+          select chot_nhat_ky_ngay();`,
+    assert: `select (select thoi_gian_ms from nhat_ky_ngay where ngay = ${NGAY_VN}) = 240000 as pass,
+              format('%s ms (phải 240000)', (select thoi_gian_ms from nhat_ky_ngay where ngay = ${NGAY_VN})) as chi_tiet`,
+  },
+  {
+    ma: 'N7',
+    ten: 'M31 — ôn từ + đọc hiểu cùng ngày ⇒ CỘNG cả 2 nguồn',
+    sql: `${DUNG_DU_LIEU(120000)}
+          ${DUNG_DOC_HIEU(60000)}
+          select chot_nhat_ky_ngay();`,
+    assert: `select (select thoi_gian_ms from nhat_ky_ngay where ngay = ${NGAY_VN}) = 180000 as pass,
+              format('%s ms (phải 180000)', (select thoi_gian_ms from nhat_ky_ngay where ngay = ${NGAY_VN})) as chi_tiet`,
   },
 ]
 

@@ -51,9 +51,13 @@ declare
   v_ngay date   := (now() at time zone 'Asia/Ho_Chi_Minh')::date;
   v_ms   bigint;
 begin
-  select coalesce(sum(thoi_gian_ms), 0) into v_ms
-  from review_log
-  where (reviewed_at at time zone 'Asia/Ho_Chi_Minh')::date = v_ngay;
+  -- M31: cộng cả thời gian ĐỌC HIỂU (doc_hieu_log, bảng tạo ở 0018 — plpgsql phân giải bảng lúc
+  -- CHẠY nên tham chiếu trước vẫn hợp lệ). Ngày chỉ đọc hiểu vẫn là ngày có học.
+  select coalesce((select sum(thoi_gian_ms) from review_log
+                    where (reviewed_at at time zone 'Asia/Ho_Chi_Minh')::date = v_ngay), 0)
+       + coalesce((select sum(thoi_gian_ms) from doc_hieu_log
+                    where (created_at at time zone 'Asia/Ho_Chi_Minh')::date = v_ngay), 0)
+    into v_ms;
 
   -- Ghi dòng kể cả khi v_ms = 0: ngày CÓ vào Player nhưng mọi dòng log thiếu thoi_gian_ms
   -- (dòng cũ trước M9 để null) vẫn phải tính là NGÀY CÓ HỌC cho streak.

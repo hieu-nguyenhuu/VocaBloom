@@ -14,6 +14,8 @@ const BANG = [
   'exercises', 'review_log', 'topic_dialogues', 'notifications', 'settings',
   'topic_grammar',   // M12 — bảng thứ 11 (ngữ pháp CỦA CHỦ ĐỀ)
   'nhat_ky_ngay',    // M14 — bảng thứ 12 (nhật ký học theo ngày, KHÔNG có FK tới vocab)
+  'topic_readings',  // M31 — bảng thứ 13 (đề đọc hiểu của chủ đề)
+  'doc_hieu_log',    // M31 — bảng thứ 14 (lịch sử làm đọc hiểu)
 ]
 
 // Key settings BẮT BUỘC có mặt — liệt kê TƯỜNG MINH, không đếm (bài học MB-13).
@@ -37,6 +39,7 @@ const INDEX = [
   'idx_word_state_due', 'idx_word_state_queue', 'idx_retry_queue_date',
   'idx_exercises_vocab_type', 'idx_exercises_blank_b', 'idx_review_log_daily',
   'idx_review_log_reviewed_at', 'idx_topic_dialogue_topic', 'idx_topic_grammar_topic',
+  'idx_topic_readings_topic', 'idx_doc_hieu_log_luot', 'idx_doc_hieu_log_created',
 ]
 
 let hong = 0

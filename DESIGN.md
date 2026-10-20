@@ -18,4 +18,7 @@
 | [`design.m29.md`](design.m29.md) | **M29** — Deploy lên Firebase Cloud Functions (giao diện + proxy Supabase/OpenRouter/TTS) để dùng từ mạng công ty; làm thẳng trên `main` | ✅ Duyệt 2026-10-07 |
 | [`design.m29a.md`](design.m29a.md) | Plan M29a — 13 task: `proxy.ts` (TDD) · cấu hình build · `functions/` proxy (TDD) · harness local + CDP · hướng dẫn Blaze/CLI · deploy | ✅ Xong 2026-10-07 (MB-51) — CDP local 2×8 + cloud 2×8 · ⏳ người dùng nghiệm thu ở công ty |
 | [`design.m30.md`](design.m30.md) | **M30** — Sắp xếp câu: hàng chip đứng yên (ô xám giữ chỗ). Lần 2: hàng chip lên TRÊN khay + neo trên (bản ma lần 1 hở 18% câu mobile) | ✅ Xong 2026-10-17 (MB-52) — quét 740 câu thật |
+| [`design.m31.md`](design.m31.md) | **M31** — Ôn theo chủ đề = Đọc hiểu kiểu HSK (5 đoạn/chủ đề, 2–3 câu trắc nghiệm/đoạn, sinh ngoài app, không tính điểm SRS); bỏ Player topic + Hội thoại kết thúc | ✅ Duyệt 2026-10-18 |
+| [`design.m31a.md`](design.m31a.md) | Plan M31a — 25 task: DB 0018 + chốt nhật ký (TDD script) · `docHieu.ts` (TDD 16 ca) · CLI `bo-sung:doc-hieu` · màn Đọc hiểu + Kết quả · gỡ chế độ topic Player · 1 chủ đề thử + CDP | ✅ Xong 2026-10-18 (MB-53) — CDP 54/54 |
+| [`design.m31b.md`](design.m31b.md) | Plan M31b — soạn đề đọc hiểu 34 chủ đề còn lại (14 HSK3 + 20 HSK4), validate + CLI | ✅ Xong 2026-10-18 (MB-54) — 35/35 · 175 đoạn · 478 câu |
 | [`design.m27c.md`](design.m27c.md) | Plan M27c — soạn 14 chủ đề 02–15 theo chuẩn chủ đề 01, 2 đợt, validate 15/15 | ✅ Xong 2026-10-05 — 15/15 sạch · M27d đã chạy |

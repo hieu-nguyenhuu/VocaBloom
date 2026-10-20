@@ -1006,3 +1006,31 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
   người dùng chọn **hàng chip LÊN TRÊN khay + `ExerciseShell` prop `neoTren`** (chỉ màn này), bỏ bản ma. Phương án loại: khay cao
   cố định + cuộn trong; dành thêm 2 dòng (không đảm bảo, khay trống >500px). Bằng chứng: 487/487 · build · lint exit 0 ·
   quét 740/740 × 3 thứ tự × 3 khổ.
+
+### [2026-10-18] MB-53 — M31a: Ôn theo chủ đề = Đọc hiểu kiểu HSK
+- **Bối cảnh:** người dùng không muốn ôn theo chủ đề giống ôn hằng ngày; muốn đọc hội thoại/đoạn văn dùng từ của chủ đề rồi trả lời
+  2–3 câu như phần đọc HSK.
+- **Quyết định (`design.m31.md`, duyệt):**
+
+| Mã | Chốt | Lý do |
+|---|---|---|
+| Q1 | Đề sinh NGOÀI app, bảng `topic_readings`, nạp bằng CLI | Giữ nguyên tắc bất biến số 1 (AI không gen bài runtime) |
+| Q2 | KHÔNG tính điểm SRS | Không chạm bảng điểm 15/12/39; SRS chỉ qua ôn hằng ngày |
+| Q3 | Ngữ pháp → Đọc hiểu → Kết quả; bỏ Player topic + Hội thoại kết thúc | Route riêng, "hết danh sách đoạn" là điểm kết thúc (MB-26) |
+| Q4 | Chọn đủ → "Kiểm tra" 1 lần, lộ đáp án + giải thích | Như đề HSK; lệch §6.2/M25 có chủ ý |
+| Q5–Q6 | ~5 đoạn/chủ đề, trắc nghiệm 4 lựa chọn, xáo đoạn + đáp án | Phủ hết từ, ~13 câu/lượt |
+| Q7 | Pinyin mặc định TẮT; dịch + từ đậm chỉ sau Kiểm tra | Giống thi thật |
+| Q8 | `doc_hieu_log` + `chot_nhat_ky_ngay` cộng cả đọc hiểu | Ngày chỉ đọc hiểu vẫn tính streak/phút |
+
+- **Kỹ thuật:** `chot_nhat_ky_ngay` sửa TẠI CHỖ ở `0014` (1 định nghĩa; plpgsql phân giải bảng lúc chạy nên tham chiếu bảng của `0018`
+  hợp lệ). Trần thời gian đọc 10 phút/đoạn (`TRAN_DOC_MS`). Validator `kiemTraBaiDoc` dùng chung CLI + Import (M31c).
+- **Bằng chứng:** `npm test` 493/493 (DH1–16, N6 nguPhap ĐỎ trước) · build · lint exit 0 · `check:schema` 14 bảng · `test:nhatky` 7/7
+  (N6/N7 ĐỎ trước) · `test:db`/`test:player`/`test:import` xanh · CDP thật 54/54.
+- **Trạng thái:** ✅ Đã áp dụng. ⏳ Duyệt ảnh + văn phong ⇒ M31b/M31c.
+
+### [2026-10-18] MB-54 — M31b: đề đọc hiểu cho 34 chủ đề còn lại
+- **Bối cảnh:** người dùng ra lệnh "chạy deploy firebase và soạn nốt 34 chủ đề còn lại" (coi như duyệt văn phong chủ đề thử 01).
+- **Quyết định:** giữ đúng chuẩn đề thử (2 HT + 3 ĐV, 2–3 câu/đoạn, phủ 100% từ); HSK3 60–120 chữ, HSK4 ưu tiên ≥ 80 chữ (chấp nhận
+  < 100 để đoạn không bị độn); file đặt tên theo thứ tự snapshot (`02–15`, `h4-01–20`). Nạp bằng CLI M31a (chặn nạp chồng).
+- **Bằng chứng:** `kiem.mjs` 34/34 file 0 lỗi · CLI dry-run 34/34 · ghi 34 · chạy lại bị chặn · nghiệm thu 35/35, 175 đoạn, 478 câu.
+- **Trạng thái:** ✅ Đã áp dụng. M31c chưa làm.

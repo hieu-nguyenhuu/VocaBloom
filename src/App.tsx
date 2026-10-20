@@ -8,7 +8,8 @@ import ImportPage from './features/import/ImportPage.tsx'
 import TrangThongBao from './features/notifications/TrangThongBao.tsx'
 import ChonChuDePage from './features/player/ChonChuDePage.tsx'
 import NguPhapTopicPage from './features/player/NguPhapTopicPage.tsx'
-import HoiThoaiKetThucPage from './features/player/HoiThoaiKetThucPage.tsx'
+import DocHieuPage from './features/player/DocHieuPage.tsx'
+import KetQuaDocHieuPage from './features/player/KetQuaDocHieuPage.tsx'
 import PlayerPage from './features/player/PlayerPage.tsx'
 import TongKetPage from './features/player/TongKetPage.tsx'
 import CaiDatPage from './features/settings/CaiDatPage.tsx'
@@ -20,7 +21,8 @@ import KhungTrang from './features/shell/KhungTrang.tsx'
  * Cây route:
  *   /dang-nhap            — ngoài auth
  *   RequireAuth (MB-10)   — RLS chặn toàn bộ DB khi chưa đăng nhập
- *     /on-tap (+ ?che_do=retry|topic), /on-tap/tong-ket, /on-tap/hoi-thoai — toàn màn hình, ngoài shell
+ *     /on-tap (+ ?che_do=retry), /on-tap/tong-ket, /on-tap/ngu-phap, /on-tap/doc-hieu(/ket-qua) (M31)
+ *                         — toàn màn hình, ngoài shell
  *     AppShell            — sidebar PC / thanh tab Mobile (systemPatterns.md §5)
  *       / (M6b) · /on-tap/chu-de (M7) · /tu-vung(/:topicId) (M8) · /import (M2b) · /cai-dat (M6a)
  *       · /thong-bao (ẩn) · /dev/tokens · 404 — KHÔNG còn màn stub nào
@@ -56,8 +58,9 @@ export default function App() {
         {/* Player toàn màn hình — NGOÀI AppShell (mockup 02–12 không có nav) */}
         <Route path="/on-tap" element={<PlayerPage />} />
         <Route path="/on-tap/tong-ket" element={<TongKetPage />} />
-        <Route path="/on-tap/hoi-thoai" element={<HoiThoaiKetThucPage />} />
         <Route path="/on-tap/ngu-phap" element={<NguPhapTopicPage />} />
+        <Route path="/on-tap/doc-hieu" element={<DocHieuPage />} />
+        <Route path="/on-tap/doc-hieu/ket-qua" element={<KetQuaDocHieuPage />} />
         <Route element={<AppShell />}>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/on-tap/chu-de" element={<ChonChuDePage />} />

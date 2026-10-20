@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-14** (M30 Sắp xếp câu chip đứng yên — xong, đã deploy)
+> Cập nhật lần cuối: **2026-10-18** (M31b — 35/35 chủ đề có đề đọc hiểu, đã deploy Firebase)
 
 ## ✅ Đã xong
 
@@ -89,6 +89,15 @@
 - [x] **M30** (XONG 2026-10-14, SỬA LẦN 2 2026-10-17, MB-52) — Arrange Words: hàng chip đứng yên, chip đã chọn thành ô xám giữ chỗ.
       Lần 1 (khay cao sẵn bằng câu đúng) hở 18% câu mobile ⇒ lần 2: hàng chip LÊN TRÊN khay + `ExerciseShell neoTren`.
       `npm test` 487/487 · build · lint exit 0 · quét 740 câu thật × 3 thứ tự × 3 khổ = 740/740. Commit + push + `deploy:firebase`.
+- [x] **M31a** (XONG 2026-10-18, MB-53) — Ôn theo chủ đề = **Đọc hiểu kiểu HSK** (thay Player topic + Hội thoại kết thúc).
+      Bảng 13 `topic_readings` + 14 `doc_hieu_log` (`0018`) · `chot_nhat_ky_ngay` cộng cả đọc hiểu (sửa tại chỗ `0014`) · `docHieu.ts`
+      (DH1–16) · CLI `bo-sung:doc-hieu` · `DocHieuPage` + `KetQuaDocHieuPage` · card "N đoạn đọc · Lần gần nhất" · Dashboard cộng phút ·
+      gỡ `gomSessionTopic`/`stageBaiTap`/`boQuaDaDat`/`HoiThoaiKetThucPage`. Đề thử: "3. Chào hỏi & giới thiệu bản thân" (5 đoạn · 14 câu · phủ 20/20).
+      `npm test` 493/493 · build · lint exit 0 · `check:schema` 14 bảng · `test:nhatky` 7/7 (N6/N7 ĐỎ trước) · `test:db` 9 · `test:player` 4 ·
+      `test:import` 10 · CDP thật 54/54 (PC/Mobile × Sáng/Tối, chặn `rpc/chot_nhat_ky_ngay`, dọn 21 dòng log theo `luot_id`).
+- [x] **M31b** (XONG 2026-10-18, MB-54) — soạn + nạp đề 34 chủ đề còn lại (`02–15.json`, `h4-01–20.json`), mỗi file validate 0 lỗi / phủ 100% từ,
+      CLI dry-run rồi ghi. DB **35 chủ đề · 175 đoạn · 478 câu**, đọc lại qua `docBaiDoc` 35/35. `deploy:firebase` ✅.
+- [ ] **M31c** — khoá `readings` trong file import (3 cổng + RPC `import_topic` + skill `vocabCsv2Json`).
 
 ### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
 - [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.

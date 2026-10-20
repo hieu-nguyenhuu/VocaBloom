@@ -47,8 +47,9 @@ Dashboard (thấy N từ due) → CTA "Bắt đầu ôn tập"
 ```
 Có thể chia nhiều lượt rải rác trong ngày; số liệu tổng kết luôn query `review_log` của cả ngày (không giữ state client).
 
-### 4.3 Ôn theo topic (tách biệt hoàn toàn)
-Chọn 1 topic → ôn toàn bộ từ trong topic → kết thúc bằng **màn hội thoại** của topic (chỉ chế độ này mới có hội thoại).
+### 4.3 Ôn theo topic (tách biệt hoàn toàn) — M31: ĐỌC HIỂU kiểu HSK
+Chọn 1 topic → ngữ pháp chủ đề → ~5 đoạn (hội thoại + đoạn văn) dùng từ của topic, mỗi đoạn 2–3 câu trắc nghiệm → Kết quả.
+KHÔNG tính điểm SRS; đề sinh ngoài app (`topic_readings`). Hội thoại cũ của topic chỉ còn xem ở màn Từ vựng.
 
 ### 4.4 Phụ trợ
 Quản lý từ vựng/topic (sửa field cơ bản, KHÔNG sửa được payload bài tập) · Cài đặt (OpenRouter key/model, số từ mới/ngày, giọng TTS, toggle cảnh báo) · Thông báo (cảnh báo hàng đợi từ mới sắp cạn).
@@ -59,7 +60,7 @@ Quản lý từ vựng/topic (sửa field cơ bản, KHÔNG sửa được paylo
 |---|---|---|---|
 | 1 | Dashboard | 01 | 01 |
 | 2 | Player — ôn hằng ngày (9 pattern bài tập) | 02–10 | 02–10 |
-| 3 | Player — ôn theo topic + hội thoại kết thúc | 11 | 11 |
+| 3 | Ôn theo topic — Đọc hiểu + Kết quả (M31, KHÔNG có mockup) | — | — |
 | 4 | Tổng kết phiên ôn tập | 12 | 12 |
 | 5 | Quản lý từ vựng & topic | 13–14 | 13–15 |
 | 6 | Import | 15–16 | 16–17 |

@@ -21,8 +21,6 @@ import {
   xepBai,
   type Man,
   type TrangThaiPlayer,
-  gomSessionTopic,
-  stageBaiTap,
   gioiHanNhap,
   tachChoTrong,
   catTheoGioiHan,
@@ -35,7 +33,7 @@ import {
   oGoLui,
 } from './player.ts'
 import { bangGanNghia } from './songNgu.ts'
-import { boBaiCua, gomSession, type DangBai, type Stage, type TrangThaiTu } from './srs.ts'
+import type { DangBai, Stage, TrangThaiTu } from './srs.ts'
 
 describe('homNayVN', () => {
   it('17:30Z ngày 16/9 = 00:30 ngày 17/9 giờ VN', () => {
@@ -443,76 +441,13 @@ describe('xepBai — stage 3 (M5)', () => {
   })
 })
 
-// ── M7: ôn theo chủ đề ──────────────────────────────────────────────────────
-describe('stageBaiTap', () => {
-  it('mastered mượn bộ bài của intensive (M7/Q1)', () => {
-    expect(stageBaiTap('mastered')).toBe('intensive')
-    expect(boBaiCua(stageBaiTap('mastered'))).toHaveLength(5) // M26d: + near_synonym
-  })
-
-  it('stage khác giữ nguyên', () => {
-    for (const s of ['new', 'stage1', 'stage2', 'stage3', 'intensive'] as const) {
-      expect(stageBaiTap(s)).toBe(s)
-    }
-  })
-})
-
-describe('gomSessionTopic', () => {
-  /** Chủ đề "Trái cây" thật (19/09): 3 mastered + 1 intensive + 1 stage1. */
-  const traiCay = [
-    { ...tu('m1', 'mastered'), next_review_date: null },
-    { ...tu('m2', 'mastered'), next_review_date: null },
-    { ...tu('m3', 'mastered'), next_review_date: null },
-    tu('i1', 'intensive'),
-    tu('s1', 'stage1'),
-  ]
-
-  it('GIỮ từ mastered và từ next_review_date = null (khác hẳn gomSession hằng ngày)', () => {
-    const p = gomSessionTopic(traiCay)
-    expect(p.flat()).toHaveLength(5)
-  })
-
-  it('so sánh trực tiếp: gomSession bỏ 3 từ mastered, gomSessionTopic giữ đủ 5', () => {
-    expect(gomSession(traiCay).flat().map((t) => t.vocab_id)).toEqual(['s1', 'i1'])
-    expect(gomSessionTopic(traiCay).flat()).toHaveLength(5)
-  })
-
-  it('mỗi session thuần 1 stage hiệu dụng — mastered gom chung với intensive', () => {
-    const p = gomSessionTopic(traiCay)
-    for (const phien of p) {
-      const set = new Set(phien.map((t) => stageBaiTap(t.stage)))
-      expect(set.size).toBe(1)
-    }
-    // stage1 (1 từ) + [3 mastered & 1 intensive → cùng nhóm intensive] ⇒ 2 session
-    expect(p).toHaveLength(2)
-  })
-
-  it('stage thấp ôn trước', () => {
-    expect(gomSessionTopic(traiCay)[0]!.every((t) => t.stage === 'stage1')).toBe(true)
-  })
-
-  it('cắt 5 từ mỗi session', () => {
-    const p = gomSessionTopic(Array.from({ length: 12 }, (_, i) => tu(`x${i}`, 'stage1')))
-    expect(p.map((x) => x.length)).toEqual([5, 5, 2])
-  })
-
-  it('chủ đề rỗng → không session nào', () => {
-    expect(gomSessionTopic([])).toEqual([])
-  })
-})
-
-describe('xepBai — boQuaDaDat (ôn chủ đề là luyện tập, không phải chu kỳ SRS)', () => {
+describe('xepBai — không làm lại dạng đã đạt trong chu kỳ (§4.2)', () => {
   const daXong = [tu('a', 'stage1', ['translate', 'select_dialog', 'listen_fill', 'select_on_describe'])]
   const baiTap = [bai('a', 'translate'), bai('a', 'listen_fill')]
 
   it('mặc định: từ đã đạt hết bộ bài → không dựng được màn tính điểm', () => {
     const { man } = xepBai({ tu: daXong, baiTap })
     expect(man.filter((m) => m.loai === 'translate' || m.loai === 'listen_fill')).toHaveLength(0)
-  })
-
-  it('boQuaDaDat: vẫn dựng đủ màn để luyện lại', () => {
-    const { man } = xepBai({ tu: daXong, baiTap, boQuaDaDat: true })
-    expect(man.filter((m) => m.loai === 'translate' || m.loai === 'listen_fill')).toHaveLength(2)
   })
 })
 

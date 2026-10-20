@@ -109,7 +109,7 @@ export default function DashboardPage() {
   async function nap() {
     const now = new Date()
     const homNay = homNayVN(now)
-    const [dueRes, vuonRes, ganDayRes, logRes, nhatKyRes, tbRes, viRes] = await Promise.all([
+    const [dueRes, vuonRes, ganDayRes, logRes, docRes, nhatKyRes, tbRes, viRes] = await Promise.all([
       supabase
         .from('word_state')
         .select('next_review_date')
@@ -128,6 +128,8 @@ export default function DashboardPage() {
         .from('review_log')
         .select('reviewed_at, thoi_gian_ms')
         .gte('reviewed_at', `${homNay}T00:00:00+07:00`),
+      // M31 — đọc hiểu hôm nay cũng là thời gian học (lượt đang dở chưa được chốt nhật ký)
+      supabase.from('doc_hieu_log').select('created_at, thoi_gian_ms').gte('created_at', `${homNay}T00:00:00+07:00`),
       supabase
         .from('nhat_ky_ngay')
         .select('ngay, thoi_gian_ms, da_va')
@@ -136,13 +138,19 @@ export default function DashboardPage() {
       // M15: tổng ruby PHẢI do server tính — màn Lịch sử lazy-load nên client không đủ dữ liệu
       supabase.rpc('vi_ruby'),
     ])
-    const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? nhatKyRes.error ?? tbRes.error
+    const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? docRes.error ?? nhatKyRes.error ?? tbRes.error
     if (e) return setLoi(e.message)
 
     // supabase-js suy kiểu quan hệ vocab(word) thành mảng; thực tế là 1 object (FK n-1)
     const gd = (ganDayRes.data ?? []) as unknown as (TuGanDay & { vocab: { word: string } | null })[]
     const { dungHan, quaHan, tong } = demDenHan(dueRes.data ?? [], homNay)
-    const logs = (logRes.data ?? []) as { reviewed_at: string; thoi_gian_ms: number | null }[]
+    const logs = [
+      ...((logRes.data ?? []) as { reviewed_at: string; thoi_gian_ms: number | null }[]),
+      ...((docRes.data ?? []) as { created_at: string; thoi_gian_ms: number | null }[]).map((r) => ({
+        reviewed_at: r.created_at,
+        thoi_gian_ms: r.thoi_gian_ms,
+      })),
+    ]
     const nhatKy = (nhatKyRes.data ?? []) as { ngay: string; thoi_gian_ms: number | null; da_va?: boolean }[]
     const ngayDaVa = new Set(nhatKy.filter((d) => d.da_va).map((d) => d.ngay))
     const ruby = (viRes.data as { con?: number } | null)?.con ?? 0

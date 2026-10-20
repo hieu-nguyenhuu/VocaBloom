@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-17** (**M30 sửa lần 2** — Sắp xếp câu: hàng chip lên trên khay + neo trên; bản 10-14 vẫn nhảy ở 18% câu mobile)
+> Cập nhật lần cuối: **2026-10-18** (**M31b XONG** — 35/35 chủ đề có đề đọc hiểu: 175 đoạn · 478 câu; đã `deploy:firebase`)
 
 ## Trạng thái hiện tại
 
@@ -48,9 +48,32 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M28 (Select Dialog: gỡ từ đã điền + chấm khi bấm "Kiểm tra") — ✅ XONG 2026-10-05 (MB-50).**
 **M29 (Deploy Firebase Cloud Function cho mạng công ty) — ✅ XONG 2026-10-07 (MB-51)** · ⏳ người dùng nghiệm thu ở công ty (T12).
 **M30 (Sắp xếp câu: hàng chip đứng yên + ô xám giữ chỗ) — ✅ XONG 2026-10-14, SỬA LẦN 2 2026-10-17 (MB-52).**
-**Tiếp theo:** chưa có milestone mới — chờ người dùng ra lệnh. Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
+**M31a (Ôn theo chủ đề = Đọc hiểu kiểu HSK) — ✅ XONG 2026-10-18 (MB-53).** ⏳ Cổng duyệt: ảnh bố cục + văn phong/độ khó chủ đề thử.
+**M31b (Soạn đề 34 chủ đề còn lại) — ✅ XONG 2026-10-18 (MB-54).**
+**Tiếp theo:** M31c (khoá `readings` trong file import + skill `vocabCsv2Json`) khi người dùng ra lệnh. (cũ)  Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M31b vừa xong (2026-10-18) — MB-54 · Plan `design.m31b.md`
+- `deploy:firebase` ✅ (lần 1 lỗi "User code failed to load… Timeout after 10000" ⇒ `FUNCTIONS_DISCOVERY_TIMEOUT=60 npx firebase deploy --only functions:vocabloom` OK; bundle `index-B2ktfXXm.js` khớp cloud).
+- Đề: `du-lieu-import/doc-hieu/02.json`…`15.json` (14 chủ đề HSK3) + `h4-01.json`…`h4-20.json` (20 chủ đề HSK4, theo thứ tự snapshot index 0–19).
+  Mỗi chủ đề 2 hội thoại + 3 đoạn văn, 12–14 câu, phủ 100% từ. Đoạn văn ngắn < ~75 chữ đã thêm câu (HSK4 phần lớn 80–138 chữ).
+- DB: **35/35 chủ đề · 175 đoạn · 478 câu** — nghiệm thu chỉ đọc qua `docBaiDoc` (scratchpad `nghiem-thu-m31b.mjs`) sạch; `doc_hieu_log` = 0.
+- Bẫy soạn đề: từ ly hợp bị tách (请两天假, 上不了网, 值一天班, 放七天假, 换个班) ⇒ validator báo "không có trong đoạn" — viết liền (请假/值班/放假…) hoặc bỏ khỏi `highlight_words`.
+- Chưa làm: M31c (file import mới phải kèm `readings`). Chủ đề import MỚI hiện sẽ "Chưa có bài đọc" cho tới khi nạp bằng CLI.
+
+### ✅ M31a vừa xong (2026-10-18) — MB-53 · Design `design.m31.md` · Plan `design.m31a.md` (25 task)
+- Chốt: đề sinh NGOÀI app (bảng `topic_readings`, CLI `bo-sung:doc-hieu`) · KHÔNG tính điểm SRS · luồng Ngữ pháp → Đọc hiểu → Kết quả
+  (bỏ Player chế độ topic + `HoiThoaiKetThucPage`) · Kiểm tra 1 lần/đoạn, lộ đáp án + giải thích · ~5 đoạn/chủ đề (2 HT + 3 ĐV), 2–3 câu ·
+  pinyin mặc định TẮT · kết quả `doc_hieu_log` (ghi ngay khi Kiểm tra), thời gian vào `nhat_ky_ngay`.
+- DB thật: 1 chủ đề có đề — "3. Chào hỏi & giới thiệu bản thân" (5 đoạn · 14 câu, nguồn `du-lieu-import/doc-hieu/01.json`); 34 chủ đề còn
+  lại hiện "Chưa có bài đọc" (card khoá). `doc_hieu_log` = 0 dòng (CDP đã dọn đúng luot_id).
+- Snapshot chủ đề cho M31b: `du-lieu-import/doc-hieu/chu-de-db.json` (`node scripts/chup-chu-de.mjs`). Validate offline: scratchpad phiên
+  2026-10-18 `kiem-01.mjs <chu-de-db.json> <file>`; CDP: `cdp-m31.mjs <thư mục ảnh>` (Vite :5193, Chrome :9233, profile `chrome-m31`).
+- Bẫy CDP mới: `innerText` trả chữ HOA khi CSS `uppercase` ⇒ so `textContent`; regex dấu thanh pinyin khớp cả tiếng Việt có dấu ⇒ chỉ
+  quét vùng đoạn/câu hỏi. Card Chọn chủ đề nằm NGOÀI `<main>` (AppShell).
+- Gợi ý chưa làm: danh sách Chọn chủ đề vẫn sắp theo "số từ đến hạn" (`tomTatChuDe`) — có thể đưa chủ đề có đề lên trước.
+- ⚠️ Phiên này: token Management API cũ hết hạn (401) — người dùng đã thay. Agent lỡ `git rm --cached` 1 lần, đã `git reset HEAD -- <file>` ngay.
 
 ### ✅ M30 vừa xong (2026-10-14) — MB-52 · Design + Plan gộp `design.m30.md`
 - Lỗi người dùng báo: Arrange Words chọn 1 chip thì các chip còn lại dồn/nhảy ⇒ chọn sai.

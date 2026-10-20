@@ -196,15 +196,20 @@ Dùng đúng Exercise Shell + 9 pattern ở §6. Session gom theo stage (DEC-10)
 - **Mobile:** shell full-width trong khung ~420px như đã validate.
 - **PC:** shell giữ nguyên độ rộng ~420-480px, **căn giữa màn hình**, KHÔNG kéo giãn full-width (tránh lưới 4 đáp án bị dàn quá mỏng, tránh textarea tự luận quá rộng khó đọc). Padding 2 bên lớn, có thể thêm khung viền mờ bao quanh toàn bộ khu vực Player để phân định với nền trang.
 
-### 8.3 Player — Ôn tập theo topic + Hội thoại kết thúc
+### 8.3 Ôn tập theo topic — Đọc hiểu (M31, thay "Player topic + Hội thoại kết thúc")
 
-> **M26:** mỗi bong bóng thêm câu tương đương bằng ngôn ngữ phụ (`text_secondary`, 13px muted, LUÔN hiện) ngay dưới pinyin,
-> trên nghĩa tiếng Việt (vẫn ẩn/hiện bằng nút). Không in đậm từ vựng trong câu phụ. Áp cho cả khối hội thoại ở màn Từ vựng.
+> ⚠️ **KHÔNG có mockup** — bố cục duyệt ở Brainstorm M31 (`design.m31.md` §5) và duyệt lại qua ảnh chụp. 0 màu mới.
+> Màn Hội thoại kết thúc (mockup 11) đã bỏ khỏi luồng ôn; khối hội thoại vẫn còn ở màn Từ vựng (M20, cùng kiểu bong bóng).
 
-Giống 8.2 về phần bài tập. Sau khi hoàn thành toàn bộ từ trong topic, chuyển sang màn hội thoại (đã validate): không ring, dạng bong bóng chat A/B (khác biệt bằng sắc độ be nhạt/đậm, KHÔNG dùng thêm hue mới), từ vựng học được tô **chàm sâu + đậm nét** trong câu, nút "Xong" (nền chàm sâu đặc) kết thúc.
+**Màn Đọc hiểu** (`/on-tap/doc-hieu`): header như Ngữ pháp chủ đề (nhãn "Đọc hiểu · i/N" + tên chủ đề, nút 拼 **mặc định TẮT**, nút X) → chấm tiến độ → thân:
+- **Mobile:** 1 cột — thẻ đoạn trên, câu hỏi dưới. **PC:** Grid 2 cột `1.15fr / 1fr`, max-w ~1040, **cột đoạn sticky** để đọc lại khi cuộn câu hỏi.
+- Thẻ đoạn `surface-card` bo 20, nhãn "Hội thoại"/"Đoạn văn" + loa nghe cả đoạn. Hội thoại = bong bóng A/B thu gọn (sắc độ `surface-page` / `surface-chat-b`). Đoạn văn = khối chữ liền 17–18px `leading-[1.9]`; bật 拼 hoặc bản dịch ⇒ mỗi câu 1 dòng, pinyin/dịch canh dưới câu.
+- Câu hỏi: tiêu đề "n. câu hỏi" + 4 ô **full-width xếp dọc** (đáp án có thể là câu dài, KHÔNG lưới 2×2), nhãn A–D tròn; ô kiểu Trắc nghiệm, đang chọn = `accent-tint` + viền `accent`.
+- Nút "Kiểm tra" tím đặc chỉ bật khi đã chọn đủ mọi câu (Enter). **Sau Kiểm tra — lệch §6.2 CÓ CHỦ Ý** (chấm 1 lần, không "chọn lại đến khi đúng"): ô đúng `success`, ô chọn sai `danger`, ô còn lại mờ 60%; giải thích `surface-sunken` 13px dưới mỗi câu; từ của chủ đề tô **tím đậm** trong đoạn; nút "Hiện bản dịch" xuất hiện. Nút đổi "Đoạn tiếp" / "Xem kết quả". Âm: đúng hết `dung`, còn lại `sai`.
 
-- **Mobile:** như mockup, full-width bong bóng chat.
-- **PC:** khung hội thoại giới hạn max-width ~560px căn giữa (giống 1 khung chat app desktop, không kéo full ngang).
+**Màn Kết quả đọc hiểu** (`/on-tap/doc-hieu/ket-qua`, khuôn Tổng kết §8.8, max-w 560): icon ăn mừng + "Hoàn thành đọc hiểu" + tên chủ đề · ngày → 3 ô (Câu đúng `accent-tint` · Đoạn · Phút trung tính) → danh sách "Đoạn n · loại" + X/Y (đủ = `success-text` ✓, thiếu = muted, KHÔNG đỏ) → "Làm lại chủ đề này" (tím đặc) · "Chọn chủ đề khác" (`secondary-tint`) · "Về Dashboard" (ghost).
+
+**Màn Chọn chủ đề:** card giữ nguyên (mockup 13), dòng dưới đổi thành "N đoạn đọc · Lần gần nhất X/Y"; chủ đề chưa có đề ⇒ card mờ + "Chưa có bài đọc".
 
 ### 8.4 Quản lý từ vựng & topic
 

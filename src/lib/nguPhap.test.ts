@@ -60,17 +60,12 @@ describe('docNguPhap', () => {
 })
 
 describe('noiTiepTheo', () => {
-  it('N6 — giai đoạn ĐẦU → vào Player chế độ topic', () => {
-    expect(noiTiepTheo('dau', 'abc')).toBe('/on-tap?che_do=topic&topic=abc')
+  it('N6 — xem xong ngữ pháp chủ đề → vào ĐỌC HIỂU (M31), không còn Player chế độ topic', () => {
+    expect(noiTiepTheo('abc')).toBe('/on-tap/doc-hieu?topic=abc')
   })
 
-  it('N7 — giai đoạn CUỐI → sang HỘI THOẠI, không nhảy thẳng Tổng kết (§4.5)', () => {
-    expect(noiTiepTheo('cuoi', 'abc')).toBe('/on-tap/hoi-thoai?topic=abc')
-  })
-
-  it('N8 — 2 giai đoạn KHÔNG bao giờ trỏ về nhau (chống lặp vô hạn)', () => {
-    expect(noiTiepTheo('dau', 'x')).not.toContain('/on-tap/ngu-phap')
-    expect(noiTiepTheo('cuoi', 'x')).not.toContain('/on-tap/ngu-phap')
+  it('N8 — không bao giờ trỏ về chính màn ngữ pháp (chống lặp vô hạn)', () => {
+    expect(noiTiepTheo('x')).not.toContain('/on-tap/ngu-phap')
   })
 })
 

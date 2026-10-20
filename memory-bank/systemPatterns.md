@@ -127,7 +127,10 @@ Toàn app dùng **SVG path vẽ tay trích từ 2 file HTML** (`stroke-width` 1.
 - **Player ở PC:** shell giữ ~420–480px **căn giữa**, KHÔNG giãn full-width. Hội thoại max-width ~560px; Tổng kết phiên ~480px.
 - Dùng `min-h-[100dvh]`, KHÔNG dùng `h-screen` / `100vh`. Chia cột bằng CSS Grid, không tính phần trăm bằng flex.
 
-## 6. Mô hình dữ liệu (**12 bảng** — SQL đầy đủ ở `SPECIFICATION.md` §2)
+## 6. Mô hình dữ liệu (**14 bảng** — SQL đầy đủ ở `SPECIFICATION.md` §2)
+
+> ⚠️ **Đính chính 2026-10-18 (M31):** thêm bảng **13** `topic_readings` (đề đọc hiểu) + **14** `doc_hieu_log` (kết quả, có `luot_id`),
+> migration `0018`. Không tính điểm SRS. `chot_nhat_ky_ngay()` cộng `review_log` + `doc_hieu_log`.
 
 > ⚠️ **Đính chính 2026-09-23 (M14):** thêm bảng thứ **12** `nhat_ky_ngay` (nhật ký học theo ngày,
 > migration `0014`) — KHÔNG có trong `SPECIFICATION.md` §2.
@@ -204,6 +207,9 @@ SUY RA từ `lang` (zh ⇒ en). Nhiều nghĩa ngăn `"; "`, nghĩa đầu là n
     màn mới vào list X2 + X5 của `amThanhCore.test.ts` · `case` ở `PlayerPage`. ⚠️ `player.ts` CHỈ được import `srs.ts` (test
     X-player) ⇒ helper song ngữ đặt ở `songNgu.ts` (0 import). Cột vocab đổi `NOT NULL` ⇒ sửa cả insert trong
     `test-maintenance` / `test-nhat-ky` / `test-player`.
+20. **Ôn theo chủ đề = ĐỌC HIỂU (M31), KHÔNG còn chạy trong Player.** Route `/on-tap/doc-hieu` + `/ket-qua`; logic thuần `docHieu.ts`.
+    Ghi `doc_hieu_log` NGAY khi Kiểm tra (ref chặn bấm đôi); Kết quả query theo `luot_id`. Thêm nguồn thời gian học mới ⇒ phải cộng
+    vào CẢ `chot_nhat_ky_ngay` lẫn Dashboard (`gopNhatKy` hôm nay), nếu không streak/phút lệch. Đề mới chỉ qua `kiemTraBaiDoc`.
 
 ## 8. Chuẩn code & an toàn
 
@@ -226,6 +232,7 @@ SUY RA từ `lang` (zh ⇒ en). Nhiều nghĩa ngăn `"; "`, nghĩa đầu là n
 | `npm run check:auth` | Kiểm chứng tài khoản duy nhất + `disable_signup` |
 | `npm run test:import` | 6 ca TDD cho `import_topic()`, cũng chạy trong `begin…rollback` |
 | `npm run import:file -- <file> [--dry-run]` | Nạp 1 file JSON thật; đăng nhập rồi gọi RPC như app |
+| `npm run bo-sung:doc-hieu -- <file…> [--dry-run]` | M31 — nạp đề đọc hiểu `{topic_name, readings[]}` vào chủ đề ĐÃ CÓ (chỉ INSERT `topic_readings`, chặn chủ đề đã có đề, `kiemTraBaiDoc` + báo từ chưa phủ) |
 | `npm run bo-sung:hoi-thoai -- <file…> [--dry-run]` | M23 — thêm `select_dialog`/`fill_dialog` vào chủ đề ĐÃ CÓ (chỉ INSERT `exercises`, kiểm tất cả file trước, 1 POST/chủ đề) |
 | `node scripts/chup-chu-de.mjs > du-lieu-import/bo-sung-hoi-thoai/chu-de-db.json` | M23 — snapshot chỉ đọc: từ + nghĩa + ví dụ + cặp hội thoại của mọi chủ đề (builder bổ sung đọc file này) |
 

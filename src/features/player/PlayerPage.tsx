@@ -3,10 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router'
 import {
   coBaiTinhDiem,
   giamPlayer,
-  gomSessionTopic,
   homNayVN,
   locRetryTheoRecord,
-  stageBaiTap,
   xepBai,
   type BaiTapDb,
   type HangRetry,
@@ -95,8 +93,7 @@ export default function PlayerPage() {
   const location = useLocation()
   const thamSo = new URLSearchParams(location.search)
   const cheDoRetry = thamSo.get('che_do') === 'retry'
-  /** Ôn theo chủ đề (M7): ôn TOÀN BỘ từ của topic, chỉ từ đang due mới được tính điểm. */
-  const topicId = thamSo.get('che_do') === 'topic' ? thamSo.get('topic') : null
+  // M31: ôn theo chủ đề KHÔNG còn chạy trong Player — đã chuyển sang màn Đọc hiểu (DocHieuPage).
 
   const [tt, dispatch] = useReducer(giamPlayer, { buoc: 'dang_tai' })
   const [vocab, setVocab] = useState<Record<string, VocabDb>>({})
@@ -129,14 +126,6 @@ export default function PlayerPage() {
   /** M11/Q1: số TỪ đã hoàn thành trong LƯỢT này + giới hạn đọc từ `settings.max_tu_moi_luot`. */
   const soTuXongLuot = useRef(0)
   const gioiHanLuot = useRef(MAC_DINH.max_tu_moi_luot)
-  /** Chế độ topic: các từ ĐANG due hôm nay — chỉ những từ này mới được cộng điểm/dời lịch (M7/Q2). */
-  const dueTrongTopic = useRef<Set<string>>(new Set())
-  /**
-   * Chế độ topic: từ đã được phục vụ trong LƯỢT này. Bắt buộc phải có — `boQuaDaDat` khiến không còn
-   * gì lọc từ ra khỏi session, nên nếu thiếu thì `napSession` dựng lại đúng session đó mãi mãi
-   * (bug kiểm thật M7: 26 lần cùng một màn, 82 dòng review_log rác).
-   */
-  const daPhucVuTopic = useRef<Set<string>>(new Set())
   const [giaiThich, setGiaiThich] = useState<{ mo: boolean; dangTai: boolean; noiDung: NoiDungGiaiThich | null; loi: string | null }>({ mo: false, dangTai: false, noiDung: null, loi: null })
 
   /** Tải mọi bài tập của các từ due, gồm cả record hội thoại trỏ tới chúng qua vai B (§4.4). */
@@ -179,27 +168,7 @@ export default function PlayerPage() {
       let dong: DongWordState[]
       /** Chỉ dùng ở chế độ retry: vocab_id → dạng cần ôn lại (null = cả bộ của stage đó). */
       const retryTheoTu = new Map<string, DangBai[] | null>()
-      if (topicId) {
-        // Ôn chủ đề: lấy TOÀN BỘ từ của topic — không lọc theo lịch, không loại mastered, và cũng
-        // không loại từ đã ôn hôm nay (đây là luyện tập, không phải chu kỳ SRS hằng ngày).
-        // 2 truy vấn: PostgREST KHÔNG có FK trực tiếp vocab_topics ↔ word_state (cả hai chỉ trỏ
-        // sang vocab), nhúng lồng nhau sẽ lỗi PGRST200 — đã kiểm thật.
-        const ltRes = await supabase.from('vocab_topics').select('vocab_id').eq('topic_id', topicId)
-        if (ltRes.error) throw ltRes.error
-        const idsTopic = (ltRes.data ?? []).map((r) => r.vocab_id as string)
-        if (idsTopic.length === 0) return dispatch({ loai: 'khong_co_tu' })
-        const { data, error } = await supabase.from('word_state').select('*, vocab(*)').in('vocab_id', idsTopic)
-        if (error) throw error
-        dong = (data ?? [])
-          .map((r) => ({ ...sangTrangThaiTu(r), vocab: r.vocab as VocabDb }))
-          .filter((t) => !daPhucVuTopic.current.has(t.vocab_id)) // mỗi từ đúng 1 lượt (xem ghi chú ở ref)
-        if (dong.length === 0) return dispatch({ loai: 'khong_co_tu' })
-        dueTrongTopic.current = new Set(
-          dong
-            .filter((t) => t.stage !== 'mastered' && t.next_review_date !== null && t.next_review_date <= homNay)
-            .map((t) => t.vocab_id),
-        )
-      } else if (cheDoRetry) {
+      if (cheDoRetry) {
         if (coRetry.size === 0) return dispatch({ loai: 'khong_co_tu' })
         const { data, error } = await supabase.from('word_state').select('*, vocab(*)').in('vocab_id', [...coRetry])
         if (error) throw error
@@ -222,7 +191,7 @@ export default function PlayerPage() {
           .filter((t) => !coRetry.has(t.vocab_id))
       }
 
-      const phienAll = topicId ? gomSessionTopic(dong) : gomSession(dong)
+      const phienAll = gomSession(dong)
       if (phienAll.length === 0) return dispatch({ loai: 'khong_co_tu' })
       // Đã ôn đủ số từ cho phép trong lượt ⇒ dừng, sang Tổng kết (M11/Q1)
       if (soTuXongLuot.current >= gioiHanLuot.current) return dispatch({ loai: 'khong_co_tu' })
@@ -239,10 +208,7 @@ export default function PlayerPage() {
         // Session thuần 1 stage ⇒ chỉ lấy dạng của CÁC TỪ TRONG PHIÊN, và luôn chặn trong bộ bài
         // của stage đó (hàng đợi null = ôn lại cả bộ).
         let dangChoPhep: DangBai[] | undefined
-        if (topicId) {
-          // mastered không có bộ bài riêng ⇒ mượn của intensive (M7/Q1)
-          dangChoPhep = [...boBaiCua(stageBaiTap(stage))]
-        } else if (cheDoRetry) {
+        if (cheDoRetry) {
           const boStage = new Set<DangBai>(boBaiCua(stage))
           const tap = new Set<DangBai>()
           let caBo = false
@@ -259,15 +225,13 @@ export default function PlayerPage() {
           const idB = (b.payload as { blank_b_vocab_id?: string | null })['blank_b_vocab_id']
           return idsPhien.has(b.vocab_id) || (idB ? idsPhien.has(idB) : false)
         })
-        // M21 — từ đã đạt hết dạng THỰC CÓ mà vẫn due ⇒ mở lại bộ bài (topic đã boQuaDaDat nên bỏ qua)
+        // M21 — từ đã đạt hết dạng THỰC CÓ mà vẫn due ⇒ mở lại bộ bài
         const coRecordPhien = dungMapRecord(baiTapPhien)
-        const phienMo = topicId ? phien : phien.map((t) => moLaiNeuHetBai(t, coRecordPhien[t.vocab_id] ?? []))
+        const phienMo = phien.map((t) => moLaiNeuHetBai(t, coRecordPhien[t.vocab_id] ?? []))
         const { man } = xepBai({
           tu: phienMo,
           baiTap: baiTapPhien,
           ...(dangChoPhep ? { dangChoPhep } : {}),
-          // Ôn chủ đề: dựng lại cả dạng đã đạt trong chu kỳ, nếu không thì từ mastered ra 0 màn
-          ...(topicId ? { boQuaDaDat: true } : {}),
           // M18 — mỗi dạng bài xáo thứ tự từ riêng, để không đoán trước được từ kế tiếp
           rng: Math.random,
         })
@@ -278,7 +242,6 @@ export default function PlayerPage() {
         setVocab((cu) => ({ ...cu, ...Object.fromEntries(dong.map((t) => [t.vocab_id, t.vocab])) }))
         await taiVocabTuB(baiTapPhien, idsPhien)
         setSoGoiY(0)
-        if (topicId) for (const t of phien) daPhucVuTopic.current.add(t.vocab_id)
         dispatch({ loai: 'nap', man, trang_thai: Object.fromEntries(phienMo.map((t) => [t.vocab_id, t])) })
         return
       }
@@ -286,7 +249,7 @@ export default function PlayerPage() {
     } catch (e) {
       setLoiTai((e as Error).message || 'Không tải được bài ôn. Kiểm tra mạng rồi thử lại nhé.')
     }
-  }, [cheDoRetry, topicId, taiBaiTap, taiVocabTuB])
+  }, [cheDoRetry, taiBaiTap, taiVocabTuB])
 
   useEffect(() => {
     void napSession()
@@ -299,14 +262,8 @@ export default function PlayerPage() {
   }, [tt, napSession, navigate])
   useEffect(() => {
     if (tt.buoc !== 'khong_co_tu' || !daOnGiDo.current) return
-    // Làm HẾT lượt ôn chủ đề → ngữ pháp chủ đề (M12b) → hội thoại kết thúc (§4.5).
-    // Màn ngữ pháp tự chuyển tiếp sang hội thoại nếu chủ đề không có mục nào.
-    // Bấm X giữa chừng đi đường `thoat` ở trên, tức về thẳng Tổng kết và KHÔNG hiện gì (M7/Q6).
-    navigate(
-      topicId ? `/on-tap/ngu-phap?topic=${topicId}&giai_doan=cuoi` : '/on-tap/tong-ket',
-      { replace: true },
-    )
-  }, [tt.buoc, navigate, topicId])
+    navigate('/on-tap/tong-ket', { replace: true })
+  }, [tt.buoc, navigate])
   useEffect(() => {
     if (tt.buoc === 'dang_on' && tt.da_xong_tu.length > 0) daOnGiDo.current = true
   }, [tt])
@@ -338,30 +295,6 @@ export default function PlayerPage() {
       if (s.buoc !== 'dang_on') return Promise.resolve(false)
       const trang_thai = s.trang_thai[vocab_id]
       if (!trang_thai) return Promise.resolve(false)
-      // Ôn chủ đề, từ CHƯA due: chỉ ghi review_log (điểm 0), KHÔNG đụng word_state/retry (M7/Q2).
-      // Cố ý không dùng `xuLyTraLoi(dang_due:false)` — nhánh "bài cuối" của nó vẫn có thể dời
-      // next_review_date / đẩy vào daily_retry_queue khi cycle_points cũ đã đủ ngưỡng.
-      if (topicId && !dueTrongTopic.current.has(vocab_id)) {
-        const p_log = {
-          vocab_id,
-          exercise_type: dang_bai,
-          is_correct: dung,
-          used_hint: dung_goi_y,
-          points: 0,
-          stage_before: trang_thai.stage,
-          stage_after: trang_thai.stage,
-          thoi_gian_ms: tinhThoiGian(mocMan.current, soChia),
-        }
-        setSoGoiY(0)
-        return goiRpc({ p_state: null, p_log, p_retry: null, p_xoa_retry: false }, () => {
-          if (la_bai_cuoi) {
-            soTuXongLuot.current += 1
-            daOnGiDo.current = true
-          }
-          dispatch({ loai: 'luu_ok', trang_thai_moi: trang_thai, ...(la_bai_cuoi ? { xong_tu: vocab_id } : {}), khong_sang })
-        })
-      }
-
       const kq = xuLyTraLoi({ trang_thai, dang_bai, dung, dung_goi_y, dang_due: true, la_bai_cuoi_cua_tu: la_bai_cuoi, hom_nay: homNayVN(new Date()),
         dang_kha_dung: dangKhaDung(trang_thai.stage, dangCoRecord.current[vocab_id] ?? []) })
       setSoGoiY(0)
@@ -388,7 +321,7 @@ export default function PlayerPage() {
         },
       )
     },
-    [cheDoRetry, topicId],
+    [cheDoRetry],
   )
 
   function flashcard(vocab_id: string, nut: 'good' | 'hard' | 'again') {

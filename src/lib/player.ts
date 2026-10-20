@@ -1,4 +1,4 @@
-import { boBaiCua, type DangBai, type Stage, type StageOn, type TrangThaiTu } from './srs.ts'
+import { boBaiCua, type DangBai, type Stage, type TrangThaiTu } from './srs.ts'
 
 /**
  * Logic thuần của Player (M4a) — CHỈ import srs.ts. Không React, không Supabase, không đọc
@@ -133,7 +133,6 @@ const THU_TU_MAN: readonly DangBai[] = [
 
 /**
  * Xếp mảng màn cho 1 session THUẦN 1 STAGE. Bỏ dạng đã nằm trong `cycle_completed_exercises`
- * (trừ khi `boQuaDaDat` — chế độ ôn theo chủ đề, M7)
  * (§4.2 — không làm lại bài đã đạt, kể cả sau reload). `dangChoPhep` dùng cho lượt retry.
  * `la_bai_cuoi_cua_tu` = không còn màn TÍNH ĐIỂM nào sau đó cho cùng từ (Matching cũng tính điểm).
  */
@@ -141,15 +140,13 @@ export function xepBai(dv: {
   tu: TrangThaiTu[]
   baiTap: BaiTapDb[]
   dangChoPhep?: DangBai[]
-  /** Ôn theo chủ đề (M7) là LUYỆN TẬP, không phải chu kỳ SRS ⇒ dựng lại cả dạng đã đạt trong chu kỳ. */
-  boQuaDaDat?: boolean
   /** M18 — có rng ⇒ mỗi dạng bài xáo thứ tự từ riêng (không truyền ⇒ giữ thứ tự `tu`, cho test cũ). */
   rng?: () => number
 }): {
   man: Man[]
   thieu: { vocab_id: string; type: DangBai }[]
 } {
-  const { tu, baiTap, dangChoPhep, boQuaDaDat, rng } = dv
+  const { tu, baiTap, dangChoPhep, rng } = dv
   const stage = tu[0]?.stage ?? 'new'
   const tinhDiem = new Set(boBaiCua(stage))
   const choPhep = (d: DangBai) =>
@@ -157,8 +154,7 @@ export function xepBai(dv: {
   const thieu: { vocab_id: string; type: DangBai }[] = []
   const man: Man[] = []
   const idsSession = new Set(tu.map((t) => t.vocab_id))
-  const daDatCua = (id: string) =>
-    boQuaDaDat ? [] : (tu.find((t) => t.vocab_id === id)?.cycle_completed_exercises ?? [])
+  const daDatCua = (id: string) => tu.find((t) => t.vocab_id === id)?.cycle_completed_exercises ?? []
 
   // Thứ tự DẠNG giữ nguyên (THU_TU_MAN); chỉ thứ tự TỪ trong mỗi dạng được xáo
   const xao = <T extends { vocab_id: string }>(ds: readonly T[]): readonly T[] =>
@@ -325,45 +321,6 @@ export function chamMatching(
   const kq: Record<string, boolean> = {}
   for (const l of luot) if (!(l.trai in kq)) kq[l.trai] = dapAn[l.trai] === l.phai
   return kq
-}
-
-// ── M7: ôn theo chủ đề ──────────────────────────────────────────────────────
-
-/**
- * Stage dùng để CHỌN BÀI. `mastered` không có bộ bài riêng (`boBaiCua` trả rỗng) nên khi ôn theo
- * chủ đề thì mượn bộ của `intensive` — chốt M7/Q1, nếu không thì 3/5 từ của "Trái cây" không ôn được.
- */
-export function stageBaiTap(stage: Stage): StageOn {
-  return stage === 'mastered' ? 'intensive' : stage
-}
-
-/**
- * Gom từ của 1 CHỦ ĐỀ thành session ≤5 từ, thuần 1 "stage hiệu dụng".
- * Khác `gomSession` (§4.1) ở 2 điểm CỐ Ý: không lọc `next_review_date` và không loại `mastered` —
- * ôn chủ đề là luyện tập toàn bộ chủ đề, không phải chu kỳ SRS hằng ngày.
- */
-export function gomSessionTopic(dsTu: TrangThaiTu[], soTuMoiSession = 5): TrangThaiTu[][] {
-  const thuTu: Record<StageOn, number> = { new: 0, stage1: 1, stage2: 2, stage3: 3, intensive: 4 }
-  const daSap = dsTu
-    .map((t, i) => ({ t, i }))
-    .sort((a, b) => {
-      const lech = (thuTu[stageBaiTap(a.t.stage)] ?? 0) - (thuTu[stageBaiTap(b.t.stage)] ?? 0)
-      return lech !== 0 ? lech : a.i - b.i // ổn định: giữ thứ tự đầu vào trong cùng stage
-    })
-    .map((x) => x.t)
-
-  const phien: TrangThaiTu[][] = []
-  let hienTai: TrangThaiTu[] = []
-  for (const t of daSap) {
-    const doiStage = hienTai.length > 0 && stageBaiTap(hienTai[0]!.stage) !== stageBaiTap(t.stage)
-    if (doiStage || hienTai.length === soTuMoiSession) {
-      phien.push(hienTai)
-      hienTai = []
-    }
-    hienTai.push(t)
-  }
-  if (hienTai.length > 0) phien.push(hienTai)
-  return phien
 }
 
 // ── Tổng kết phiên (§4.6) — tổng hợp từ review_log CẢ NGÀY, không giữ state client ──

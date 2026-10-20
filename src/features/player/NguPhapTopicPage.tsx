@@ -8,22 +8,21 @@ import { useDungPhim } from './dungPhim.ts'
 import Grammar from './bai/Grammar.tsx'
 
 /**
- * NGỮ PHÁP CỦA CHỦ ĐỀ (M12b, DESIGN.md §5.1) — `/on-tap/ngu-phap?topic=X&giai_doan=dau|cuoi`.
+ * NGỮ PHÁP CỦA CHỦ ĐỀ (M12b, DESIGN.md §5.1) — `/on-tap/ngu-phap?topic=X`, mở đầu lượt ôn theo chủ đề;
+ * xem xong ⇒ màn Đọc hiểu (M31).
  *
  * Chủ ý kiến trúc: đây là ROUTE RIÊNG, KHÔNG nhét vào `PlayerPage`/reducer `giamPlayer`.
  * Mỗi lần thêm chế độ vào Player đều phải trả lời được "cái gì làm session kết thúc?" — đã trả giá
  * ở M7 (26 lần cùng 1 màn, 82 dòng log rác, MB-26). Route riêng thì câu hỏi đó không phát sinh.
  *
- * Chủ đề KHÔNG có mục ngữ pháp nào ⇒ tự chuyển tiếp ngay, luồng cũ giữ nguyên 100%.
+ * Chủ đề KHÔNG có mục ngữ pháp nào ⇒ tự chuyển tiếp ngay sang Đọc hiểu.
  *
  * Thị giác: tái dùng nguyên component `Grammar` (mockup 10) — không có từ nào để in đậm nên
  * `tuDam` bỏ trống.
  */
 export default function NguPhapTopicPage() {
   const navigate = useNavigate()
-  const tham = new URLSearchParams(location.search)
-  const topicId = tham.get('topic')
-  const giaiDoan = tham.get('giai_doan') === 'cuoi' ? 'cuoi' : 'dau'
+  const topicId = new URLSearchParams(location.search).get('topic')
 
   const [ten, setTen] = useState('')
   const [lang, setLang] = useState<'zh' | 'en'>('zh')
@@ -48,13 +47,13 @@ export default function NguPhapTopicPage() {
 
   // Không có mục nào (hoặc lỗi đọc) → đi tiếp ngay, KHÔNG giữ người dùng ở màn trống.
   useEffect(() => {
-    if (ds && ds.length === 0 && topicId) navigate(noiTiepTheo(giaiDoan, topicId), { replace: true })
-  }, [ds, giaiDoan, topicId, navigate])
+    if (ds && ds.length === 0 && topicId) navigate(noiTiepTheo(topicId), { replace: true })
+  }, [ds, topicId, navigate])
 
   function tiep() {
     if (!ds || !topicId) return
     if (i + 1 < ds.length) return setI(i + 1)
-    navigate(noiTiepTheo(giaiDoan, topicId), { replace: true })
+    navigate(noiTiepTheo(topicId), { replace: true })
   }
 
   // M11/Q2 — Enter = hành động chính của màn
@@ -134,9 +133,7 @@ export default function NguPhapTopicPage() {
             payload={{ content_target: muc.content_target, pinyin: muc.pinyin, content_vi: muc.content_vi }}
             hienPhienAm={hienPhienAm}
             onTiep={tiep}
-            nhanNut={
-              cuoiCung ? (giaiDoan === 'dau' ? 'Bắt đầu ôn' : 'Xem hội thoại') : 'Tiếp theo'
-            }
+            nhanNut={cuoiCung ? 'Bắt đầu đọc' : 'Tiếp theo'}
           />
 
           {muc.vi_du && (

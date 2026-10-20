@@ -4,7 +4,7 @@
  *
  * ⚠️ Đừng lẫn với ngữ pháp CỦA TỪ (`exercises.type = 'grammar'`): cái đó gắn với 1 vocab,
  * chạy trong session như một màn bài tập. Ngữ pháp chủ đề không gắn từ nào, không tính điểm,
- * chỉ hiện ở đầu/cuối lượt ôn theo chủ đề và ở màn Từ vựng.
+ * chỉ hiện ở đầu lượt ôn theo chủ đề (trước Đọc hiểu) và ở màn Từ vựng.
  */
 
 export type MucNguPhap = {
@@ -43,14 +43,10 @@ export function docNguPhap(rows: unknown): MucNguPhap[] {
 }
 
 /**
- * Đích đến sau khi xem xong ngữ pháp của một giai đoạn.
- *
- * Tách thành hàm thuần vì đây là chỗ DỄ SAI NHẤT của M12b: giai đoạn `dau` phải vào Player,
- * giai đoạn `cuoi` phải sang hội thoại rồi mới tới Tổng kết. Nhầm 1 nhánh là hoặc mất màn hội
- * thoại kết thúc (§4.5), hoặc lặp vô hạn giữa Player và màn ngữ pháp.
+ * Đích đến sau khi xem xong ngữ pháp chủ đề. M31: ôn theo chủ đề = ĐỌC HIỂU (design.m31.md §2);
+ * giai đoạn "cuối" (→ hội thoại kết thúc) đã bỏ cùng chế độ topic của Player.
+ * Giữ thành hàm thuần có test: trỏ nhầm về chính màn ngữ pháp là lặp vô hạn.
  */
-export function noiTiepTheo(giaiDoan: 'dau' | 'cuoi', topicId: string): string {
-  return giaiDoan === 'dau'
-    ? `/on-tap?che_do=topic&topic=${topicId}`
-    : `/on-tap/hoi-thoai?topic=${topicId}`
+export function noiTiepTheo(topicId: string): string {
+  return `/on-tap/doc-hieu?topic=${topicId}`
 }

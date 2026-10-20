@@ -351,7 +351,14 @@ tối đa của từ ở stage1/stage2/intensive bằng đúng ngưỡng. Chủ 
 | Chế độ | Nguồn từ | Hiển thị hội thoại (`topic_dialogues`) |
 |---|---|---|
 | Ôn hằng ngày | Từ due hôm nay, không phân biệt topic | KHÔNG |
-| Ôn theo topic | Chọn 1 topic, ôn toàn bộ từ trong topic đó | CÓ — sau khi hoàn thành lượt ôn |
+| Ôn theo topic | **M31:** Đọc hiểu kiểu HSK — ~5 đoạn (hội thoại + đoạn văn) dùng từ của topic, 2–3 câu trắc nghiệm/đoạn; **KHÔNG tính điểm SRS** | KHÔNG (hội thoại xem ở màn Từ vựng) |
+
+**M31 (2026-10-18) — Ôn theo topic = Đọc hiểu** (thay Player chế độ topic + màn Hội thoại kết thúc; chi tiết `design.m31.md`):
+- Luồng: Chọn chủ đề → Ngữ pháp chủ đề (nếu có) → `/on-tap/doc-hieu` → `/on-tap/doc-hieu/ket-qua`. Bấm X sau ≥ 1 đoạn ⇒ Kết quả; chưa đoạn nào ⇒ về Chọn chủ đề.
+- Đề nằm ở bảng **`topic_readings`** (bảng thứ 13; `content` = `lines[]`, `highlight_vocab_ids[]`, `questions[]` gồm `hoi`, `lua_chon`[4], `dap_an` 0–3, `giai_thich_vi`). Đề sinh **NGOÀI app** rồi nạp bằng `npm run bo-sung:doc-hieu` (nguyên tắc AI §7–8 không đổi).
+- Mỗi đoạn: chọn hết 2–3 câu → "Kiểm tra" (chấm 1 lần, lộ đáp án đúng + giải thích) → ghi NGAY 1 dòng **`doc_hieu_log`** (bảng thứ 14: `luot_id`, `so_cau`, `so_dung`, `thoi_gian_ms` trần 10 phút). Thứ tự đoạn + đáp án xáo mỗi lượt.
+- KHÔNG đụng `word_state` / `review_log` / `daily_retry_queue`. Thời gian đọc cộng vào `nhat_ky_ngay` qua `chot_nhat_ky_ngay()` (gọi ở màn Kết quả) ⇒ ngày chỉ đọc hiểu vẫn tính streak.
+- ⚠️ Đính chính §2: schema nay **14 bảng** (+ `topic_grammar` M12, `nhat_ky_ngay` M14, `topic_readings` + `doc_hieu_log` M31).
 
 **M26:** mỗi dòng hội thoại có thêm `text_secondary` (câu tương đương bằng ngôn ngữ phụ), hiện LUÔN ngay dưới pinyin; nghĩa
 tiếng Việt vẫn ẩn/hiện bằng nút. Câu phụ không in đậm từ vựng. Áp cho cả màn Hội thoại kết thúc lẫn khối hội thoại ở màn Từ vựng.
@@ -729,7 +736,7 @@ Nếu `total_points` bị phạt (§3.5), viền **ngắn lại** — phản án
 |---|---|
 | Dashboard | Tổng quan tiến độ, số từ due hôm nay, vòng tròn tiến độ tổng |
 | Ôn tập hằng ngày (Player) | Chạy session theo §4.1–4.4, 17 dạng bài §6 |
-| Ôn tập theo topic (Player) | Giống trên nhưng theo 1 topic, có hội thoại kết thúc (§4.5) |
+| Ôn tập theo topic — Đọc hiểu (M31) | Ngữ pháp chủ đề → ~5 đoạn đọc, 2–3 câu trắc nghiệm/đoạn → Kết quả; không tính điểm SRS (§4.5) |
 | **Tổng kết phiên ôn tập hằng ngày** | Hiển thị 1 lần sau khi hết due+retry trong ngày — điểm/lên stage/từ Mastered (§4.6) |
 | Quản lý từ vựng — Topic | Sửa/xóa từ, topic |
 | Import | Luồng §10 |
