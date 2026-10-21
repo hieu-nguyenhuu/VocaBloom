@@ -184,6 +184,8 @@ Kế thừa DEC-12, áp dụng token thị giác Nhiệt đới:
 
 **Nội dung** (đã validate bằng mockup): header chào + ngày + streak badge (coral tint) → 2 thẻ màu riêng biệt "đến hạn hôm nay" (tint chàm `#EDE9FE`) / "quá hạn" (tint vàng `#FEF9C3`, giọng điệu bình thản, KHÔNG dùng đỏ) → CTA chính "Bắt đầu ôn tập · N từ" (nền chàm sâu đặc) → CTA phụ "Ôn theo chủ đề" (tint ngọc lam) → khối "Khu vườn của bạn" gồm 2 tầng: hàng đếm 6 giai đoạn (icon trong chip màu tint theo ramp) + cụm ring cá nhân của từ vừa ôn gần đây.
 
+**M33 — đóng băng lịch ôn (KHÔNG có mockup):** khi đóng băng, ngay trên 2 thẻ đến hạn/quá hạn có dải `surface-sunken` bo 14, 13px: "Lịch ôn đang đóng băng từ 21/10 — chỉ còn từ tồn đọng." + link tím "Mở lại" → Cài đặt. 2 thẻ và nút "Bắt đầu ôn tập · N từ" chỉ đếm từ tồn đọng.
+
 ⚠️ **Lưu ý quan trọng khi code:** màu ở hàng đếm 6 giai đoạn là **màu tượng trưng cho cả nhóm** (1 màu/stage cố định), ring cá nhân ở cụm bên dưới CÙNG màu theo stage (MB-43) nhưng độ đầy phản ánh `total_points` thật của từng từ. Đây là 2 nguồn dữ liệu khác nhau, đừng dùng chung 1 query.
 
 - **Mobile:** 1 cột dọc đúng như mockup đã duyệt.
@@ -227,7 +229,7 @@ Dùng đúng Exercise Shell + 9 pattern ở §6. Session gom theo stage (DEC-10)
 
 ### 8.6 Cài đặt
 
-3 nhóm: **AI/OpenRouter** (API key ẩn dạng `sk-••••3f2a`, chọn model) → **Học tập** (**M32:** công tắc "Thêm từ mới hằng ngày" + dòng ghi chú 12px muted ngay dưới — tắt thì stepper số từ mới mờ 50% nhưng vẫn chỉnh được; số từ mới/ngày dạng stepper +/-, giọng đọc TTS) → **Thông báo** (toggle bật/tắt cảnh báo hàng đợi cạn, dùng switch nền chàm sâu khi bật).
+3 nhóm: **AI/OpenRouter** (API key ẩn dạng `sk-••••3f2a`, chọn model) → **Học tập** (**M33:** công tắc "Ôn tập hằng ngày" — tắt = đóng băng lịch ôn, khoá trong lúc gọi RPC — + dòng ghi chú 12px muted ngay dưới (ngày đóng băng, số ngày sẽ dời hạn); đóng băng thì stepper số từ mới mờ 50% nhưng vẫn chỉnh được; số từ mới/ngày dạng stepper +/-, giọng đọc TTS) → **Thông báo** (toggle bật/tắt cảnh báo hàng đợi cạn, dùng switch nền chàm sâu khi bật).
 
 - **Mobile:** 1 cột, các nhóm xếp dọc như mockup.
 - **PC:** 2 cột (nhóm AI + Học tập bên trái, Thông báo bên phải) hoặc giữ 1 cột nhưng rộng hơn với label/input canh 2 bên trái-phải rõ ràng hơn — ưu tiên rộng rãi hơn vì đây là màn ít ghé thăm, không cần tối ưu mật độ.

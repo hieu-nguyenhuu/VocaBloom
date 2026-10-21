@@ -16,6 +16,7 @@ import {
   type ODai,
 } from '../../lib/dashboard.ts'
 import { homNayVN } from '../../lib/player.ts'
+import { ngayDongBang, ngayHieuLuc, ngayThang } from '../../lib/dongBang.ts'
 import { supabase } from '../../lib/supabase.ts'
 import Ring from '../player/Ring.tsx'
 import KhungTrang from '../shell/KhungTrang.tsx'
@@ -53,6 +54,8 @@ type DuLieu = {
   vuon: { stage: StageCay; so: number }[]
   ganDay: TuGanDay[]
   chuaDoc: number
+  /** M33 — ngày VN bắt đầu đóng băng lịch ôn (null = bình thường). */
+  dongBangTu: string | null
 }
 
 function The({ nhan, so, nen, mauNhan }: { nhan: string; so: number; nen: string; mauNhan: string }) {
@@ -109,12 +112,13 @@ export default function DashboardPage() {
   async function nap() {
     const now = new Date()
     const homNay = homNayVN(now)
-    const [dueRes, vuonRes, ganDayRes, logRes, docRes, nhatKyRes, tbRes, viRes] = await Promise.all([
+    const [dueRes, vuonRes, ganDayRes, logRes, docRes, nhatKyRes, tbRes, viRes, bangRes] = await Promise.all([
+      // M33 — lấy mọi từ còn lịch rồi lọc theo NGÀY HIỆU LỰC ở client (cần mốc đóng băng, đọc song song bên dưới)
       supabase
         .from('word_state')
         .select('next_review_date')
         .neq('stage', 'mastered')
-        .lte('next_review_date', homNay),
+        .not('next_review_date', 'is', null),
       supabase.from('word_state').select('stage'),
       supabase
         .from('word_state')
@@ -137,13 +141,20 @@ export default function DashboardPage() {
       supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('is_read', false),
       // M15: tổng ruby PHẢI do server tính — màn Lịch sử lazy-load nên client không đủ dữ liệu
       supabase.rpc('vi_ruby'),
+      supabase.from('settings').select('value').eq('key', 'dong_bang_luc').maybeSingle(),
     ])
-    const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? docRes.error ?? nhatKyRes.error ?? tbRes.error
+    const e = dueRes.error ?? vuonRes.error ?? ganDayRes.error ?? logRes.error ?? docRes.error ?? nhatKyRes.error ?? tbRes.error ?? bangRes.error
     if (e) return setLoi(e.message)
 
     // supabase-js suy kiểu quan hệ vocab(word) thành mảng; thực tế là 1 object (FK n-1)
     const gd = (ganDayRes.data ?? []) as unknown as (TuGanDay & { vocab: { word: string } | null })[]
-    const { dungHan, quaHan, tong } = demDenHan(dueRes.data ?? [], homNay)
+    const v = (bangRes.data as { value?: unknown } | null)?.value
+    const mocBang = typeof v === 'string' ? v : null
+    const hieuLuc = ngayHieuLuc(homNay, mocBang)
+    const { dungHan, quaHan, tong } = demDenHan(
+      (dueRes.data ?? []).filter((r) => r.next_review_date !== null && r.next_review_date <= hieuLuc),
+      homNay,
+    )
     const logs = [
       ...((logRes.data ?? []) as { reviewed_at: string; thoi_gian_ms: number | null }[]),
       ...((docRes.data ?? []) as { created_at: string; thoi_gian_ms: number | null }[]).map((r) => ({
@@ -162,6 +173,7 @@ export default function DashboardPage() {
       dungHan,
       quaHan,
       tong,
+      dongBangTu: ngayDongBang(mocBang),
       coTu: (vuonRes.data ?? []).length > 0,
       streak: tinhStreak(ngay, homNay),
       dai: dai7Ngay(ngay, homNay, phut, ngayDaVa),
@@ -259,6 +271,17 @@ export default function DashboardPage() {
 
       <div className="flex flex-col gap-4 md:grid md:grid-cols-[1.4fr_1fr] md:items-start md:gap-7">
         <div className="flex flex-col gap-4 md:gap-5">
+          {/* M33 — dải trạng thái đóng băng (KHÔNG có mockup, 0 màu mới; design.m33.md §4) */}
+          {dl.dongBangTu && (
+            <div className="flex items-center justify-between gap-3 rounded-14 bg-surface-sunken px-4 py-3 text-13 text-content-nav">
+              <span>
+                Lịch ôn đang đóng băng từ {ngayThang(dl.dongBangTu)} — chỉ còn từ tồn đọng.
+              </span>
+              <Link to="/cai-dat" className="shrink-0 font-semibold text-accent">
+                Mở lại
+              </Link>
+            </div>
+          )}
           <div className="flex gap-3 md:gap-4">
             <The nhan="Đến hạn hôm nay" so={dl.dungHan} nen="bg-accent-tint" mauNhan="text-accent" />
             <The nhan="Quá hạn" so={dl.quaHan} nen="bg-warn-bg" mauNhan="text-warn-text" />

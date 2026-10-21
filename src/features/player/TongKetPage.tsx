@@ -12,6 +12,7 @@ import {
 import { supabase } from '../../lib/supabase.ts'
 import { KhungLoi } from '../../components/TrangThai.tsx'
 import { phatAmThanh } from '../../lib/amThanh.ts'
+import { ngayHieuLuc } from '../../lib/dongBang.ts'
 
 /**
  * Tổng kết phiên ôn tập (mockup 12, SPECIFICATION §4.6, UI_DESIGN §8.8). Route /on-tap/tong-ket, ngoài shell.
@@ -59,23 +60,29 @@ export default function TongKetPage() {
   // lại, không phát lại âm (2 effect trên có ref guard riêng).
   const nap = useCallback(async () => {
     const homNay = homNayVN(new Date())
-    const [logRes, dueRes, retryRes] = await Promise.all([
+    const [logRes, dueRes, retryRes, bangRes] = await Promise.all([
       supabase
         .from('review_log')
         .select('vocab_id, points, stage_before, stage_after, is_correct, vocab(word)')
         .gte('reviewed_at', `${homNay}T00:00:00+07:00`)
         .order('reviewed_at'),
-      supabase.from('word_state').select('vocab_id').lte('next_review_date', homNay).neq('stage', 'mastered'),
+      // M33 — lọc theo ngày hiệu lực ở client (đang đóng băng ⇒ chỉ từ tồn đọng)
+      supabase.from('word_state').select('vocab_id, next_review_date').not('next_review_date', 'is', null).neq('stage', 'mastered'),
       supabase.from('daily_retry_queue').select('vocab_id').eq('queue_date', homNay),
+      supabase.from('settings').select('value').eq('key', 'dong_bang_luc').maybeSingle(),
     ])
-    const e = logRes.error ?? dueRes.error ?? retryRes.error
+    const e = logRes.error ?? dueRes.error ?? retryRes.error ?? bangRes.error
     if (e) return setLoi(e.message)
     // supabase-js suy kiểu quan hệ vocab(word) thành mảng; thực tế là 1 object (FK n-1)
     const rows = (logRes.data ?? []) as unknown as (DongLogDb & { vocab: { word: string } | null })[]
     const tu = Object.fromEntries(rows.map((r) => [r.vocab_id, r.vocab?.word ?? '?']))
     const tk = tongHopTongKet(rows)
     const retryIds = [...new Set((retryRes.data ?? []).map((r) => r.vocab_id as string))]
-    const due = (dueRes.data ?? []).map((r) => r.vocab_id as string)
+    const v = (bangRes.data as { value?: unknown } | null)?.value
+    const hieuLuc = ngayHieuLuc(homNay, typeof v === 'string' ? v : null)
+    const due = ((dueRes.data ?? []) as { vocab_id: string; next_review_date: string }[])
+      .filter((r) => r.next_review_date <= hieuLuc)
+      .map((r) => r.vocab_id)
     setDl({ tk, tu, conCho: demConCho(due, retryIds), soRetry: retryIds.length, homNay })
   }, [])
 

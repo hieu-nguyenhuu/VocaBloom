@@ -21,5 +21,6 @@
 | [`design.m31.md`](design.m31.md) | **M31** — Ôn theo chủ đề = Đọc hiểu kiểu HSK (5 đoạn/chủ đề, 2–3 câu trắc nghiệm/đoạn, sinh ngoài app, không tính điểm SRS); bỏ Player topic + Hội thoại kết thúc | ✅ Duyệt 2026-10-18 |
 | [`design.m31a.md`](design.m31a.md) | Plan M31a — 25 task: DB 0018 + chốt nhật ký (TDD script) · `docHieu.ts` (TDD 16 ca) · CLI `bo-sung:doc-hieu` · màn Đọc hiểu + Kết quả · gỡ chế độ topic Player · 1 chủ đề thử + CDP | ✅ Xong 2026-10-18 (MB-53) — CDP 54/54 |
 | [`design.m31b.md`](design.m31b.md) | Plan M31b — soạn đề đọc hiểu 34 chủ đề còn lại (14 HSK3 + 20 HSK4), validate + CLI | ✅ Xong 2026-10-18 (MB-54) — 35/35 · 175 đoạn · 478 câu |
-| [`design.m32.md`](design.m32.md) | **M32** — Công tắc "Thêm từ mới hằng ngày" ở Cài đặt (mặc định bật; tắt ⇒ cron bỏ B4 nhỏ giọt + B5 cảnh báo cạn). Design + Plan gộp | ✅ Xong 2026-10-21 (MB-55) — CDP 12/12 |
+| [`design.m32.md`](design.m32.md) | **M32** — Công tắc "Thêm từ mới hằng ngày" ở Cài đặt (mặc định bật; tắt ⇒ cron bỏ B4 nhỏ giọt + B5 cảnh báo cạn). Design + Plan gộp | ✅ 2026-10-21 (MB-55) · ⚠️ bị thay bởi M33 |
+| [`design.m33.md`](design.m33.md) | **M33** — Đóng băng lịch ôn (thay công tắc M32): tắt ⇒ chỉ còn từ tồn đọng (hạn ≤ ngày tắt), không phạt/không thêm từ; bật ⇒ dời hạn từ bị giữ +N ngày. Design + Plan gộp | ✅ Xong 2026-10-21 (MB-56) — CDP 12/12 |
 | [`design.m27c.md`](design.m27c.md) | Plan M27c — soạn 14 chủ đề 02–15 theo chuẩn chủ đề 01, 2 đợt, validate 15/15 | ✅ Xong 2026-10-05 — 15/15 sạch · M27d đã chạy |

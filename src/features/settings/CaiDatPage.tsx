@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { anKhoa, chinhGioiHanLuot, chinhSoTuMoi, docCaiDat, type CaiDat } from '../../lib/settings.ts'
+import { moTaDongBang } from '../../lib/dongBang.ts'
+import { homNayVN } from '../../lib/player.ts'
 import { supabase } from '../../lib/supabase.ts'
 import { demTuThieuAudio, genAudioChoTu, nghegiongThu, type KetQuaGen } from '../../lib/tts.ts'
 import { GIONG_EN, GIONG_ZH, NHAN_GIONG, type MaNgonNgu } from '../../lib/ttsCore.ts'
@@ -86,6 +88,9 @@ export default function CaiDatPage() {
   const [soThieu, setSoThieu] = useState(0)
   const [tienDo, setTienDo] = useState<{ da: number; tong: number } | null>(null)
   const [ketQuaGen, setKetQuaGen] = useState<KetQuaGen | null>(null)
+  // M33 — đang gọi RPC đóng/mở băng (khoá công tắc) + kết quả lần mở băng gần nhất trong phiên
+  const [dangDoiBang, setDangDoiBang] = useState(false)
+  const [daMoBang, setDaMoBang] = useState<{ so_ngay: number; so_tu_doi: number } | null>(null)
 
   useEffect(() => {
     void nap()
@@ -111,6 +116,23 @@ export default function CaiDatPage() {
       setLoi(error.message)
       return
     }
+    setLoi(null)
+    setDaLuu(true)
+    setTimeout(() => setDaLuu(false), 1500)
+  }
+
+  /**
+   * M33 — công tắc "Ôn tập hằng ngày": bật = mở băng (RPC dời hạn từ bị giữ), tắt = đóng băng.
+   * KHÔNG upsert thẳng `dong_bang_luc` như các key khác: mở băng phải dời hạn trong cùng 1 transaction.
+   */
+  async function doiDongBang(onTap: boolean) {
+    setDangDoiBang(true)
+    const { data, error } = await supabase.rpc(onTap ? 'mo_bang_lich' : 'dong_bang_lich')
+    setDangDoiBang(false)
+    if (error) return setLoi(error.message)
+    const moc = !onTap && typeof data === 'string' ? data : null
+    setCd((c) => (c ? { ...c, dong_bang_luc: onTap ? null : (moc ?? new Date().toISOString()) } : c))
+    setDaMoBang(onTap ? (data as { so_ngay: number; so_tu_doi: number }) : null)
     setLoi(null)
     setDaLuu(true)
     setTimeout(() => setDaLuu(false), 1500)
@@ -250,21 +272,21 @@ export default function CaiDatPage() {
           </Nhom>
 
           <Nhom ten="Học tập">
-            {/* M32 — tắt ⇒ cron 01:00 không nhỏ giọt từ mới (B4) và không cảnh báo hàng đợi cạn (B5) */}
+            {/* M33 — tắt = ĐÓNG BĂNG lịch ôn: chỉ còn từ tồn đọng, không thêm từ mới, không trừ điểm (design.m33.md) */}
             <div className={HANG}>
-              <span className={NHAN}>Thêm từ mới hằng ngày</span>
+              <span className={NHAN}>Ôn tập hằng ngày</span>
               <CongTac
-                bat={cd.new_words_enabled}
-                nhan="Thêm từ mới hằng ngày"
-                onDoi={(v) => void ghi('new_words_enabled', v)}
+                bat={cd.dong_bang_luc === null}
+                nhan="Ôn tập hằng ngày"
+                khoa={dangDoiBang}
+                onDoi={(v) => void doiDongBang(v)}
               />
             </div>
             <p className="-mt-2 text-12 text-content-muted">
-              {cd.new_words_enabled
-                ? `Mỗi ngày lúc 01:00 thêm ${cd.new_words_per_day} từ từ hàng đợi. Thay đổi có hiệu lực từ 01:00 sáng mai.`
-                : 'Đang tạm dừng — không thêm từ mới, từ đã học vẫn ôn bình thường.'}
+              {moTaDongBang(homNayVN(new Date()), cd.dong_bang_luc)}
+              {daMoBang && daMoBang.so_tu_doi > 0 && ` Đã dời hạn ${daMoBang.so_tu_doi} từ thêm ${daMoBang.so_ngay} ngày.`}
             </p>
-            <div className={`${HANG} ${cd.new_words_enabled ? '' : 'opacity-50'}`}>
+            <div className={`${HANG} ${cd.dong_bang_luc === null ? '' : 'opacity-50'}`}>
               <span className={NHAN}>Số từ mới/ngày</span>
               <div className="flex items-center gap-3">
                 <button type="button" aria-label="Giảm" onClick={() => void ghi('new_words_per_day', chinhSoTuMoi(cd.new_words_per_day, -1))} className={NUT_NHO}>

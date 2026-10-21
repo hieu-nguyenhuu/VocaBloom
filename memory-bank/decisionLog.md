@@ -1042,3 +1042,23 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
 - **Kỹ thuật:** seed bằng migration riêng `0019` (khuôn `0012`), hàm cron sửa tại chỗ ở `0005` (1 định nghĩa).
 - **Bằng chứng:** settings 3 ca + `test:db` T10/T11 + `check:schema` đều ĐỎ trước · CDP 12/12.
 - **Trạng thái:** ✅ Đã áp dụng · commit + push + `deploy:firebase` theo lệnh người dùng.
+
+### [2026-10-21] MB-56 — M33: Đóng băng lịch ôn (thay M32)
+- **Bối cảnh:** M32 chỉ ngừng nhỏ giọt từ mới; người dùng muốn nút xử lý khi **từ quá hạn dồn quá nhiều**.
+- **Quyết định (`design.m33.md`):**
+
+| Mã | Chốt |
+|---|---|
+| Q1 | Chặn dòng chảy vào, giữ tồn đọng: đóng băng ngày F ⇒ đến hạn = hạn ≤ F |
+| Q2 | Bật lại ⇒ dời hạn từ bị giữ thêm N = U − F ngày (dừng đồng hồ) |
+| Q3 | Phạm vi: mọi từ có lịch (new → intensive) |
+| Q4 | Thay công tắc M32 bằng 1 công tắc "Ôn tập hằng ngày" |
+| Q5 | Streak tính bình thường |
+| Q6 | Từ tồn đọng ôn trong lúc đóng băng, lên stage ⇒ giữ tới khi bật, không dời thêm |
+| Q7 | Không phạt khi đóng băng (cron bỏ B1, B2, B4, B5) |
+| Q8 | Deploy lúc M32 đang tắt ⇒ đóng băng ngay từ lúc migrate |
+
+- **Kỹ thuật:** 1 key `dong_bang_luc` (timestamp | null) thay cờ boolean — "ngày hiệu lực" tự ẩn từ bị giữ mà không cần cột mới;
+  mở băng là RPC 1 transaction (không upsert từ client). Từ "đã ôn sau mốc" nhận biết bằng `last_reviewed_at > dong_bang_luc`.
+- **Bằng chứng:** DB1–DB10 · D1–D8 · T10 đều ĐỎ trước · CDP 12/12 với snapshot DB trước/sau giống hệt.
+- **Trạng thái:** ✅ Đã áp dụng · commit + push + `deploy:firebase` theo lệnh người dùng.

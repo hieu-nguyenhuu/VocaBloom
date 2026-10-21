@@ -1,5 +1,5 @@
 /**
- * Cấu hình app — 9 key dạng key-value (SPECIFICATION §11, DEC-17 + 2 key TTS M6c + `max_tu_moi_luot` M11 + `new_words_enabled` M32). Single-user nên không cần bảng
+ * Cấu hình app — 9 key dạng key-value (SPECIFICATION §11, DEC-17 + 2 key TTS M6c + `max_tu_moi_luot` M11 + `dong_bang_luc` M33). Single-user nên không cần bảng
  * cấu hình phức tạp. File này THUẦN: không đọc DB, `CaiDatPage` truyền `rows` vào.
  *
  * ⚠️ `settings.value` là **jsonb** ⇒ phải ghi đúng KIỂU JSON (số, boolean, chuỗi). Nếu lưu `"5"`
@@ -17,8 +17,11 @@ export type CaiDat = {
   tts_voice: string
   tts_voice_en: string
   low_queue_alert_enabled: boolean
-  /** M32 — chỉ khi true cron 01:00 mới nhỏ giọt từ mới (B4); từ đã kích hoạt không bị ảnh hưởng. */
-  new_words_enabled: boolean
+  /**
+   * M33 — null = bình thường; chuỗi timestamp = đang ĐÓNG BĂNG lịch ôn từ lúc đó (xem `dongBang.ts`).
+   * KHÔNG ghi trực tiếp bằng upsert: bật/tắt qua RPC `dong_bang_lich` / `mo_bang_lich` (mở băng phải dời hạn).
+   */
+  dong_bang_luc: string | null
 }
 
 // Danh sách giọng nằm ở `ttsCore.ts` (GIONG_ZH / GIONG_EN) — Google KHÔNG có `cmn-CN-Neural2-*`,
@@ -33,7 +36,7 @@ export const MAC_DINH: CaiDat = {
   tts_voice: 'cmn-CN-Wavenet-A',
   tts_voice_en: 'en-US-Neural2-C',
   low_queue_alert_enabled: true,
-  new_words_enabled: true,
+  dong_bang_luc: null,
 }
 
 export const MIN_TU_MOI = 1
@@ -55,7 +58,6 @@ export function docCaiDat(rows: { key: string; value: unknown }[]): CaiDat {
   const so = m.get('new_words_per_day')
   const gioiHan = m.get('max_tu_moi_luot')
   const bat = m.get('low_queue_alert_enabled')
-  const batTuMoi = m.get('new_words_enabled')
   return {
     openrouter_api_key: chuoi('openrouter_api_key') ?? MAC_DINH.openrouter_api_key,
     openrouter_model: chuoi('openrouter_model') ?? MAC_DINH.openrouter_model,
@@ -65,7 +67,7 @@ export function docCaiDat(rows: { key: string; value: unknown }[]): CaiDat {
     tts_voice: chuoi('tts_voice') ?? MAC_DINH.tts_voice,
     tts_voice_en: chuoi('tts_voice_en') ?? MAC_DINH.tts_voice_en,
     low_queue_alert_enabled: typeof bat === 'boolean' ? bat : MAC_DINH.low_queue_alert_enabled,
-    new_words_enabled: typeof batTuMoi === 'boolean' ? batTuMoi : MAC_DINH.new_words_enabled,
+    dong_bang_luc: chuoi('dong_bang_luc') ?? MAC_DINH.dong_bang_luc,
   }
 }
 

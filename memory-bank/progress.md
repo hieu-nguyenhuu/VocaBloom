@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-21** (M32 — công tắc "Thêm từ mới hằng ngày")
+> Cập nhật lần cuối: **2026-10-21** (M33 — đóng băng lịch ôn, thay M32)
 
 ## ✅ Đã xong
 
@@ -100,6 +100,10 @@
 - [ ] **M31c** — khoá `readings` trong file import (3 cổng + RPC `import_topic` + skill `vocabCsv2Json`).
 - [x] **M32** (XONG 2026-10-21, MB-55) — công tắc "Thêm từ mới hằng ngày" ở Cài đặt: key `new_words_enabled` (`0019`, mặc định bật),
       cron bỏ B4 + B5 khi tắt. `npm test` 494/494 · build · lint · `test:db` 11/11 · `check:schema` · CDP 12/12. Commit + push + deploy Firebase.
+      ⚠️ Bị thay bởi M33 cùng ngày (key `new_words_enabled` đã xoá).
+- [x] **M33** (XONG 2026-10-21, MB-56) — **đóng băng lịch ôn**: công tắc "Ôn tập hằng ngày"; tắt ⇒ chỉ còn từ tồn đọng (hạn ≤ ngày tắt),
+      không phạt/không reset vòng/không thêm từ; bật ⇒ dời hạn từ bị giữ +N ngày. `npm test` 504/504 · `test:dongbang` 9/9 · `test:db` 10/10 ·
+      CDP 12/12 (DB nguyên trạng). Commit + push + deploy Firebase. DB hiện đang đóng băng từ 21/10.
 
 ### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
 - [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.

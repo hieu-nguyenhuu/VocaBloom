@@ -25,6 +25,7 @@ import {
 import { chamBaiTuLuan, giaiThichBai } from '../../lib/ai.ts'
 import { deBaiCua, dungTuVerdict, taoItemCham, type GiaiThich as NoiDungGiaiThich, type KetQuaCham } from '../../lib/aiCore.ts'
 import { docCaiDat, MAC_DINH } from '../../lib/settings.ts'
+import { ngayHieuLuc } from '../../lib/dongBang.ts'
 import { supabase } from '../../lib/supabase.ts'
 import ExerciseShell, { type Ghost } from './ExerciseShell.tsx'
 import Ring from './Ring.tsx'
@@ -155,7 +156,10 @@ export default function PlayerPage() {
     const homNay = homNayVN(new Date())
     try {
       const cauHinh = await supabase.from('settings').select('key, value')
-      gioiHanLuot.current = docCaiDat((cauHinh.data ?? []) as { key: string; value: unknown }[]).max_tu_moi_luot
+      const caiDat = docCaiDat((cauHinh.data ?? []) as { key: string; value: unknown }[])
+      gioiHanLuot.current = caiDat.max_tu_moi_luot
+      // M33 — đang đóng băng ⇒ chỉ lấy từ tồn đọng (hạn ≤ ngày bắt đầu đóng băng)
+      const hieuLuc = ngayHieuLuc(homNay, caiDat.dong_bang_luc)
       // Từ đã có log hôm nay → không đưa lại vào session thường (DEC-06); từ có hàng retry → chỉ lượt retry
       const [logRes, retryRes] = await Promise.all([
         supabase.from('review_log').select('vocab_id').gte('reviewed_at', `${homNay}T00:00:00+07:00`),
@@ -182,7 +186,7 @@ export default function PlayerPage() {
         const { data, error } = await supabase
           .from('word_state')
           .select('*, vocab(*)')
-          .lte('next_review_date', homNay)
+          .lte('next_review_date', hieuLuc)
           .neq('stage', 'mastered')
           .order('next_review_date')
         if (error) throw error

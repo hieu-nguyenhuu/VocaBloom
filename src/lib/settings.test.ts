@@ -19,7 +19,7 @@ describe('docCaiDat', () => {
         { key: 'tts_voice', value: 'cmn-CN-Wavenet-C' },
         { key: 'tts_voice_en', value: 'en-US-Neural2-D' },
         { key: 'low_queue_alert_enabled', value: false },
-        { key: 'new_words_enabled', value: false },
+        { key: 'dong_bang_luc', value: '2026-10-21T03:00:00Z' },
       ]),
     ).toEqual({
       openrouter_api_key: 'sk-abc',
@@ -30,7 +30,7 @@ describe('docCaiDat', () => {
       tts_voice: 'cmn-CN-Wavenet-C',
       tts_voice_en: 'en-US-Neural2-D',
       low_queue_alert_enabled: false,
-      new_words_enabled: false,
+      dong_bang_luc: '2026-10-21T03:00:00Z',
     })
   })
 
@@ -44,10 +44,11 @@ describe('docCaiDat', () => {
   it('sai kiểu (số/boolean lưu thành chuỗi) → mặc định', () => {
     expect(docCaiDat([{ key: 'new_words_per_day', value: '7' }]).new_words_per_day).toBe(5)
     expect(docCaiDat([{ key: 'low_queue_alert_enabled', value: 'true' }]).low_queue_alert_enabled).toBe(true)
-    expect(docCaiDat([{ key: 'new_words_enabled', value: 'false' }]).new_words_enabled).toBe(true)
+    expect(docCaiDat([{ key: 'dong_bang_luc', value: 123 }]).dong_bang_luc).toBeNull()
   })
-  it('mặc định BẬT thêm từ mới hằng ngày (giữ hành vi cũ — M32/Q2)', () => {
-    expect(MAC_DINH.new_words_enabled).toBe(true)
+  it('mặc định KHÔNG đóng băng lịch ôn (M33) — key M32 new_words_enabled đã bỏ', () => {
+    expect(MAC_DINH.dong_bang_luc).toBeNull()
+    expect('new_words_enabled' in MAC_DINH).toBe(false)
   })
   it('key lạ → bỏ qua', () => {
     expect(docCaiDat([{ key: 'linh_tinh', value: 1 }])).toEqual(MAC_DINH)

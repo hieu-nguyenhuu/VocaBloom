@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-21** (**M32 XONG** — công tắc "Thêm từ mới hằng ngày" ở Cài đặt; đã commit + push + deploy theo lệnh người dùng)
+> Cập nhật lần cuối: **2026-10-21** (**M33 XONG** — đóng băng lịch ôn, thay công tắc M32; DB đang ĐÓNG BĂNG từ 21/10 22:30; đã commit + push + deploy)
 
 ## Trạng thái hiện tại
 
@@ -50,10 +50,26 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M30 (Sắp xếp câu: hàng chip đứng yên + ô xám giữ chỗ) — ✅ XONG 2026-10-14, SỬA LẦN 2 2026-10-17 (MB-52).**
 **M31a (Ôn theo chủ đề = Đọc hiểu kiểu HSK) — ✅ XONG 2026-10-18 (MB-53).** ⏳ Cổng duyệt: ảnh bố cục + văn phong/độ khó chủ đề thử.
 **M31b (Soạn đề 34 chủ đề còn lại) — ✅ XONG 2026-10-18 (MB-54).**
-**M32 (Công tắc "Thêm từ mới hằng ngày") — ✅ XONG 2026-10-21 (MB-55).**
+**M32 (Công tắc "Thêm từ mới hằng ngày") — ✅ 2026-10-21 (MB-55) · ⚠️ ĐÃ BỊ THAY bởi M33 cùng ngày.**
+**M33 (Đóng băng lịch ôn) — ✅ XONG 2026-10-21 (MB-56).**
 **Tiếp theo:** M31c (khoá `readings` trong file import + skill `vocabCsv2Json`) khi người dùng ra lệnh. (cũ)  Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M33 vừa xong (2026-10-21) — MB-56 · Design + Plan gộp `design.m33.md`
+- Người dùng: M32 chưa đúng ý — muốn ĐÓNG BĂNG để xử lý khi từ quá hạn dồn nhiều. Mô hình chốt: **chặn dòng chảy vào, giữ tồn đọng**.
+  Tắt ngày F ⇒ đến hạn = `next_review_date ≤ F` (tồn đọng vẫn ôn/lên stage bình thường); từ hạn > F (kể cả vừa lên stage) bị giữ;
+  cron bỏ B1 phạt · B2 reset vòng · B4 từ mới · B5 cảnh báo (B3 giữ). Bật ngày U ⇒ RPC `mo_bang_lich()` dời hạn từ bị giữ +N=U−F,
+  trừ từ đã ôn sau mốc. Streak tính bình thường. Phạm vi mọi từ có lịch (new→intensive).
+- Key `settings.dong_bang_luc` (null | timestamp). `0019_bat_tu_moi.sql` → **`0019_dong_bang.sql`** (xoá key M32 `new_words_enabled`; nếu nó
+  đang false thì đóng băng ngay — Q8). RPC `dong_bang_lich()` / `mo_bang_lich()` (không security definer, grant authenticated). Cron sửa tại chỗ `0005`.
+- Client: `src/lib/dongBang.ts` (`ngayHieuLuc`, `ngayDongBang`, `soNgayDongBang`, `moTaDongBang`, `ngayThang`) — MỌI truy vấn đến hạn dùng
+  `ngayHieuLuc`: Dashboard (lọc client + dải trạng thái + "Mở lại"), Player lượt thường (`lte(hieuLuc)`), Tổng kết. `chuDe.ts so_den_han` KHÔNG đổi
+  (không còn hiện ở màn nào). Công tắc "Ôn tập hằng ngày" ở Cài đặt gọi RPC (không upsert), khoá khi đang gọi.
+- **Trạng thái DB thật:** ĐANG ĐÓNG BĂNG từ `2026-10-21T15:30:54Z` (22:30 VN 21/10) — tồn đọng 54 từ (45 quá hạn + 9 hôm nay), 46 từ bị giữ.
+- Kiểm chứng: `npm test` 504/504 (DB1–DB10 + settings ĐỎ trước) · build · lint · `test:dongbang` 9/9 · `test:db` 10/10 (T10 ĐỎ trước) ·
+  `test:player` 4 · `test:import` 10 · `test:nhatky` 7 · `check:schema` · CDP 12/12 trên DB thật (giả lập mốc 3 ngày CHỈ bằng sửa settings,
+  mở băng chỉ khi N = 0; snapshot 740 `next_review_date` trước/sau giống hệt). Script: scratchpad `cdp-m33.mjs`.
 
 ### ✅ M32 vừa xong (2026-10-21) — MB-55 · Design + Plan gộp `design.m32.md`
 - Key `new_words_enabled` (jsonb boolean, seed `true` ở `0019_bat_tu_moi.sql`). `run_daily_maintenance()` sửa TẠI CHỖ ở `0005`:

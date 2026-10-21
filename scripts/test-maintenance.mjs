@@ -21,12 +21,12 @@ const DON_SACH = `
            daily_retry_queue, word_state, exercises, vocab_topics, topic_dialogues cascade;
   update settings set value = '5'    where key = 'new_words_per_day';
   update settings set value = 'true' where key = 'low_queue_alert_enabled';
-  insert into settings (key, value) values ('new_words_enabled', 'true')
-    on conflict (key) do update set value = 'true';
+  insert into settings (key, value) values ('dong_bang_luc', 'null')
+    on conflict (key) do update set value = 'null';
 `
 
-/** M32 — tắt công tắc "Thêm từ mới hằng ngày" (trong giao dịch, rollback ở cuối). */
-const TAT_TU_MOI = "update settings set value = 'false' where key = 'new_words_enabled';"
+/** M33 — đóng băng lịch ôn từ 3 ngày trước (trong giao dịch, rollback ở cuối). */
+const DONG_BANG = "update settings set value = to_jsonb(now() - interval '3 days') where key = 'dong_bang_luc';"
 
 /** Seed 1 từ + word_state. updated_at lùi 2 ngày để không dính chốt chống-phạt-chồng. */
 function motTu({ ten, stage, due, diem, onLuc = 'null', cycle = 0 }) {
@@ -151,19 +151,17 @@ const CAC_CA = [
   },
   {
     ma: 'T10',
-    ten: 'M32 — TẮT thêm từ mới: 12 từ hàng đợi → KHÔNG kích hoạt từ nào',
-    seed: TAT_TU_MOI + hangDoi(12),
+    ten: 'M33 — ĐÓNG BĂNG: không trừ điểm, không reset vòng, không thêm từ mới, không cảnh báo',
+    seed: DONG_BANG + motTu({ ten: 'w1', stage: 'stage2', due: HOM_QUA, diem: 10, cycle: 3 }) + hangDoi(7),
     goi: 1,
-    assert: `select (select count(*) from word_state where next_review_date = ${HOM_NAY}) = 0 as pass,
-                    'đã kích hoạt=' || (select count(*) from word_state where next_review_date = ${HOM_NAY}) as chi_tiet`,
-  },
-  {
-    ma: 'T11',
-    ten: 'M32 — TẮT thêm từ mới: hàng đợi 7 từ → KHÔNG gửi cảnh báo low_queue',
-    seed: TAT_TU_MOI + hangDoi(7),
-    goi: 1,
-    assert: `select (select count(*) from notifications where type = 'low_queue') = 0 as pass,
-                    'số notification=' || (select count(*) from notifications) as chi_tiet`,
+    assert: `select (select total_points from word_state ws join vocab v on v.id = ws.vocab_id where v.word = 'w1') = 10
+                and (select cycle_points from word_state ws join vocab v on v.id = ws.vocab_id where v.word = 'w1') = 3
+                and (select count(*) from word_state where next_review_date = ${HOM_NAY}) = 0
+                and (select count(*) from notifications where type = 'low_queue') = 0 as pass,
+                    'w1 points=' || (select total_points from word_state ws join vocab v on v.id = ws.vocab_id where v.word = 'w1')
+                 || ' cycle=' || (select cycle_points from word_state ws join vocab v on v.id = ws.vocab_id where v.word = 'w1')
+                 || ' · kích hoạt=' || (select count(*) from word_state where next_review_date = ${HOM_NAY})
+                 || ' · low_queue=' || (select count(*) from notifications where type = 'low_queue') as chi_tiet`,
   },
 ]
 

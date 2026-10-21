@@ -414,9 +414,12 @@ select cron.schedule(
 4. **Kích hoạt từ mới (nhỏ giọt, §5.1):** đưa thêm từ từ hàng đợi (`next_review_date IS NULL`) vào learning theo `settings.new_words_per_day`.
 5. **Cảnh báo hàng đợi cạn (§5.2):** kiểm tra và tạo notification nếu cần.
 
-**M32 (2026-10-21):** bước 4 và 5 chỉ chạy khi `settings.new_words_enabled = true` (công tắc "Thêm từ mới hằng ngày" ở Cài đặt,
-mặc định bật). Tắt ⇒ không kích hoạt thêm từ mới và không cảnh báo hàng đợi cạn; từ đã kích hoạt vẫn ôn bình thường; bước 1–3 không đổi.
-Bật/tắt có hiệu lực ở lần cron kế tiếp (01:00).
+**M33 (2026-10-21) — Đóng băng lịch ôn** (thay công tắc M32; chi tiết `design.m33.md`). `settings.dong_bang_luc` = null (bình thường)
+hoặc timestamp bắt đầu đóng băng (F = ngày VN). Khi đóng băng:
+- Từ đến hạn = `next_review_date ≤ F` (phần tồn đọng) — client dùng `ngayHieuLuc()`; từ có hạn > F (kể cả từ vừa lên stage trong lúc đóng băng) bị giữ.
+- Cron bỏ bước 1 (phạt), 2 (reset cycle), 4 (từ mới), 5 (cảnh báo); bước 3 vẫn chạy. Streak tính bình thường.
+- RPC `dong_bang_lich()` ghi mốc (đã đóng băng thì giữ mốc cũ). RPC `mo_bang_lich()` (1 transaction) dời `next_review_date += N` (N = hôm nay − F)
+  cho từ ≠ mastered, hạn > F, chưa ôn sau mốc; rồi xoá mốc. Bật lại ⇒ từ hiện ngay.
 
 ### 5.1 Kích hoạt từ mới (DEC-16)
 
@@ -692,7 +695,7 @@ Ngoài checklist thủ công ở §10.5, có **1 file JSON Schema hình thức**
 | `openrouter_api_key` | API key OpenRouter (dùng chung cho §7 và §8) | — (bắt buộc nhập) |
 | `openrouter_model` | Model chấm điểm/giải thích | — (chọn từ danh sách) |
 | `new_words_per_day` | Số từ mới kích hoạt/ngày (DEC-16) | 5 |
-| `new_words_enabled` | **M32** — bật/tắt nhỏ giọt từ mới hằng ngày (§5 bước 4–5) | `true` |
+| `dong_bang_luc` | **M33** — null = bình thường; timestamp = đang đóng băng lịch ôn từ lúc đó (§5). Đổi qua RPC, không upsert | `null` |
 | `google_tts_api_key` | API key Google Cloud TTS (thêm ở M6c) | — (bắt buộc nhập) |
 | `tts_voice` | Giọng TTS tiếng Trung | `cmn-CN-Wavenet-A` |
 | `tts_voice_en` | Giọng TTS tiếng Anh (thêm ở M6c) | `en-US-Neural2-C` |
