@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-21** (M33 — đóng băng lịch ôn, thay M32)
+> Cập nhật lần cuối: **2026-10-24** (M34 — Firebase kẹt bundle cũ do ETag size+mtime)
 
 ## ✅ Đã xong
 
@@ -104,6 +104,9 @@
 - [x] **M33** (XONG 2026-10-21, MB-56) — **đóng băng lịch ôn**: công tắc "Ôn tập hằng ngày"; tắt ⇒ chỉ còn từ tồn đọng (hạn ≤ ngày tắt),
       không phạt/không reset vòng/không thêm từ; bật ⇒ dời hạn từ bị giữ +N ngày. `npm test` 504/504 · `test:dongbang` 9/9 · `test:db` 10/10 ·
       CDP 12/12 (DB nguyên trạng). Commit + push + deploy Firebase. DB hiện đang đóng băng từ 21/10.
+- [x] **M34** (XONG 2026-10-24, MB-57) — **Firebase kẹt bundle cũ** (lý do M31/M33 "không có" trên Firebase): ETag `index.html` = size+mtime,
+      mtime cloud = 1980, size luôn 1646 ⇒ 304 vĩnh viễn. Sửa `traTinh` (`functions/index.js`): file không hash ⇒ `res.send` (ETag theo nội dung).
+      Test `functions/tinh.test.js` F10/F11 (F10 ĐỎ trước) · `test:functions` 11/11 · lint exit 0 · deploy · curl URL thật: ETag kẹt ⇒ 200.
 
 ### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
 - [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.

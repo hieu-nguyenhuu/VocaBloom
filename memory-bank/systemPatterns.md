@@ -21,6 +21,8 @@
 - `vocab.audio_url` trong DB LUÔN là URL `supabase.co` gốc (`urlCongKhai`) — chỉ đổi sang proxy lúc phát (`audioQuaProxy`).
 - Function không giữ khoá bí mật; không thêm `minInstances` (tốn tiền). Deploy: `npm run deploy:firebase`.
 - `functions/web/` là output build ⇒ đã `.gitignore` (nếu không oxlint quét cả bundle và báo lỗi).
+- **File tĩnh KHÔNG hash (index.html, favicon) KHÔNG được trả bằng `res.sendFile` (M34):** mtime trên cloud = 1980 + size không đổi
+  ⇒ ETag size+mtime đứng yên ⇒ trình duyệt kẹt bản cũ vĩnh viễn. Dùng `guiTheoNoiDung` (ETag theo nội dung). Test: `functions/tinh.test.js`.
 
 **Dependency gatekeeping (`ponytail`):** trước khi `npm install` bất cứ gì, phải xác nhận stack trên + HTML5/CSS3 native không giải quyết được, và nêu lý do 1 dòng. Ưu tiên `<dialog>`, `<input>` native, CSS Grid, `Intl`, `crypto.randomUUID()` hơn package ngoài.
 

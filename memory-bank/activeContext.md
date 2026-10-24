@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-21** (**M33 XONG** — đóng băng lịch ôn, thay công tắc M32; DB đang ĐÓNG BĂNG từ 21/10 22:30; đã commit + push + deploy)
+> Cập nhật lần cuối: **2026-10-24** (**M34 XONG** — Firebase kẹt bundle cũ vì ETag size+mtime; đã deploy + commit, CHƯA push. DB vẫn ĐÓNG BĂNG từ 21/10 22:30)
 
 ## Trạng thái hiện tại
 
@@ -52,9 +52,24 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M31b (Soạn đề 34 chủ đề còn lại) — ✅ XONG 2026-10-18 (MB-54).**
 **M32 (Công tắc "Thêm từ mới hằng ngày") — ✅ 2026-10-21 (MB-55) · ⚠️ ĐÃ BỊ THAY bởi M33 cùng ngày.**
 **M33 (Đóng băng lịch ôn) — ✅ XONG 2026-10-21 (MB-56).**
+**M34 (Firebase kẹt bundle cũ — ETag size+mtime) — ✅ XONG 2026-10-24 (MB-57).**
 **Tiếp theo:** M31c (khoá `readings` trong file import + skill `vocabCsv2Json`) khi người dùng ra lệnh. (cũ)  Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M34 vừa xong (2026-10-24) — MB-57 · sửa lỗi, không có design file
+- Người dùng báo: Firebase vẫn "ôn theo chủ đề kiểu cũ" + nút đóng băng không chạy, Vercel thì đúng. Kiểm thật: cloud phục vụ ĐÚNG
+  bundle M33 (`index-BN8nQOur.js`), proxy `/sb` thông, DB vẫn đóng băng — lỗi ở cache trình duyệt.
+- Gốc: `res.sendFile` của express tạo ETag size+mtime; Cloud Functions đặt mtime = 1980, `index.html` luôn 1646 byte ⇒ ETag
+  `W/"66e-49773873e8"` y hệt mọi lần deploy ⇒ 304 mãi ⇒ trình duyệt giữ index.html (và bundle) từ LẦN ĐẦU mở. Kết luận "tải lại trang"
+  ngày 20/10 (M31b) là SAI gốc — chỉ trình duyệt mới tinh mới thấy bản mới.
+- Sửa `functions/index.js` `traTinh`: file không hash ⇒ `guiTheoNoiDung` (`res.type().send(readFileSync)`), assets vẫn `sendFile` immutable.
+  Trên cloud hạ tầng Google bỏ ETag yếu ⇒ index.html không ETag/Last-Modified ⇒ luôn 200 (~1,6 KB) — chấp nhận.
+- Kiểm chứng: `functions/tinh.test.js` (express + `xuLy` thật; F10 ĐỎ với code cũ ở cả 2 assert) · `npm run test:functions` 11/11 ·
+  lint exit 0 · `FUNCTIONS_DISCOVERY_TIMEOUT=60 npm run deploy:firebase` · curl 2 URL × (`/`, `/on-tap/doc-hieu`): ETag kẹt ⇒ 200.
+- ⚠️ Bẫy test: `fetch` của Node tự thêm `Cache-Control: no-cache` khi có `If-None-Match` ⇒ không bao giờ thấy 304; dùng `node:http`.
+- ⚠️ Connector Supabase MCP của phiên chỉ thấy project "ArcGoal" — đọc DB VocaBloom bằng `chaySql` (`scripts/db-lib.mjs`).
+- Người dùng cho phép agent tự deploy + commit cho task này (ngoại lệ luật git, chỉ áp cho M34; KHÔNG push).
 
 ### ✅ M33 vừa xong (2026-10-21) — MB-56 · Design + Plan gộp `design.m33.md`
 - Người dùng: M32 chưa đúng ý — muốn ĐÓNG BĂNG để xử lý khi từ quá hạn dồn nhiều. Mô hình chốt: **chặn dòng chảy vào, giữ tồn đọng**.

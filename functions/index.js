@@ -1,6 +1,6 @@
 // M29 — Cloud Function `vocabloom`: phục vụ giao diện (web/) + chuyển tiếp /sb /or /tts (design.m29.md §2).
 // Function KHÔNG giữ khoá bí mật nào — khoá AI/TTS do trình duyệt gửi kèm như khi chạy trên Vercel.
-import { statSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { onRequest } from 'firebase-functions/v2/https'
@@ -36,17 +36,24 @@ async function chuyenTiep(req, res, dich) {
   }
 }
 
+// Cloud Functions đặt mtime mọi file = 1980 và index.html build nào cũng dài bằng nhau ⇒ ETag size+mtime của
+// `sendFile` không đổi qua các lần deploy ⇒ trình duyệt nhận 304 mãi, kẹt bundle cũ. File không hash (nhỏ) ⇒
+// `res.send` để express tính ETag theo NỘI DUNG (vẫn 304 đúng khi không đổi).
+function guiTheoNoiDung(res, duong) {
+  return res.type(extname(duong)).send(readFileSync(duong))
+}
+
 function traTinh(res, file) {
   const duong = resolve(WEB, file)
   if (!duong.startsWith(WEB + sep)) return res.status(404).end()
   if (statSync(duong, { throwIfNoEntry: false })?.isFile()) {
     res.setHeader('Cache-Control', cacheTinh(file))
-    return res.sendFile(duong)
+    return file.startsWith('assets/') ? res.sendFile(duong) : guiTheoNoiDung(res, duong)
   }
   // Thiếu file JS/CSS/ảnh ⇒ 404 thật (trả HTML thay sẽ ra lỗi MIME khó hiểu); đường của router ⇒ index.html (SPA)
   if (extname(file)) return res.status(404).end()
   res.setHeader('Cache-Control', 'no-cache')
-  return res.sendFile(join(WEB, 'index.html'))
+  return guiTheoNoiDung(res, join(WEB, 'index.html'))
 }
 
 export const vocabloom = onRequest(

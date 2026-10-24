@@ -1062,3 +1062,13 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
   mở băng là RPC 1 transaction (không upsert từ client). Từ "đã ôn sau mốc" nhận biết bằng `last_reviewed_at > dong_bang_luc`.
 - **Bằng chứng:** DB1–DB10 · D1–D8 · T10 đều ĐỎ trước · CDP 12/12 với snapshot DB trước/sau giống hệt.
 - **Trạng thái:** ✅ Đã áp dụng · commit + push + `deploy:firebase` theo lệnh người dùng.
+
+### [2026-10-24] MB-57 — M34: Firebase kẹt bundle cũ (ETag size+mtime)
+- **Bối cảnh:** người dùng thấy Firebase vẫn chạy Ôn theo chủ đề kiểu cũ + nút đóng băng không có tác dụng, Vercel thì đúng.
+- **Chẩn đoán:** cloud phục vụ đúng bundle mới; `index.html` có ETag `W/"66e-49773873e8"` (size 1646 + mtime 1980 do Cloud Functions
+  chuẩn hoá) — giống hệt ở mọi lần deploy ⇒ server trả 304 cho trình duyệt đang giữ bản cũ ⇒ kẹt mãi. Vercel dùng ETag theo nội dung.
+- **Quyết định:** file không hash trả bằng `res.send` (ETag theo nội dung, express tự 304 khi không đổi); assets có hash giữ `sendFile`
+  + immutable. Không chọn tắt ETag qua option `sendFile` vì express 5 ghi đè `opts.etag` bằng cấu hình app; không tắt `etag` toàn app
+  (đổi hành vi chung của app Firebase dựng sẵn).
+- **Bằng chứng:** `functions/tinh.test.js` F10 ĐỎ với code cũ (ETag size+mtime ⇒ 304) · 11/11 · curl URL thật: ETag kẹt ⇒ 200.
+- **Trạng thái:** ✅ Đã áp dụng · deploy + commit theo lệnh người dùng (chưa push).
