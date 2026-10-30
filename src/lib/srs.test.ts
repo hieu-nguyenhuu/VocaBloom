@@ -45,7 +45,7 @@ describe('Điểm mỗi bài (§3.2)', () => {
     expect(diemChoBai('stage1', 'translate', false)).toBe(2)
     expect(diemChoBai('stage2', 'arrange_words', false)).toBe(3)
     expect(diemChoBai('stage3', 'make_sentence', false)).toBe(4)
-    expect(diemChoBai('intensive', 'fill_dialog', false)).toBe(3) // Q4: dùng luật stage2
+    expect(diemChoBai('intensive', 'select_sentence', false)).toBe(3) // Q4: dùng luật stage2
   })
 
   it('E2 — Matching CÓ tính điểm (chốt Q1), Flashcard và Grammar thì không', () => {
@@ -88,15 +88,15 @@ describe('Ngưỡng nâng stage (§3.2) + gap của stage ĐÍCH (§3.1)', () =>
     expect(kq.trang_thai_moi.next_review_date).toBe('2026-09-13') // +4 × 100%
   })
 
-  it('P3 — stage2 đủ 12/15 → stage3, gap 7 ngày (M26d)', () => {
-    const kq = traLoi(tu({ stage: 'stage2', cycle_points: 9, total_points: 22 }), 'select_sentence',
+  it('P3 — stage2 đủ 9/12 → stage3, gap 7 ngày (M35)', () => {
+    const kq = traLoi(tu({ stage: 'stage2', cycle_points: 6, total_points: 19 }), 'select_sentence',
       { la_bai_cuoi_cua_tu: true })
     expect(kq.trang_thai_moi.stage).toBe('stage3')
     expect(kq.trang_thai_moi.next_review_date).toBe('2026-09-16') // +7 × 100%
   })
 
-  it('P3b — stage2 mới 11/15 (đã qua ngưỡng cũ 9) → CHƯA lên stage3 (M26d)', () => {
-    const kq = traLoi(tu({ stage: 'stage2', cycle_points: 8, total_points: 20 }), 'select_sentence',
+  it('P3b — stage2 mới 8/12 → CHƯA lên stage3 (M35)', () => {
+    const kq = traLoi(tu({ stage: 'stage2', cycle_points: 5, total_points: 17 }), 'select_sentence',
       { la_bai_cuoi_cua_tu: true })
     expect(kq.trang_thai_moi.stage).toBe('stage2')
   })
@@ -109,11 +109,11 @@ describe('Ngưỡng nâng stage (§3.2) + gap của stage ĐÍCH (§3.1)', () =>
 })
 
 describe('Health & gap_factor (§3.4)', () => {
-  it('H1 — health = total_points / max tích luỹ (4·12·27·39, chốt Q2 + M26d)', () => {
+  it('H1 — health = total_points / max tích luỹ (4·12·24·36, chốt Q2 + M35)', () => {
     expect(tinhHealth(tu({ stage: 'new', total_points: 4 }))).toBeCloseTo(1)
     expect(tinhHealth(tu({ stage: 'stage1', total_points: 6 }))).toBeCloseTo(0.5)
-    expect(tinhHealth(tu({ stage: 'stage2', total_points: 27 }))).toBeCloseTo(1)
-    expect(tinhHealth(tu({ stage: 'stage3', total_points: 39 }))).toBeCloseTo(1)
+    expect(tinhHealth(tu({ stage: 'stage2', total_points: 24 }))).toBeCloseTo(1)
+    expect(tinhHealth(tu({ stage: 'stage3', total_points: 36 }))).toBeCloseTo(1)
   })
 
   it('H2 — 3 mốc gap_factor', () => {
@@ -225,38 +225,38 @@ describe('Chưa đạt ngưỡng (§4.2)', () => {
 })
 
 describe('Rẽ nhánh cuối: mastered / intensive (§3.3)', () => {
-  it('M1 — xong vòng stage3 với total ≥ 39 → mastered, DỪNG lịch ôn (M26d)', () => {
-    const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 35 }), 'trans_sentence',
+  it('M1 — xong vòng stage3 với total ≥ 36 → mastered, DỪNG lịch ôn (M35)', () => {
+    const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 32 }), 'trans_sentence',
       { la_bai_cuoi_cua_tu: true })
-    expect(kq.trang_thai_moi.total_points).toBe(39)
+    expect(kq.trang_thai_moi.total_points).toBe(36)
     expect(kq.trang_thai_moi.stage).toBe('mastered')
     expect(kq.trang_thai_moi.next_review_date).toBeNull()
     expect(kq.dong_review_log.stage_after).toBe('mastered')
   })
 
-  it('M1b — M26d: xong stage3 với 38 điểm (< 39) → intensive, KHÔNG mastered như ngưỡng cũ 36', () => {
-    const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 34 }), 'trans_sentence',
+  it('M1b — M35: xong stage3 với 35 điểm (< 36) → intensive, chưa mastered', () => {
+    const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 31 }), 'trans_sentence',
       { la_bai_cuoi_cua_tu: true })
-    expect(kq.trang_thai_moi.total_points).toBe(38)
+    expect(kq.trang_thai_moi.total_points).toBe(35)
     expect(kq.trang_thai_moi.stage).toBe('intensive')
   })
 
-  it('M2 — xong vòng stage3 nhưng total < 39 → intensive, gap 7 ngày', () => {
+  it('M2 — xong vòng stage3 nhưng total < 36 → intensive, gap 7 ngày', () => {
     const kq = traLoi(tu({ stage: 'stage3', cycle_points: 8, total_points: 10 }), 'trans_sentence',
       { la_bai_cuoi_cua_tu: true })
     expect(kq.trang_thai_moi.stage).toBe('intensive')
     expect(kq.trang_thai_moi.next_review_date).not.toBeNull()
   })
 
-  it('M2b — intensive đủ đúng 39 điểm (biên) → mastered (M26d)', () => {
-    const kq = traLoi(tu({ stage: 'intensive', cycle_points: 9, total_points: 36 }), 'fill_dialog',
+  it('M2b — intensive đủ đúng 36 điểm (biên) → mastered (M35)', () => {
+    const kq = traLoi(tu({ stage: 'intensive', cycle_points: 6, total_points: 33 }), 'select_sentence',
       { la_bai_cuoi_cua_tu: true })
-    expect(kq.trang_thai_moi.total_points).toBe(39)
+    expect(kq.trang_thai_moi.total_points).toBe(36)
     expect(kq.trang_thai_moi.stage).toBe('mastered')
   })
 
-  it('M2c — intensive chưa đủ 39 → ở lại intensive, KHÔNG tụt stage (ngưỡng vòng 12/15)', () => {
-    const kq = traLoi(tu({ stage: 'intensive', cycle_points: 9, total_points: 12 }), 'fill_dialog',
+  it('M2c — intensive chưa đủ 36 → ở lại intensive, KHÔNG tụt stage (ngưỡng vòng 9/12)', () => {
+    const kq = traLoi(tu({ stage: 'intensive', cycle_points: 6, total_points: 12 }), 'select_sentence',
       { la_bai_cuoi_cua_tu: true })
     expect(kq.trang_thai_moi.stage).toBe('intensive')
     expect(kq.trang_thai_moi.cycle_points).toBe(0) // vòng mới
@@ -354,8 +354,8 @@ describe('Chống lệch giữa TypeScript và SQL', () => {
     for (const st of cacStage) expect(MAX_CYCLE[st]).toBeGreaterThan(0)
   })
 
-  it('X1b — MASTER_THRESHOLD = 39 = TỔNG MAX_CYCLE new+stage1+stage2+stage3 (§3.3, M24 → M26d)', () => {
-    expect(MASTER_THRESHOLD).toBe(39)
+  it('X1b — MASTER_THRESHOLD = 36 = TỔNG MAX_CYCLE new+stage1+stage2+stage3 (§3.3, M24 → M26d → M35)', () => {
+    expect(MASTER_THRESHOLD).toBe(36)
     expect(MASTER_THRESHOLD).toBe(MAX_CYCLE.new + MAX_CYCLE.stage1 + MAX_CYCLE.stage2 + MAX_CYCLE.stage3)
   })
 
@@ -368,13 +368,20 @@ describe('Chống lệch giữa TypeScript và SQL', () => {
     expect(tinhHealth(tu({ stage: 'intensive', total_points: cong }))).toBeCloseTo(1)
   })
 
-  it('N1 — near_synonym +3 ở stage2/intensive, 0 ở stage khác; max vòng 15 (M26d)', () => {
+  it('N1 — near_synonym +3 ở stage2/intensive, 0 ở stage khác; max vòng 12 (M35)', () => {
     expect(diemChoBai('stage2', 'near_synonym', false)).toBe(3)
     expect(diemChoBai('intensive', 'near_synonym', true)).toBe(1)
     expect(diemChoBai('stage1', 'near_synonym', false)).toBe(0)
     expect(boBaiCua('stage2')).toContain('near_synonym')
     expect(boBaiCua('intensive')).toContain('near_synonym')
-    expect(MAX_CYCLE.stage2).toBe(15)
+    expect(MAX_CYCLE.stage2).toBe(12)
+  })
+
+  it('FD1 — M35: fill_dialog ngừng dùng ⇒ 0 điểm, không thuộc bộ bài stage2/intensive', () => {
+    expect(diemChoBai('stage2', 'fill_dialog', false)).toBe(0)
+    expect(diemChoBai('intensive', 'fill_dialog', false)).toBe(0)
+    expect(boBaiCua('stage2')).toEqual(['select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation'])
+    expect(boBaiCua('intensive')).toEqual(boBaiCua('stage2'))
   })
 
   it('X1c — srs.ts là hàm THUẦN: không import React/Supabase/node:', () => {

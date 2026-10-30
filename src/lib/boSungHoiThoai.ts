@@ -1,5 +1,5 @@
 /**
- * boSungHoiThoai.ts — M23: thêm select_dialog/fill_dialog vào chủ đề ĐÃ CÓ trong DB.
+ * boSungHoiThoai.ts — M23: thêm select_dialog vào chủ đề ĐÃ CÓ trong DB (M35: fill_dialog ngừng dùng).
  *
  * HÀM THUẦN (MB-05): không đọc file, không network. CLI `scripts/bo-sung-hoi-thoai.mjs` lo phần DB.
  * File bổ sung dùng `word` thay `temp_id` (từ đã có trong DB): `vocab_word` = từ A, `payload.blank_b_word` = từ B.
@@ -7,12 +7,12 @@
  */
 import { kiemPayload, type ViTri } from './importValidate.ts'
 
-export type DangHoiThoai = 'select_dialog' | 'fill_dialog'
+export type DangHoiThoai = 'select_dialog'
 export type TuChuDe = { id: string; word: string }
 export type BaiHoiThoai = { vocab_id: string; type: string; payload: Record<string, unknown> }
 export type DongMoi = { vocab_id: string; type: DangHoiThoai; payload: Record<string, unknown> }
 
-const DANG: readonly DangHoiThoai[] = ['select_dialog', 'fill_dialog']
+const DANG: readonly DangHoiThoai[] = ['select_dialog']
 
 function laObject(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null && !Array.isArray(x)
@@ -25,16 +25,15 @@ const khoaBai = (type: string, idA: string, idB: unknown, dialogA: unknown) => `
 
 /** Từ còn THIẾU từng dạng — vai A (`vocab_id`) hay vai B (`blank_b_vocab_id`) đều tính là có. */
 export function phuSongHoiThoai(tu: TuChuDe[], bai: BaiHoiThoai[]): Record<DangHoiThoai, string[]> {
-  const co: Record<DangHoiThoai, Set<string>> = { select_dialog: new Set(), fill_dialog: new Set() }
+  const co: Record<DangHoiThoai, Set<string>> = { select_dialog: new Set() }
   for (const b of bai) {
-    if (b.type !== 'select_dialog' && b.type !== 'fill_dialog') continue
+    if (b.type !== 'select_dialog') continue
     co[b.type].add(b.vocab_id)
     const idB = b.payload['blank_b_vocab_id']
     if (typeof idB === 'string') co[b.type].add(idB)
   }
   return {
     select_dialog: tu.filter((t) => !co.select_dialog.has(t.id)).map((t) => t.word),
-    fill_dialog: tu.filter((t) => !co.fill_dialog.has(t.id)).map((t) => t.word),
   }
 }
 
@@ -71,7 +70,7 @@ export function dichBaiBoSung(
     if (!laObject(bai)) return bao(g, 'Phải là object.')
     const kieu = bai['type']
     if (typeof kieu !== 'string' || !(DANG as readonly string[]).includes(kieu)) {
-      return bao(`${g}.type`, `Chỉ nhận select_dialog / fill_dialog, đang là ${JSON.stringify(kieu)}.`)
+      return bao(`${g}.type`, `Chỉ nhận select_dialog (fill_dialog đã ngừng dùng — M35), đang là ${JSON.stringify(kieu)}.`)
     }
     const wordA = bai['vocab_word']
     const idA = typeof wordA === 'string' ? idCua.get(wordA) : undefined

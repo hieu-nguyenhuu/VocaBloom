@@ -51,9 +51,10 @@ export type KetQuaTraLoi = {
 
 /**
  * = điểm tối đa cả lộ trình — đúng trọn vẹn ⇒ lên thẳng mastered, hụt dù 1 điểm ⇒ intensive.
- * M24 (MB-45): 36 = 4+8+12+12 · M26d: 39 = 4+8+15+12 (stage2 thêm near_synonym). Test X1b canh = tổng MAX_CYCLE.
+ * M24 (MB-45): 36 = 4+8+12+12 · M26d: 39 = 4+8+15+12 (stage2 thêm near_synonym) · M35: 36 = 4+8+12+12
+ * (stage2 bỏ fill_dialog). Test X1b canh = tổng MAX_CYCLE.
  */
-export const MASTER_THRESHOLD = 39
+export const MASTER_THRESHOLD = 36
 
 /** Điểm mỗi bài ĐÚNG. Q4: intensive dùng nguyên luật stage2. */
 const DIEM_MOI_BAI: Record<StageOn, number> = {
@@ -62,7 +63,7 @@ const DIEM_MOI_BAI: Record<StageOn, number> = {
 
 /** Ngưỡng cycle_points để hoàn thành 1 vòng. */
 const NGUONG_CYCLE: Record<StageOn, number> = {
-  new: 3, stage1: 6, stage2: 12, stage3: 9, intensive: 12, // M26d: stage2/intensive 9 → 12 (vẫn "được sai 1 bài")
+  new: 3, stage1: 6, stage2: 9, stage3: 9, intensive: 9, // M35: stage2/intensive 12 → 9 (4 dạng, vẫn "được sai 1 bài")
 }
 
 /**
@@ -72,12 +73,12 @@ const NGUONG_CYCLE: Record<StageOn, number> = {
  * M4 cũng dùng để hiển thị tiến độ vòng ("3/4 điểm").
  */
 export const MAX_CYCLE: Record<StageOn, number> = {
-  new: 4, stage1: 8, stage2: 15, stage3: 12, intensive: 15, // M26d: +near_synonym ⇒ 5 dạng × 3
+  new: 4, stage1: 8, stage2: 12, stage3: 12, intensive: 12, // M35: bỏ fill_dialog ⇒ 4 dạng × 3
 }
 
-/** Q2: mẫu số của health = max điểm CỘNG DỒN các stage đã đi qua (4 · 12 · 27 · 39 — M26d). Test X3 canh. */
+/** Q2: mẫu số của health = max điểm CỘNG DỒN các stage đã đi qua (4 · 12 · 24 · 36 — M35). Test X3 canh. */
 const MAX_TICH_LUY: Record<StageOn, number> = {
-  new: 4, stage1: 12, stage2: 27, stage3: 39, intensive: 39,
+  new: 4, stage1: 12, stage2: 24, stage3: 36, intensive: 36,
 }
 
 /**
@@ -101,9 +102,10 @@ export const PHAT: Record<Stage, number> = {
 const DANG_BAI_THEO_STAGE: Record<StageOn, readonly DangBai[]> = {
   new: ['matching', 'selection', 'audio_recognition', 'fast_decision'],
   stage1: ['translate', 'select_dialog', 'listen_fill', 'select_on_describe'],
-  stage2: ['fill_dialog', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation'],
+  // M35: fill_dialog ngừng dùng (vẫn giữ trong DangBai vì review_log cũ + enum DB)
+  stage2: ['select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation'],
   stage3: ['make_sentence', 'trans_sentence', 'complete_situation'],
-  intensive: ['fill_dialog', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation'],
+  intensive: ['select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation'],
 }
 
 const STAGE_KE_TIEP: Record<'new' | 'stage1' | 'stage2', Stage> = {

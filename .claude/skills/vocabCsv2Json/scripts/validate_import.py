@@ -170,6 +170,9 @@ def validate_file(path):
             if words.get(vtid) in ds:
                 errors.append(f"{label}: đáp án nhiễu trùng chính từ đang ôn")
 
+        if etype == "fill_dialog":
+            warnings.append(f"{label}: fill_dialog đã ngừng dùng (M35) — app sẽ bỏ qua bài này khi import")
+
         # Cross-reference blank_b_vocab_id
         if etype in ("select_dialog", "fill_dialog"):
             b_id = payload.get("blank_b_vocab_id")
@@ -228,7 +231,7 @@ def validate_file(path):
 
     # --- M23: phủ sóng bài hội thoại (CẢNH BÁO — topic 1 từ không ghép được) ---
     if len(vocab_list) >= 2:
-        for loai in ("select_dialog", "fill_dialog"):
+        for loai in ("select_dialog",):  # M35: fill_dialog ngừng dùng
             co = set()
             for e in exercises:
                 if e.get("type") == loai:

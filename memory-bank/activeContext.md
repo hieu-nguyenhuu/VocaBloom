@@ -1,6 +1,6 @@
 # Active Context
 
-> Cập nhật lần cuối: **2026-10-24** (**M34 XONG** — Firebase kẹt bundle cũ vì ETag size+mtime; đã deploy + commit, CHƯA push. DB vẫn ĐÓNG BĂNG từ 21/10 22:30)
+> Cập nhật lần cuối: **2026-10-30** (**M35 XONG** — bỏ dạng `fill_dialog`; DB đã xoá 379 bản ghi (có sao lưu); commit + push (kèm M34) + deploy Firebase. DB vẫn ĐÓNG BĂNG từ 21/10 22:30)
 
 ## Trạng thái hiện tại
 
@@ -53,9 +53,27 @@ vòng đời SRS đã chạy trọn vẹn tới `mastered` trên dữ liệu th�
 **M32 (Công tắc "Thêm từ mới hằng ngày") — ✅ 2026-10-21 (MB-55) · ⚠️ ĐÃ BỊ THAY bởi M33 cùng ngày.**
 **M33 (Đóng băng lịch ôn) — ✅ XONG 2026-10-21 (MB-56).**
 **M34 (Firebase kẹt bundle cũ — ETag size+mtime) — ✅ XONG 2026-10-24 (MB-57).**
+**M35 (Bỏ dạng bài `fill_dialog`, Mastered 39 → 36) — ✅ XONG 2026-10-30 (MB-58).** Commit + push + deploy Firebase.
 **Tiếp theo:** M31c (khoá `readings` trong file import + skill `vocabCsv2Json`) khi người dùng ra lệnh. (cũ)  Việc treo: xem các màn M26c/M26d trong Player thật khi có từ
 lên stage1–3 (hiện 740 từ ở `new`) · kiểm mặt sau Flashcard trên dữ liệu thật · `npm run seed:test` vẫn hỏng (thư mục
 `du-lieu-kiem-thu/` không còn) · ca "Đăng xuất mọi thiết bị" thành công chưa kiểm.
+
+### ✅ M35 vừa xong (2026-10-30) — MB-58 · Design + Plan gộp `design.m35.md`
+- Lý do người dùng: Fill Dialog 1 câu nhiều cách điền đúng mà chấm khớp tuyệt đối. Kiểm DB: fill 379 / select 380, **0 câu trùng**.
+- Chốt: stage2/intensive còn 4 dạng (select_sentence → near_synonym → arrange_words → trans_collocation), max 12, **ngưỡng 9**;
+  `MAX_TICH_LUY` 4·12·24·36; **`MASTER_THRESHOLD` 36**. `DangBai` + enum DB GIỮ `fill_dialog` (70 dòng review_log cũ).
+- Player: bỏ khỏi `Man`/`CAN_RECORD`/`THU_TU_MAN`; `HoiThoai.tsx` chỉ còn chọn chip (gỡ prop `cheDo`, ô gõ tay); xoá `oGoiY` (chỉ Fill dùng).
+- Import: validator vẫn nhận shape, CẢNH BÁO + không đếm (`KIEU_NGUNG_DUNG`); `0007_import_topic.sql` sửa tại chỗ — `continue` khi
+  type = fill_dialog (chặn cho cả màn Import lẫn CLI). Công cụ M23 `boSungHoiThoai` chỉ còn select_dialog (fill ⇒ lỗi).
+- Skill: bài mẫu `example-output.json` bỏ record fill (51 bài); SKILL.md/payload-schemas "NGỪNG DÙNG"; schema giữ `payloadFillDialog`;
+  Python validator cảnh báo. Test dùng bài fill cũ qua hằng `FD_CU` (importValidate.test + test-import).
+- DB thật: sao lưu `du-lieu-import/sao-luu/fill_dialog-2026-10-30.json` (379) → xoá trong DO block (lệch số ⇒ rollback);
+  md5 `word_state` trước = sau, select_dialog 380, exercises 7562 → 7183, mốc đóng băng giữ nguyên.
+- Kiểm chứng: `npm test` 502/502 (srs 10 ca + player 2 + importValidate FD2 + BS8/BS10 ĐỎ trước) · build · lint exit 0 ·
+  `test:import` 11/11 (I11 ĐỎ trước) · `db:migrate` ×2 · `test:db` 10/10 · `test:player` 4/4 · `check:schema` · `test:dongbang` 9/9 ·
+  `test:nhatky` 7/7 · nghiệm thu chỉ đọc `xepBai` trên 35 từ stage2 + 12 intensive: 0 màn fill_dialog. Chưa chụp UI Player thật.
+- Người dùng cho phép agent commit + push + `deploy:firebase` cho task này (ngoại lệ luật git, chỉ áp cho M35). Push kèm commit M34.
+- File sao lưu nằm trong `du-lieu-import/` (đã `.gitignore`) ⇒ CHỈ có ở máy local, không lên git.
 
 ### ✅ M34 vừa xong (2026-10-24) — MB-57 · sửa lỗi, không có design file
 - Người dùng báo: Firebase vẫn "ôn theo chủ đề kiểu cũ" + nút đóng băng không chạy, Vercel thì đúng. Kiểm thật: cloud phục vụ ĐÚNG

@@ -63,6 +63,9 @@ begin
   -- B5. Exercises — dịch temp_id -> uuid ở CẢ HAI chỗ: vocab_temp_id và payload.blank_b_vocab_id
   for phan_tu in select * from jsonb_array_elements(coalesce(du_lieu -> 'exercises', '[]'::jsonb))
   loop
+    -- M35: fill_dialog ngừng dùng — file cũ vẫn import được, bài này không ghi (validator app đã cảnh báo)
+    if phan_tu ->> 'type' = 'fill_dialog' then continue; end if;
+
     if not (map ? (phan_tu ->> 'vocab_temp_id')) then
       raise exception 'exercises: vocab_temp_id "%" không có trong mảng vocab',
                       phan_tu ->> 'vocab_temp_id';

@@ -133,7 +133,7 @@ export default function PlayerPage() {
   const taiBaiTap = useCallback(async (ids: string[]): Promise<BaiTapDb[]> => {
     const [btChinh, btVaiB] = await Promise.all([
       supabase.from('exercises').select('id, vocab_id, type, payload').in('vocab_id', ids),
-      supabase.from('exercises').select('id, vocab_id, type, payload').in('type', ['select_dialog', 'fill_dialog']).in('payload->>blank_b_vocab_id', ids),
+      supabase.from('exercises').select('id, vocab_id, type, payload').eq('type', 'select_dialog').in('payload->>blank_b_vocab_id', ids),
     ])
     if (btChinh.error) throw btChinh.error
     if (btVaiB.error) throw btVaiB.error
@@ -355,7 +355,7 @@ export default function PlayerPage() {
   }
 
   /** Bài 2 từ: chấm 2 chỗ trống độc lập, chỉ ghi cho từ CÓ trong session (§4.4). */
-  async function dialogXong(m: Extract<Man, { loai: 'select_dialog' | 'fill_dialog' }>, kq: { a: boolean; b: boolean }, batDau = 0) {
+  async function dialogXong(m: Extract<Man, { loai: 'select_dialog' }>, kq: { a: boolean; b: boolean }, batDau = 0) {
     const ids = Object.keys(m.la_bai_cuoi)
     for (let i = batDau; i < ids.length; i++) {
       const id = ids[i]!
@@ -534,7 +534,7 @@ export default function PlayerPage() {
     )
   }
 
-  if (man.loai === 'select_dialog' || man.loai === 'fill_dialog') {
+  if (man.loai === 'select_dialog') {
     const tuChinh = vocab[man.vocab_a] ?? (man.vocab_b ? vocab[man.vocab_b] : undefined)
     const stChinh = tt.trang_thai[man.vocab_a] ?? (man.vocab_b ? tt.trang_thai[man.vocab_b] : undefined)
     if (!tuChinh) return null
@@ -560,7 +560,6 @@ export default function PlayerPage() {
         {bannerLoi}
         <HoiThoai
           key={tt.chi_so}
-          cheDo={man.loai}
           payload={man.payload}
           tuB={man.vocab_b ? (vocab[man.vocab_b] ?? null) : null}
           lang={tuChinh.lang}

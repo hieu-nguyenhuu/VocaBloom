@@ -19,6 +19,16 @@ function doc(ten: string): unknown {
   return JSON.parse(readFileSync(`${THU_MUC}/${ten}`, 'utf8'))
 }
 
+/** M35 — bài fill_dialog CŨ (bài mẫu đã bỏ dạng này); file cũ vẫn phải qua được kiểm shape. */
+const FD_CU = {
+  vocab_temp_id: 'v3', type: 'fill_dialog',
+  payload: {
+    dialog_a: '妈妈买了很多水果，有___。', dialog_a_pinyin: 'Māma mǎile hěnduō shuǐguǒ, yǒu ___.',
+    dialog_b: '太好了，我最喜欢吃___了。', dialog_b_pinyin: 'Tài hǎo le, wǒ zuì xǐhuān chī ___ le.',
+    blank_a_answer: '橙子', blank_b_vocab_id: 'v4',
+  },
+}
+
 /** Deep-clone file mẫu đầy đủ nhất rồi cho phép sửa 1 chỗ. */
 function sua(hamSua: (d: any) => void): unknown {
   const d = structuredClone(doc('example-output.json')) as any
@@ -45,7 +55,7 @@ describe('validateImportFile', () => {
     expect(kq.tom_tat).toEqual({
       ten_topic: 'Trái cây',
       so_tu: 5,
-      so_bai_tap: 52,
+      so_bai_tap: 51, // M35: bài mẫu bỏ 1 fill_dialog
       so_dong_hoi_thoai: 9,
       so_ngu_phap: 0,
     })
@@ -245,7 +255,15 @@ describe('validateImportFile — siết shape (M13)', () => {
   it('S6 — select_dialog: distractors phải là {word,pinyin} và ĐÒI key *_pinyin', () => {
     expect(sua1((d) => { bai(d, 'select_dialog').payload.distractors = ['a', 'b'] }).hop_le).toBe(false)
     expect(sua1((d) => { delete bai(d, 'select_dialog').payload.dialog_a_pinyin }).hop_le).toBe(false)
-    expect(sua1((d) => { delete bai(d, 'fill_dialog').payload.dialog_b_pinyin }).hop_le).toBe(false)
+    expect(sua1((d) => { d.exercises.push(structuredClone(FD_CU)); delete bai(d, 'fill_dialog').payload.dialog_b_pinyin }).hop_le).toBe(false)
+  })
+
+  it('FD2 — M35: file còn fill_dialog vẫn HỢP LỆ, cảnh báo ngừng dùng, không đếm vào số bài sẽ ghi', () => {
+    const goc = validateImportFile(sua(() => {}))
+    const kq = sua1((d) => { d.exercises.push(structuredClone(FD_CU)) })
+    expect(kq.hop_le, duongDanLoi(kq)).toBe(true)
+    expect(kq.canh_bao.some((c) => c.thong_diep.includes('fill_dialog') && c.thong_diep.includes('ngừng'))).toBe(true)
+    expect(kq.tom_tat.so_bai_tap).toBe(goc.tom_tat.so_bai_tap)
   })
 
   it('S7 — chuỗi rỗng trong payload thì CHẶN', () => {
@@ -287,7 +305,10 @@ describe('validateImportFile — siết shape (M13)', () => {
       const canCo: string[] = schema.$defs[def].required ?? []
       // Thiếu 1 field ⇒ validator TS phải báo lỗi, đúng bằng chứng "phủ được"
       for (const f of canCo) {
-        const kq = sua1((d) => { delete bai(d, loai)?.payload?.[f] })
+        const kq = sua1((d) => {
+          if (loai === 'fill_dialog') d.exercises.push(structuredClone(FD_CU)) // M35: bài mẫu không còn dạng này
+          delete bai(d, loai)?.payload?.[f]
+        })
         expect(kq.hop_le, `${loai}.${f} bị xoá mà validator vẫn cho qua`).toBe(false)
       }
     }

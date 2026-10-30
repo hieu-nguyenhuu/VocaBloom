@@ -648,6 +648,7 @@
       }
     },
     "payloadFillDialog": {
+      "description": "M35: fill_dialog NGỪNG DÙNG — chỉ giữ để file cũ vẫn hợp lệ; app bỏ qua khi import, KHÔNG sinh mới.",
       "type": "object",
       "required": [
         "dialog_a",

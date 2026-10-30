@@ -214,16 +214,16 @@ Add từ vựng (import) ──► next_review_date = NULL (hàng đợi chờ k
         │  cycle_points ≥ 6/8
         ▼
    stage = stage2, next_review_date += 4 × gap_factor(health)
-        │  cycle_points ≥ 12/15   (M26d — +near_synonym)
+        │  cycle_points ≥ 9/12   (M35 — bỏ fill_dialog; M26d từng là 12/15)
         ▼
    stage = stage3, next_review_date += 7 × gap_factor(health)
         │  (làm bài AI-graded, cộng total_points)
         ▼
-   total_points ≥ 39 ? ──YES──► stage = mastered (DỪNG, miễn nhiễm phạt)
+   total_points ≥ 36 ? ──YES──► stage = mastered (DỪNG, miễn nhiễm phạt)
         │ NO
         ▼
    stage = intensive (bài dạng stage2, gap 7 ngày/lần, cộng total_points)
-        │  lặp lại tới khi total_points ≥ 39
+        │  lặp lại tới khi total_points ≥ 36
         ▼
    stage = mastered
 ```
@@ -234,10 +234,10 @@ Add từ vựng (import) ──► next_review_date = NULL (hàng đợi chờ k
 |---|---|---|---|---|
 | new (0) | Matching*, Selection, Audio Recognition, Fast Decision (*Matching/Flashcard/Grammar KHÔNG tính điểm) | 4 | **≥ 3** | +1 |
 | stage1 | Translate, Select Dialog, Listen Fill, Select on Describe | 8 | **≥ 6** | +2 |
-| stage2 | Fill Dialog, Select Sentence, **Near Synonym** (M26d), Arrange Words, Trans Collocation | 15 | **≥ 12** | +3 |
+| stage2 | Select Sentence, **Near Synonym** (M26d), Arrange Words, Trans Collocation — ~~Fill Dialog~~ bỏ ở M35 | 12 | **≥ 9** | +3 |
 | stage3 | Make Sentence, Trans Sentence, Complete Situation | 12 | *(không nâng stage, rẽ nhánh — xem §3.3)* | +4 |
 
-Tổng max lý thuyết cả đời: `4 + 8 + 15 + 12 = 39` (M26d; trước là 36). Intensive dùng nguyên bộ bài stage2 (max 15, ngưỡng 12).
+Tổng max lý thuyết cả đời: `4 + 8 + 12 + 12 = 36` (M35; M26d là 39). Intensive dùng nguyên bộ bài stage2 (max 12, ngưỡng 9).
 
 ⚠️ **Bổ sung 2026-10-01 (M23, MB-44):** mỗi dạng bài chỉ tính điểm **1 lần trong 1 vòng** — dạng đã có trong
 `cycle_completed_exercises` mà làm lại (từ nằm ở 2 bài hội thoại cùng dạng, ôn theo chủ đề…) thì vẫn chấm đúng/sai,
@@ -246,7 +246,7 @@ vẫn ghi log, nhưng **0 điểm**. Nhờ vậy điểm 1 vòng không bao gi�
 ### 3.3 Mastered threshold (`total_points`)
 
 ```
-MASTER_THRESHOLD = 39   (= 100% của 39 — điểm tối đa cả lộ trình; M26d, trước là 36)
+MASTER_THRESHOLD = 36   (= 100% của 36 — điểm tối đa cả lộ trình; M35, M26d là 39)
 ```
 
 ⚠️ **Sửa 2026-10-02 (M24, MB-45):** bản trước là 30 (≈ 83%) ⇒ từ học tốt gần như luôn bỏ qua intensive. Nay đúng trọn
@@ -254,6 +254,9 @@ vẹn mọi vòng (không gợi ý, không bỏ ngày) ⇒ xong stage3 đủ 36 
 +9–12 ⇒ thường 1 vòng là đủ). Điều kiện: mọi từ có đủ bài tập (M23 — xem §4.4).
 ⚠️ **Sửa 2026-10-05 (M26d):** 36 → **39** vì stage2 thêm `near_synonym` (max vòng 12 → 15). Lúc đổi, 740/740 từ đang ở `new`
 với 0 điểm ⇒ không từ nào bị ảnh hưởng giữa chừng. Intensive mỗi vòng +12–15.
+⚠️ **Sửa 2026-10-30 (M35):** 39 → **36** vì stage2/intensive bỏ `fill_dialog` (1 câu nhiều cách điền đúng mà chấm khớp
+tuyệt đối) ⇒ max vòng 15 → 12, ngưỡng 12 → 9. Lúc đổi: 35 từ stage2 đều `cycle_points = 0`, 0/65 từ stage3/intensive có
+`total_points ≥ 36` ⇒ không từ nào lên stage/mastered đột ngột. Intensive mỗi vòng +9–12.
 
 Kiểm tra tại 2 thời điểm: (a) ngay sau khi hoàn thành bài stage3 lần đầu, (b) sau mỗi lần ôn ở Intensive.
 
@@ -262,7 +265,7 @@ Kiểm tra tại 2 thời điểm: (a) ngay sau khi hoàn thành bài stage3 l�
 Khi promote lên stage kế, KHÔNG dùng gap cố định — nhân thêm hệ số theo độ tin cậy trí nhớ:
 
 ```
-health = total_points / max_điểm_có_thể_đạt_tới_thời_điểm_promote   -- cộng dồn: new 4 · stage1 12 · stage2 27 · stage3/intensive 39
+health = total_points / max_điểm_có_thể_đạt_tới_thời_điểm_promote   -- cộng dồn: new 4 · stage1 12 · stage2 24 · stage3/intensive 36 (M35)
 gap_factor(health):
     health ≥ 0.8        → 100%
     0.5 ≤ health < 0.8   → 70%
@@ -342,8 +345,8 @@ where type = 'select_dialog'
 
 **Quy tắc điểm:** CHỈ cộng `cycle_points`/`total_points` cho từ đang thực sự due hôm nay. Từ kia (nếu chưa due) vẫn được điền + chấm đúng/sai tại chỗ, nhưng không ảnh hưởng điểm/chu kỳ của nó ("ôn thêm miễn phí").
 
-**Phủ sóng (M23, 2026-10-01):** mỗi từ phải có ≥ 1 `select_dialog` và ≥ 1 `fill_dialog` (vai A hoặc B) — thiếu thì điểm
-tối đa của từ ở stage1/stage2/intensive bằng đúng ngưỡng. Chủ đề số từ lẻ ⇒ 1 từ nằm ở 2 bài cùng dạng: Player bỏ màn thứ
+**Phủ sóng (M23, 2026-10-01; M35 bỏ `fill_dialog`):** mỗi từ phải có ≥ 1 `select_dialog` (vai A hoặc B) — thiếu thì điểm
+tối đa của từ ở stage1 bằng đúng ngưỡng. `fill_dialog` ngừng dùng từ M35 (379 bản ghi đã xoá, sao lưu ở `du-lieu-import/sao-luu/`). Chủ đề số từ lẻ ⇒ 1 từ nằm ở 2 bài cùng dạng: Player bỏ màn thứ
 2 nếu mọi từ liên quan trong phiên đã có màn cùng dạng, và điểm chỉ tính 1 lần (§3.2).
 
 ### 4.5 Chế độ ôn — 2 loại (tách biệt hoàn toàn)
@@ -472,7 +475,7 @@ NẾU hàng_đợi_còn_lại < new_words_per_day × 3 AND settings.low_queue_al
 
 | # | Dạng bài | Payload | Điểm | Đáp án đúng |
 |---|---|---|---|---|
-| 11 | **Fill Dialog** | `{dialog_a, dialog_a_pinyin, dialog_b, dialog_b_pinyin, blank_a_answer, blank_b_vocab_id}` (giống Select Dialog, bỏ distractors) | +3/từ due | Nhập tay, so khớp sau khi trim khoảng trắng, KHÔNG cho sai ký tự |
+| 11 | ~~**Fill Dialog**~~ ⛔ **NGỪNG DÙNG từ M35 (2026-10-30)** | `{dialog_a, dialog_a_pinyin, dialog_b, dialog_b_pinyin, blank_a_answer, blank_b_vocab_id}` (giống Select Dialog, bỏ distractors) | 0 (không thuộc bộ bài) | Lý do bỏ: 1 câu nhiều cách điền đúng mà chấm khớp tuyệt đối. Import vẫn nhận file cũ (cảnh báo) nhưng `import_topic` bỏ qua |
 | 12 | **Select Sentence** | `{correct_sentence: {text, pinyin}, wrong_sentences: [{text, pinyin} ×3]}` | +3 | `correct_sentence` |
 | 13 | **Arrange Words** | `{tokens: [{text, pinyin} ...]}` (đúng thứ tự gốc) | +3 | Thứ tự mảng gốc; app shuffle khi hiển thị |
 | 14 | **Trans Collocation** | *(không cần record — dùng `vocab.collocation`/`collocation_pinyin`/`collocation_meaning_vi`)* | +3 | `vocab.collocation`. M26c: đề = `secondary_collocation` + `collocation_meaning_vi`; thiếu ⇒ đề tiếng Việt |
@@ -501,6 +504,7 @@ chính**; câu phụ chỉ nhận thêm nhận xét `secondary_feedback`. Từ t
 - `sentence` có ĐÚNG 1 `___`; 3 nhiễu khác nhau và ≠ `vocab.word` (validator chặn cứng). Nhiễu ưu tiên từ gần nghĩa thật.
 - ✅ **Bật 2026-10-05 (M26d):** vào bộ bài tính điểm stage2/intensive (thứ tự màn: fill_dialog → select_sentence →
   **near_synonym** → arrange_words → trans_collocation) — §3.1–3.4 và §12.2 đã sửa theo (max 15, ngưỡng 12, `MASTER_THRESHOLD = 39`).
+  M35 bỏ `fill_dialog` ⇒ thứ tự còn select_sentence → near_synonym → arrange_words → trans_collocation (max 12, ngưỡng 9, 36).
 - **Màn (design.m26d.md D1–D3):** đề = câu Trung có `___` (+pinyin theo nút 拼), 4 ô chữ Hán lưới 2×2. Chọn sai ⇒ luật M25
   (đỏ → mờ + khoá, chọn lại). Chọn đúng ⇒ điền từ vào chỗ trống, **hiện `sentence_secondary` (chỉ SAU khi đúng)** + bảng so sánh
   4 từ (pinyin · nghĩa phụ · ghi chú) ⇒ "Tiếp tục". Điểm theo LẦN ĐẦU; ghi log khi bấm Tiếp tục (thoát lúc xem bảng ⇒ không ghi).
@@ -717,7 +721,7 @@ Ngoài checklist thủ công ở §10.5, có **1 file JSON Schema hình thức**
 ### 12.2 Viền (mastery ring)
 
 ```
-% viền = min(total_points, 39) / 39    -- = MASTER_THRESHOLD (MB-45 → M26d); CHỈ dùng total_points, không dùng cycle_points
+% viền = min(total_points, 36) / 36    -- = MASTER_THRESHOLD (MB-45 → M26d → M35); CHỈ dùng total_points, không dùng cycle_points
 ```
 
 ⚠️ **Sửa 2026-10-01 (MB-43):** bản trước tô màu viền theo 6 mốc `total_points` (0–5 đỏ … 30 xanh đậm). Vì 6 màu

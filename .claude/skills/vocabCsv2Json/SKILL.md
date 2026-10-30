@@ -56,7 +56,7 @@ Người dùng đã tự gom sẵn, **KHÔNG tự suy luận nhóm ngữ nghĩa*
 tên ở dòng đầu khối (Bước 1). Mỗi khối → 1 file JSON riêng.
 
 **ngoại lệ cần xử lý:**
-**Topic chỉ có 1-2 từ:** vẫn xử lý bình thường — topic 1 từ KHÔNG tạo được `select_dialog`/`fill_dialog` (cần 2 từ khác nhau, không được ghép từ 2 topic khác nhau lại với nhau); topic 2 từ ⇒ 1 bản ghi mỗi dạng cho cặp đó. `dialogue` vẫn cố viết đủ 7-10 câu dù vốn từ ít (dùng thêm ngữ cảnh chung quanh chủ đề, miễn câu hội thoại tự nhiên và có sử dụng từ vựng đó).
+**Topic chỉ có 1-2 từ:** vẫn xử lý bình thường — topic 1 từ KHÔNG tạo được `select_dialog` (cần 2 từ khác nhau, không được ghép từ 2 topic khác nhau lại với nhau); topic 2 từ ⇒ 1 bản ghi cho cặp đó. `dialogue` vẫn cố viết đủ 7-10 câu dù vốn từ ít (dùng thêm ngữ cảnh chung quanh chủ đề, miễn câu hội thoại tự nhiên và có sử dụng từ vựng đó).
 
 Với CSV 200-300 dòng đã gom sẵn topic → số lượng file phụ thuộc số topic khác nhau trong CSVCSV. Xử lý tuần tự từng topic một, không cố nhồi tất cả vào 1 lần trả lời.
 
@@ -131,10 +131,10 @@ rà lại và cắt bớt. Mức hợp lý thường là **2–4 từ trong 10**
 
 6 dạng KHÔNG được tạo record (đọc mục 2 của `payload-schemas.md`): `flashcard, matching, translate, listen_fill, make_sentence, trans_collocation`.
 
-2 dạng theo CẶP từ: `select_dialog`, `fill_dialog`. **Cố gắng tạo sao cho MỖI từ xuất hiện ít nhất 1 lần trong `select_dialog` và 1 lần trong `fill_dialog`** (vai A hoặc vai B đều tính) để đảm bảo số điểm tối đa cho từng từ.
-- Chủ đề N từ ⇒ cần ≥ ⌈N/2⌉ bản ghi MỖI dạng. N lẻ ⇒ 1 từ dùng 2 lần, lần thứ 2 ở **vai B** (vai A của 1 dạng chỉ 1 lần/từ).
-- Bạn cặp của 1 từ ở `select_dialog` nên KHÁC bạn cặp ở `fill_dialog` (ôn đa dạng ngữ cảnh, không thuộc vẹt câu).
-- **Vì sao bắt buộc:** thiếu 2 dạng này thì điểm tối đa của từ ở stage1 = 6, stage2/intensive = 9 — **đúng bằng ngưỡng** lên stage, dùng gợi ý 1 lần là phải ôn lại; health lúc lên stage3 chỉ 0,79 ⇒ gap bị cắt còn 70% dù trả lời đúng hết (M21/M23, 2026-10-01: 518/678 từ từng rơi vào cảnh này vì luật cũ chỉ đòi "1 cặp/topic").
+1 dạng theo CẶP từ: `select_dialog`. **Cố gắng tạo sao cho MỖI từ xuất hiện ít nhất 1 lần trong `select_dialog`** (vai A hoặc vai B đều tính) để đảm bảo số điểm tối đa cho từng từ.
+- ⛔ **`fill_dialog` ĐÃ NGỪNG DÙNG (M35, 2026-10-30) — KHÔNG sinh dạng này.** App vẫn nhận file cũ có nó nhưng bỏ qua khi import.
+- Chủ đề N từ ⇒ cần ≥ ⌈N/2⌉ bản ghi. N lẻ ⇒ 1 từ dùng 2 lần, lần thứ 2 ở **vai B** (vai A chỉ 1 lần/từ).
+- **Vì sao bắt buộc:** thiếu dạng này thì điểm tối đa của từ ở stage1 = 6 — **đúng bằng ngưỡng** lên stage, dùng gợi ý 1 lần là phải ôn lại (M21/M23, 2026-10-01: 518/678 từ từng rơi vào cảnh này vì luật cũ chỉ đòi "1 cặp/topic").
 - Vẫn phải TỰ NHIÊN: chọn cặp có thể cùng xuất hiện trong 1 tình huống; khó ghép thì đổi bạn cặp, KHÔNG bỏ từ.
 
 **Nguyên tắc chất lượng nội dung:**
@@ -164,7 +164,7 @@ thoại thật — app hiện câu này LUÔN, ngay dưới pinyin.
 |---|---|---|
 | 1 | **File JSON KHÔNG chứa audio** (§10.6). App tự gọi Google TTS sau khi import. Không bịa field `audio_url` | Field lạ ⇒ schema từ chối (`additionalProperties: false`) |
 | 2 | **`temp_id` chỉ có nghĩa TRONG 1 file** (§10.2). File kế tiếp reset lại `v1` | Trộn temp_id giữa 2 file ⇒ nối sai từ |
-| 3 | **`select_dialog`/`fill_dialog` cần ĐÚNG 2 từ khác nhau** (§4.4): 1 record duy nhất, từ B trỏ bằng `blank_b_vocab_id`. **KHÔNG được trỏ về chính từ A** | Validator app chặn cứng (M13) |
+| 3 | **`select_dialog` cần ĐÚNG 2 từ khác nhau** (§4.4): 1 record duy nhất, từ B trỏ bằng `blank_b_vocab_id`. **KHÔNG được trỏ về chính từ A** | Validator app chặn cứng (M13) |
 | 4 | **Mỗi câu đúng 1 chỗ trống `___`** (MB-29/Q5) | Vỡ layout màn hội thoại — bug thật ở M9 |
 | 5 | **`lang='zh'` ⇒ `pinyin` và `collocation_pinyin` BẮT BUỘC có nội dung thật**, không được `null` (§6.5) | Validator app chặn cứng (M13) |
 | 6 | **`lang='en'` ⇒ các field phiên âm để `null` nhưng KEY vẫn phải có mặt** | Thiếu key ⇒ chặn |
@@ -288,25 +288,19 @@ Thêm 1 truy vấn xác nhận `temp_id` đã được dịch hết (không còn
 ```sql
 select count(*) as con_sot_temp_id
 from exercises e
-where e.type in ('select_dialog','fill_dialog')
+where e.type = 'select_dialog'
   and (e.payload ->> 'blank_b_vocab_id') not in (select id::text from vocab);
 ```
 Phải bằng **0**.
 
-Và truy vấn phủ sóng bài hội thoại (M23) — liệt kê từ CHƯA có `select_dialog`/`fill_dialog` ở vai A hoặc B:
+Và truy vấn phủ sóng bài hội thoại (M23) — liệt kê từ CHƯA có `select_dialog` ở vai A hoặc B:
 
 ```sql
-select t.name, v.word,
-       exists (select 1 from exercises e where e.type = 'select_dialog'
-               and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text)) as co_select_dialog,
-       exists (select 1 from exercises e where e.type = 'fill_dialog'
-               and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text)) as co_fill_dialog
+select t.name, v.word
 from topics t join vocab_topics vt on vt.topic_id = t.id join vocab v on v.id = vt.vocab_id
 where t.id in (...)
-  and not (exists (select 1 from exercises e where e.type = 'select_dialog'
-                   and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text))
-       and exists (select 1 from exercises e where e.type = 'fill_dialog'
-                   and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text)));
+  and not exists (select 1 from exercises e where e.type = 'select_dialog'
+                  and (e.vocab_id = v.id or e.payload ->> 'blank_b_vocab_id' = v.id::text));
 ```
 Phải **0 dòng** (trừ topic chỉ có 1 từ).
 
@@ -340,7 +334,7 @@ Phải **0 dòng** (trừ topic chỉ có 1 từ).
 
 - `references/payload-schemas.md` — **đọc bắt buộc trước khi sinh dữ liệu**, chứa đặc tả field chính xác cho cả 18 dạng bài + checklist tự kiểm tra.
 - `references/import-schema.json` — **JSON Schema chính thức (Draft 2020-12)**, validate cấu trúc/kiểu dữ liệu tự động bằng công cụ chuẩn (ajv/jsonschema). Đã kiểm thử: bắt đúng lỗi thiếu field, sai enum, sai độ dài mảng, field thừa, vi phạm điều kiện `lang=zh → pinyin bắt buộc`.
-- `references/example-output.json` — file mẫu HOÀN CHỈNH (3-5 từ tiếng Trung chủ đề "Trái cây"), có cả `select_dialog` lẫn `fill_dialog`, dùng làm ví dụ đối chiếu khi không chắc cấu trúc.
+- `references/example-output.json` — file mẫu HOÀN CHỈNH (3-5 từ tiếng Trung chủ đề "Trái cây"), có `select_dialog` (không còn `fill_dialog` — M35), dùng làm ví dụ đối chiếu khi không chắc cấu trúc.
 - `references/example-output-english-topic.json` — ví dụ topic `lang="en"` (chủ đề "Nghề nghiệp"), minh họa cách để `pinyin`=null và cách dùng field `text_zh`/`given_sentence_zh` cho nội dung tiếng Anh.
-- `references/example-output-single-word-topic.json` — ví dụ topic chỉ có 1 từ (chủ đề "Thời tiết"), minh họa trường hợp không tạo được `select_dialog`/`fill_dialog`.
+- `references/example-output-single-word-topic.json` — ví dụ topic chỉ có 1 từ (chủ đề "Thời tiết"), minh họa trường hợp không tạo được `select_dialog`.
 - `scripts/validate_import.py` — script Python kiểm tra tự động JSON syntax + tên field + tham chiếu `temp_id` + số lượng phần tử bắt buộc trong mảng (bổ sung cho JSON Schema — kiểm tra phần tham chiếu chéo mà schema không làm được).

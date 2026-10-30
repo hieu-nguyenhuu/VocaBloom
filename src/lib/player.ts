@@ -107,7 +107,7 @@ export type Man =
   | { loai: 'arrange_words'; vocab_id: string; payload: PayloadSapXep; la_bai_cuoi_cua_tu: boolean }
   | { loai: 'near_synonym'; vocab_id: string; payload: PayloadGanNghia; la_bai_cuoi_cua_tu: boolean } // M26d
   /** Bài 2 TỪ (§4.4): 1 record dùng chung cho A và B; `la_bai_cuoi` chỉ chứa từ CÓ trong session. */
-  | { loai: 'select_dialog' | 'fill_dialog'; vocab_a: string; vocab_b: string | null; payload: PayloadDialog; la_bai_cuoi: Record<string, boolean> }
+  | { loai: 'select_dialog'; vocab_a: string; vocab_b: string | null; payload: PayloadDialog; la_bai_cuoi: Record<string, boolean> }
   // M5 — stage 3 tự luận: màn NHẬP không chấm, chấm gom ở màn `cham_ai` (DEC-14: 3 request/session)
   | { loai: DangBaiAI; vocab_id: string; payload?: PayloadTuLuan }
   | { loai: 'cham_ai'; dang: DangBaiAI; vocab_ids: string[]; la_bai_cuoi: Record<string, boolean> }
@@ -119,15 +119,15 @@ export type Man =
  */
 export const CAN_RECORD: ReadonlySet<DangBai> = new Set([
   'grammar', 'selection', 'audio_recognition', 'fast_decision',
-  'select_dialog', 'select_on_describe', 'fill_dialog', 'select_sentence', 'arrange_words',
-  'near_synonym', // M26d
+  'select_dialog', 'select_on_describe', 'select_sentence', 'arrange_words',
+  'near_synonym', // M26d · M35: bỏ fill_dialog
 ])
 
 /** Thứ tự màn đã chốt (Brainstorm M4a): theo DẠNG BÀI, xen kẽ từ — tốt cho trí nhớ hơn làm hết 1 từ. */
 const THU_TU_MAN: readonly DangBai[] = [
   'flashcard', 'grammar', 'matching', 'selection', 'audio_recognition', 'fast_decision',
   'translate', 'select_dialog', 'listen_fill', 'select_on_describe',
-  'fill_dialog', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation',
+  'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation',
   'make_sentence', 'trans_sentence', 'complete_situation',
 ]
 
@@ -167,7 +167,7 @@ export function xepBai(dv: {
       if (ids.length > 0) man.push({ loai: 'matching', vocab_ids: ids, la_bai_cuoi: {} })
       continue
     }
-    if (dang === 'select_dialog' || dang === 'fill_dialog') {
+    if (dang === 'select_dialog') {
       // Xếp theo RECORD: 1 record = 1 màn, dùng cho cả A (vocab_id) và B (payload.blank_b_vocab_id).
       // Nhờ vậy câu chỉ xuất hiện 1 lần dù A, B hay cả 2 cùng trong session (§4.4).
       const daPhucVu = new Set<string>()
@@ -262,7 +262,7 @@ export function xepBai(dv: {
         m.la_bai_cuoi[id] = !daThay.has(id)
         daThay.add(id)
       }
-    } else if (m.loai === 'select_dialog' || m.loai === 'fill_dialog') {
+    } else if (m.loai === 'select_dialog') {
       for (const id of [m.vocab_a, m.vocab_b]) {
         if (id === null || !idsSession.has(id)) continue // từ ngoài session: ôn thêm miễn phí, không tính điểm
         m.la_bai_cuoi[id] = !daThay.has(id)
@@ -568,17 +568,6 @@ export function tachChoTrong(text: string): { truoc: string; sau: string | null 
 export function gioiHanNhap(giaTri: string, soKyTu: number, dangGoIme: boolean): string {
   if (dangGoIme) return giaTri
   return [...giaTri].slice(0, soKyTu).join('')
-}
-
-/**
- * Ô nào CHƯA điền thì lộ trước, theo thứ tự A → B; mỗi lần bấm Gợi ý lộ thêm 1 ô (M11/#5).
- * Lỗi cũ: chỉ lộ ô A nên bài 2 chỗ trống không bao giờ gợi ý được ô B.
- */
-export function oGoiY(soGoiY: number, dienA: string, dienB: string, coB: boolean): ('a' | 'b')[] {
-  const trong: ('a' | 'b')[] = []
-  if (!dienA) trong.push('a')
-  if (coB && !dienB) trong.push('b')
-  return trong.slice(0, Math.max(0, soGoiY))
 }
 
 /** Select Dialog (M28): chỉ số chip đang nằm ở mỗi ô; `null` = ô trống. Theo CHỈ SỐ để 2 chip cùng chữ không lẫn nhau. */

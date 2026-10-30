@@ -1,6 +1,6 @@
 # Progress Log
 
-> Cập nhật lần cuối: **2026-10-24** (M34 — Firebase kẹt bundle cũ do ETag size+mtime)
+> Cập nhật lần cuối: **2026-10-30** (M35 — bỏ dạng bài fill_dialog)
 
 ## ✅ Đã xong
 
@@ -107,6 +107,10 @@
 - [x] **M34** (XONG 2026-10-24, MB-57) — **Firebase kẹt bundle cũ** (lý do M31/M33 "không có" trên Firebase): ETag `index.html` = size+mtime,
       mtime cloud = 1980, size luôn 1646 ⇒ 304 vĩnh viễn. Sửa `traTinh` (`functions/index.js`): file không hash ⇒ `res.send` (ETag theo nội dung).
       Test `functions/tinh.test.js` F10/F11 (F10 ĐỎ trước) · `test:functions` 11/11 · lint exit 0 · deploy · curl URL thật: ETag kẹt ⇒ 200.
+- [x] **M35** (XONG 2026-10-30, MB-58) — **bỏ dạng `fill_dialog`**: stage2/intensive 4 dạng, max 12 / ngưỡng 9, Mastered 39 → 36;
+      import nhận file cũ nhưng bỏ qua (validator cảnh báo + RPC `continue`); skill ngừng sinh. DB: sao lưu + xoá 379 bản ghi, md5 word_state
+      không đổi. `npm test` 502/502 · `test:import` 11/11 · build · lint · test:db/player/dongbang/nhatky · nghiệm thu `xepBai` 47 từ thật.
+      Commit + push + deploy Firebase theo lệnh người dùng.
 
 ### ✅ M26a — Nền dữ liệu song ngữ (XONG 2026-10-03)
 - [x] `check:schema` liệt kê TÊN enum (18) + 5 cột (ĐỎ trước) · migration `0016` chạy 2 lần vẫn xanh.

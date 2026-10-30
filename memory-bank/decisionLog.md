@@ -1072,3 +1072,13 @@ sai ⇒ verdict vẫn good + có nhận xét; dịch lệch đề ⇒ fail). SPE
   (đổi hành vi chung của app Firebase dựng sẵn).
 - **Bằng chứng:** `functions/tinh.test.js` F10 ĐỎ với code cũ (ETag size+mtime ⇒ 304) · 11/11 · curl URL thật: ETag kẹt ⇒ 200.
 - **Trạng thái:** ✅ Đã áp dụng · deploy + commit theo lệnh người dùng (chưa push).
+
+### [2026-10-30] MB-58 — M35: bỏ dạng bài `fill_dialog`
+- **Bối cảnh:** người dùng thấy Fill Dialog 1 câu có nhiều cách điền đúng nhưng app chấm khớp tuyệt đối ⇒ đúng nghĩa vẫn 0 điểm.
+  DB lúc đó: 379 fill / 380 select_dialog, 0 câu trùng (2 bộ hội thoại soạn riêng ở M23).
+- **Quyết định (`design.m35.md`):** bỏ khỏi stage2 + intensive · max vòng 12, ngưỡng **9** (giữ "được sai 1 bài") · `MASTER_THRESHOLD`
+  39 → **36** · xoá hẳn 379 bản ghi (có sao lưu JSON) · import vẫn NHẬN file cũ (cảnh báo, RPC bỏ qua) · skill ngừng sinh ·
+  GIỮ enum DB + `DangBai` vì 70 dòng review_log cũ.
+- **Không chọn:** chấm mềm/AI cho fill_dialog (người dùng muốn bỏ hẳn); gỡ giá trị enum Postgres (phiền, không lợi gì).
+- **Bằng chứng:** 10 ca srs + 2 player + FD2 + BS8/BS10 + I11 đều ĐỎ trước · 502/502 · 11/11 import · md5 word_state trước = sau.
+- **Trạng thái:** ✅ Đã áp dụng (DB đã xoá) · commit + push + `deploy:firebase` theo lệnh người dùng.

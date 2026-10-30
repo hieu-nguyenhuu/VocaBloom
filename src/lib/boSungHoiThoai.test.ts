@@ -1,5 +1,5 @@
 /**
- * Test cho boSungHoiThoai.ts — M23: thêm select_dialog/fill_dialog vào chủ đề ĐÃ CÓ trong DB.
+ * Test cho boSungHoiThoai.ts — M23: thêm select_dialog vào chủ đề ĐÃ CÓ trong DB (M35: bỏ fill_dialog).
  */
 import { describe, expect, it } from 'vitest'
 import { dichBaiBoSung, phuSongHoiThoai, type BaiHoiThoai, type TuChuDe } from './boSungHoiThoai.ts'
@@ -74,6 +74,12 @@ describe('dichBaiBoSung (M23)', () => {
     expect(kqFile.bo_qua).toHaveLength(1)
   })
 
+  it('BS10 — M35: file bổ sung có fill_dialog ⇒ lỗi (dạng ngừng dùng), không sinh dòng nào', () => {
+    const kq = dichBaiBoSung(file(bai({ type: 'fill_dialog' }, { distractors: undefined })), TU, [])
+    expect(kq.loi.some((l) => l.thong_diep.includes('ngừng'))).toBe(true)
+    expect(kq.dong).toEqual([])
+  })
+
   it('BS9 — từ trùng chữ trong chủ đề ⇒ lỗi (không biết trỏ id nào)', () => {
     const kq = dichBaiBoSung(file(bai()), [...TU, { id: 'id-a2', word: '累' }], [])
     expect(kq.loi.length).toBeGreaterThan(0)
@@ -86,6 +92,7 @@ describe('phuSongHoiThoai (M23)', () => {
       { vocab_id: 'id-a', type: 'select_dialog', payload: { blank_b_vocab_id: 'id-b' } },
       { vocab_id: 'id-c', type: 'fill_dialog', payload: { blank_b_vocab_id: 'id-a' } },
     ]
-    expect(phuSongHoiThoai(TU, bt)).toEqual({ select_dialog: ['检查'], fill_dialog: ['休息'] })
+    // M35: chỉ còn select_dialog — record fill_dialog cũ không được tính là "đã phủ"
+    expect(phuSongHoiThoai(TU, bt)).toEqual({ select_dialog: ['检查'] })
   })
 })

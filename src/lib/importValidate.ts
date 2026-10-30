@@ -34,6 +34,9 @@ const KIEU_HOP_LE = [
   'near_synonym', // M26 — dạng 18
 ] as const
 
+/** M35 — dạng ngừng dùng: vẫn nhận shape (file cũ), RPC import_topic bỏ qua, không đếm vào số bài sẽ ghi. */
+const KIEU_NGUNG_DUNG = new Set(['fill_dialog'])
+
 /** 6 dạng Player đọc thẳng từ vocab — CÓ record trong exercises là sai (DEC-22). */
 const KIEU_KHONG_PAYLOAD = new Set([
   'flashcard', 'matching', 'translate', 'listen_fill', 'make_sentence', 'trans_collocation',
@@ -322,7 +325,14 @@ export function validateImportFile(raw: unknown): KetQuaValidate {
   if (dsBai !== undefined && !Array.isArray(dsBai)) {
     bao('exercises', 'Nếu có thì phải là mảng.')
   } else if (Array.isArray(dsBai)) {
-    tom_tat.so_bai_tap = dsBai.length
+    tom_tat.so_bai_tap = dsBai.filter((b) => !(laObject(b) && KIEU_NGUNG_DUNG.has(String(b['type'])))).length
+    const soNgung = dsBai.length - tom_tat.so_bai_tap
+    if (soNgung > 0) {
+      canh_bao.push({
+        duong_dan: 'exercises',
+        thong_diep: `${soNgung} bài fill_dialog đã ngừng dùng (M35) — sẽ bỏ qua khi import.`,
+      })
+    }
     dsBai.forEach((bai, i) => {
       const g = `exercises[${i}]`
       if (!laObject(bai)) {

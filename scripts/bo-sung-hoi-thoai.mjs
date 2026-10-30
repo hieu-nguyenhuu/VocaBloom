@@ -1,5 +1,5 @@
 /**
- * bo-sung-hoi-thoai.mjs — M23: thêm select_dialog/fill_dialog vào chủ đề ĐÃ CÓ trong DB.
+ * bo-sung-hoi-thoai.mjs — M23: thêm select_dialog vào chủ đề ĐÃ CÓ trong DB (M35: fill_dialog ngừng dùng).
  *
  * Chạy:  npm run bo-sung:hoi-thoai -- <file.json ...> [--dry-run]
  *
@@ -39,7 +39,7 @@ async function napChuDe(ten) {
   if (topics.length !== 1) throw new Error(`Chủ đề "${ten}": tìm thấy ${topics.length} (cần đúng 1).`)
   const tu = (await doc(`vocab_topics?select=vocab(id,word)&topic_id=eq.${topics[0].id}`)).map((r) => r.vocab)
   const ids = tu.map((t) => t.id).join(',')
-  const loc = 'select=id,vocab_id,type,payload&type=in.(select_dialog,fill_dialog)'
+  const loc = 'select=id,vocab_id,type,payload&type=eq.select_dialog'
   const [vaiA, vaiB] = await Promise.all([
     doc(`exercises?${loc}&vocab_id=in.(${ids})`),
     doc(`exercises?${loc}&payload->>blank_b_vocab_id=in.(${ids})`),
@@ -48,7 +48,7 @@ async function napChuDe(ten) {
   return { tu, bai }
 }
 
-const inThieu = (p) => `thiếu SD [${p.select_dialog.join(', ')}] · thiếu FD [${p.fill_dialog.join(', ')}]`
+const inThieu = (p) => `thiếu SD [${p.select_dialog.join(', ')}]`
 
 // ── Pha 1: kiểm tất cả, chưa ghi gì ──────────────────────────────────────
 const ke = []
@@ -79,7 +79,7 @@ for (const duongDan of dsFile) {
     continue
   }
   const sau = phuSongHoiThoai(cd.tu, [...cd.bai, ...kq.dong])
-  const du = sau.select_dialog.length === 0 && sau.fill_dialog.length === 0
+  const du = sau.select_dialog.length === 0
   console.log(`${du ? '✅' : '⚠️ '} ${ten}: ${cd.tu.length} từ · có sẵn ${cd.bai.length} bài · +${kq.dong.length} mới · bỏ qua ${kq.bo_qua.length}` +
     (du ? ' · phủ sóng đủ' : ` · ${inThieu(sau)}`))
   ke.push({ ten, dong: kq.dong })
@@ -109,7 +109,7 @@ for (const { ten, dong } of ke) {
   }
   const cd = await napChuDe(ten)
   const that = phuSongHoiThoai(cd.tu, cd.bai)
-  const du = that.select_dialog.length === 0 && that.fill_dialog.length === 0
+  const du = that.select_dialog.length === 0
   console.log(`${du ? '✅' : '⚠️ '} ĐÃ GHI ${ten}: +${dong.length} · DB nay ${cd.bai.length} bài hội thoại` + (du ? ' · phủ sóng đủ' : ` · ${inThieu(that)}`))
 }
 console.log('')

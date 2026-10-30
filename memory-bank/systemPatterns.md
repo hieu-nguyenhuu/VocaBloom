@@ -214,6 +214,10 @@ mới ⇒ seed bằng migration riêng `on conflict do nothing` + thêm vào `KE
     màn mới vào list X2 + X5 của `amThanhCore.test.ts` · `case` ở `PlayerPage`. ⚠️ `player.ts` CHỈ được import `srs.ts` (test
     X-player) ⇒ helper song ngữ đặt ở `songNgu.ts` (0 import). Cột vocab đổi `NOT NULL` ⇒ sửa cả insert trong
     `test-maintenance` / `test-nhat-ky` / `test-player`.
+19b. **Bỏ 1 dạng bài tính điểm (khuôn M35):** `srs.ts` 5 bảng (bộ bài, `MAX_CYCLE`, `NGUONG_CYCLE`, `MAX_TICH_LUY`, `MASTER_THRESHOLD`)
+    nhưng GIỮ giá trị trong `DangBai` + enum DB (log cũ) · `player.ts` (`Man`, `CAN_RECORD`, `THU_TU_MAN`) · validator thêm vào
+    `KIEU_NGUNG_DUNG` (cảnh báo, không chặn file cũ) · `0007_import_topic.sql` `continue` · bài mẫu skill (là fixture của
+    `importValidate.test`/`test-import`/`importUi.test`) ⇒ test cần bài cũ thì tự chèn hằng `FD_CU`.
 20. **Ôn theo chủ đề = ĐỌC HIỂU (M31), KHÔNG còn chạy trong Player.** Route `/on-tap/doc-hieu` + `/ket-qua`; logic thuần `docHieu.ts`.
     Ghi `doc_hieu_log` NGAY khi Kiểm tra (ref chặn bấm đôi); Kết quả query theo `luot_id`. Thêm nguồn thời gian học mới ⇒ phải cộng
     vào CẢ `chot_nhat_ky_ngay` lẫn Dashboard (`gopNhatKy` hôm nay), nếu không streak/phút lệch. Đề mới chỉ qua `kiemTraBaiDoc`.

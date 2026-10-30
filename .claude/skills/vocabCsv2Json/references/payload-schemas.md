@@ -42,6 +42,9 @@ near_synonym
 
 Bất kỳ giá trị nào khác 18 chuỗi trên (kể cả viết hoa, số ít/nhiều khác, dấu cách thay vì `_`) đều bị Import validator từ chối.
 
+⛔ **M35 (2026-10-30): `fill_dialog` ngừng dùng** — vẫn là giá trị enum hợp lệ (file cũ không bị từ chối) nhưng KHÔNG được sinh mới;
+app bỏ qua khi import. File mới chỉ dùng **11 giá trị** của mục 3.
+
 ⚠️ **Lưu ý quan trọng:** đây là danh sách 18 dạng bài của TOÀN BỘ app, nhưng field `exercises[].type` trong FILE IMPORT chỉ được chấp nhận **12/18 giá trị** (xem mục 3) — 6 giá trị ở mục 2 (`flashcard, matching, translate, listen_fill, make_sentence, trans_collocation`) tuyệt đối KHÔNG được xuất hiện trong mảng `exercises`, Import validator của app **chặn cứng (reject enum)** nếu gặp, không phải chỉ cảnh báo.
 
 ---
@@ -146,7 +149,7 @@ Cấu trúc **giống hệt** `selection`:
 
 ### 3.10 `select_dialog` — CẦN 2 TỪ VỰNG, gắn vào từ "chính"
 
-Ghép **2 từ vựng trong cùng topic** vào 1 đoạn hội thoại ngắn tự nhiên. **Mỗi từ của topic nên có ≥ 1 bài này (vai A hoặc vai B)** — xem luật phủ sóng ở SKILL.md Bước 3 (M23). Áp dụng y hệt cho `fill_dialog`.
+Ghép **2 từ vựng trong cùng topic** vào 1 đoạn hội thoại ngắn tự nhiên. **Mỗi từ của topic nên có ≥ 1 bài này (vai A hoặc vai B)** — xem luật phủ sóng ở SKILL.md Bước 3 (M23).
 
 | Field | Kiểu | Ghi chú |
 |---|---|---|
@@ -166,9 +169,10 @@ Record này được tạo với `vocab_temp_id` = từ A (từ "chính").
 > AI soạn đã vi phạm). `blank_a_answer` là đáp án cho chỗ trống ở câu A; đáp án cho câu B lấy từ
 > `vocab.word` của từ được `blank_b_vocab_id` trỏ tới, KHÔNG có field riêng.
 
-### 3.11 `fill_dialog` — giống `select_dialog` nhưng KHÔNG có đáp án chọn (nhập tay)
+### 3.11 ~~`fill_dialog`~~ — ⛔ NGỪNG DÙNG (M35, 2026-10-30): KHÔNG sinh dạng này
 
-Field giống hệt `select_dialog` NHƯNG **bỏ hẳn field `distractors`**:
+Lý do: 1 câu có nhiều cách điền hợp lý nhưng app chấm khớp tuyệt đối. App vẫn nhận file CŨ có dạng này (validator chỉ
+cảnh báo) nhưng `import_topic` bỏ qua, không ghi vào DB. Shape cũ (chỉ để đọc file cũ) — giống `select_dialog`, bỏ `distractors`:
 
 ```json
 {
@@ -270,18 +274,19 @@ Mảng ở **gốc file**, ngang hàng `dialogue`. Đây là các mẫu ngữ ph
 ## 5. Checklist tự kiểm tra trước khi giao file (bắt buộc rà lại)
 
 - [ ] File là JSON hợp lệ (không thiếu dấu phẩy/ngoặc).
-- [ ] Mọi `exercise.type` trong mảng `exercises` thuộc đúng **12 giá trị ở mục 3** (KHÔNG phải 18 — 6 giá trị ở mục 2 tuyệt đối không được xuất hiện ở đây).
+- [ ] Mọi `exercise.type` trong mảng `exercises` thuộc đúng **11 giá trị ở mục 3, trừ `fill_dialog`** (KHÔNG phải 18 — 6 giá trị ở mục 2 tuyệt đối không được xuất hiện ở đây).
 - [ ] Mọi `vocab_temp_id` trong `exercises` khớp với 1 `temp_id` có thật trong mảng `vocab` CÙNG file.
-- [ ] Mọi `blank_b_vocab_id` (trong `select_dialog`/`fill_dialog`) khớp với 1 `temp_id` có thật.
+- [ ] KHÔNG có bài `fill_dialog` nào (ngừng dùng từ M35).
+- [ ] Mọi `blank_b_vocab_id` (trong `select_dialog`) khớp với 1 `temp_id` có thật.
 - [ ] Mọi `highlight_vocab_temp_ids` trong `dialogue.lines` khớp với `temp_id` có thật.
 - [ ] Không có field nào ngoài danh sách đã liệt kê ở mục 0 và mục 3 (không tự thêm field thừa như `id`, `difficulty`, `answer`...).
 - [ ] Mọi field phiên âm (`pinyin`, `collocation_pinyin` ở mục 0; `pinyin` trong `grammar`; `given_sentence_pinyin` trong `complete_situation`) đều có KEY xuất hiện trong object dù `lang="en"` (giá trị `null`, KHÔNG bỏ hẳn key).
 - [ ] `distractors` đúng số lượng bắt buộc: `selection`/`audio_recognition`=3, `select_on_describe`=3, `select_sentence`.wrong_sentences=3, `select_dialog`.distractors=2, `near_synonym`.distractors=3.
-- [ ] Mỗi từ vựng có đủ **9 dạng bài bắt buộc** (không tính `select_dialog`/`fill_dialog` — 2 dạng này theo cặp, kiểm ở dòng dưới): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation, near_synonym`.
+- [ ] Mỗi từ vựng có đủ **9 dạng bài bắt buộc** (không tính `select_dialog` — dạng này theo cặp, kiểm ở dòng dưới): `selection, audio_recognition, fast_decision, select_on_describe, select_sentence, arrange_words, trans_sentence, complete_situation, near_synonym`.
 - [ ] (M26) Mọi `vocab` có đủ 5 KEY `secondary_*`; `secondary_word`/`secondary_collocation`/`secondary_example` không rỗng.
 - [ ] (M26) Mọi `near_synonym`: `sentence` có ĐÚNG 1 `___`; 3 nhiễu khác nhau, ≠ từ đang ôn, mỗi nhiễu có `note_vi` nói vì sao sai.
 - [ ] (M26) Mọi dòng `dialogue.lines` có `text_secondary`; `select_on_describe.description` viết bằng ngôn ngữ phụ.
-- [ ] Mỗi từ vựng xuất hiện ≥ 1 lần trong `select_dialog` VÀ ≥ 1 lần trong `fill_dialog` (vai A qua `vocab_temp_id` hoặc vai B qua `blank_b_vocab_id`) — trừ topic chỉ có 1 từ. Vai A của 1 dạng chỉ 1 lần/từ.
+- [ ] Mỗi từ vựng xuất hiện ≥ 1 lần trong `select_dialog` (vai A qua `vocab_temp_id` hoặc vai B qua `blank_b_vocab_id`) — trừ topic chỉ có 1 từ. Vai A chỉ 1 lần/từ.
 - [ ] **`grammar` (ngữ pháp CỦA TỪ) KHÔNG nằm trong 9 dạng bắt buộc** — chỉ gắn cho từ có điểm dễ dùng sai (M12). Rà lại: nếu ≥ 50% số từ trong file có `grammar` thì gần như chắc chắn đang gắn tràn lan.
 - [ ] Dòng CSV đánh dấu `ngữ pháp` đã vào mảng `grammar` ở gốc file (mục 4b), **không** lọt vào `vocab`.
 - [ ] Mảng `grammar` (nếu có): mỗi mục đủ `content_target`/`pinyin`(key)/`content_vi`; chủ đề không có ngữ pháp thì bỏ hẳn khoá.

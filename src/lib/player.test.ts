@@ -24,7 +24,6 @@ import {
   gioiHanNhap,
   tachChoTrong,
   catTheoGioiHan,
-  oGoiY,
   dangKhaDung,
   moLaiNeuHetBai,
   type PayloadGanNghia,
@@ -272,7 +271,7 @@ describe('xepBai — stage 1 & 2 (M4b)', () => {
     ])
   })
 
-  it('stage2: fill_dialog → select_sentence → arrange_words → trans_collocation', () => {
+  it('stage2 (M35): có record fill_dialog vẫn KHÔNG ra màn — select_sentence → arrange_words → trans_collocation', () => {
     const bt = [
       dialog('a', 'b', 'fill_dialog'),
       bai('a', 'select_sentence', { correct_sentence: { text: 'c' }, wrong_sentences: [] }),
@@ -280,7 +279,7 @@ describe('xepBai — stage 1 & 2 (M4b)', () => {
     ]
     const { man } = xepBai({ tu: [tu('a', 'stage2')], baiTap: bt })
     expect(man.map((m) => m.loai)).toEqual([
-      'flashcard', 'fill_dialog', 'select_sentence', 'arrange_words', 'trans_collocation',
+      'flashcard', 'select_sentence', 'arrange_words', 'trans_collocation',
     ])
   })
 
@@ -494,29 +493,6 @@ describe('gioiHanNhap (IME tiếng Trung)', () => {
   })
 })
 
-// ── M11 ─────────────────────────────────────────────────────────────────────
-describe('oGoiY (gợi ý lần lượt các ô CHƯA điền)', () => {
-  it('chưa điền ô nào: bấm lần 1 lộ ô A, lần 2 lộ thêm ô B', () => {
-    expect(oGoiY(1, '', '', true)).toEqual(['a'])
-    expect(oGoiY(2, '', '', true)).toEqual(['a', 'b'])
-  })
-
-  it('ô A đã điền → gợi ý nhảy thẳng sang ô B (lỗi cũ: mãi chỉ lộ ô A)', () => {
-    expect(oGoiY(1, '朋友', '', true)).toEqual(['b'])
-  })
-
-  it('cả 2 ô đã điền → không lộ gì', () => {
-    expect(oGoiY(2, '朋友', '老师', true)).toEqual([])
-  })
-
-  it('bài chỉ có 1 ô (không có từ B) → chỉ lộ ô A', () => {
-    expect(oGoiY(3, '', '', false)).toEqual(['a'])
-  })
-
-  it('chưa bấm gợi ý → không lộ gì', () => {
-    expect(oGoiY(0, '', '', true)).toEqual([])
-  })
-})
 
 describe('catTheoGioiHan (giới hạn số từ mỗi lượt)', () => {
   const phien = ['a', 'b', 'c', 'd', 'e']
@@ -666,7 +642,7 @@ describe('near_synonym trong Player (M26d)', () => {
   const dialog2 = (a: string, b: string) => ({ id: `${a}-fd`, vocab_id: a, type: 'fill_dialog' as DangBai,
     payload: { dialog_a: 'x ___', dialog_b: 'y ___', blank_a_answer: a, blank_b_vocab_id: b } })
 
-  it('NS1 — stage2: fill_dialog → select_sentence → near_synonym → arrange_words → trans_collocation', () => {
+  it('NS1 — stage2: select_sentence → near_synonym → arrange_words → trans_collocation (M35: bỏ fill_dialog)', () => {
     const bt = [
       dialog2('a', 'b'),
       bai('a', 'select_sentence', { correct_sentence: { text: 'c' }, wrong_sentences: [] }),
@@ -675,7 +651,7 @@ describe('near_synonym trong Player (M26d)', () => {
     ]
     const { man } = xepBai({ tu: [tu('a', 'stage2')], baiTap: bt })
     expect(man.map((m) => m.loai)).toEqual([
-      'flashcard', 'fill_dialog', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation',
+      'flashcard', 'select_sentence', 'near_synonym', 'arrange_words', 'trans_collocation',
     ])
     const ns = man.find((m) => m.loai === 'near_synonym')
     expect(ns && 'payload' in ns ? ns.payload : null).toEqual(NS)

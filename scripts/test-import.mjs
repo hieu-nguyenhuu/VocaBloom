@@ -24,6 +24,16 @@ function sua(hamSua) {
   return d
 }
 
+/** M35 — bài fill_dialog CŨ (bài mẫu đã bỏ dạng này): file cũ còn nó vẫn import được, nhưng không ghi. */
+const FD_CU = {
+  vocab_temp_id: 'v3', type: 'fill_dialog',
+  payload: {
+    dialog_a: '妈妈买了很多水果，有___。', dialog_a_pinyin: 'Māma mǎile hěnduō shuǐguǒ, yǒu ___.',
+    dialog_b: '太好了，我最喜欢吃___了。', dialog_b_pinyin: 'Tài hǎo le, wǒ zuì xǐhuān chī ___ le.',
+    blank_a_answer: '橙子', blank_b_vocab_id: 'v4',
+  },
+}
+
 const DON_SACH = `truncate vocab, topics, notifications, review_log,
   daily_retry_queue, word_state, exercises, vocab_topics, topic_dialogues,
   topic_grammar cascade;`
@@ -53,7 +63,7 @@ const CAC_CA = [
                 and (select count(*) from vocab) = 5
                 and (select count(*) from word_state) = 5
                 and (select count(*) from vocab_topics) = 5
-                and (select count(*) from exercises) = 52
+                and (select count(*) from exercises) = 51
                 and (select count(*) from topic_dialogues) = 1 as pass,
               format('topics=%s vocab=%s word_state=%s vocab_topics=%s exercises=%s dialogue=%s',
                 (select count(*) from topics), (select count(*) from vocab),
@@ -171,6 +181,18 @@ const CAC_CA = [
               format('co_phu=%s near_synonym=%s',
                 (select count(*) from vocab where secondary_word is not null),
                 (select count(*) from exercises where type = 'near_synonym')) as chi_tiet`,
+  },
+  {
+    ma: 'I11',
+    ten: 'M35 — file còn fill_dialog: import OK nhưng KHÔNG ghi fill_dialog, so_bai_tap không đếm',
+    sql: `create temp table kq on commit drop as
+            select import_topic(${nhung(sua((d) => { d.exercises.push(FD_CU) }))}) as r;`,
+    assert: `select (select count(*) from exercises where type = 'fill_dialog') = 0
+                and (select count(*) from exercises) = 51
+                and (select (r ->> 'so_bai_tap')::int from kq) = 51 as pass,
+              format('fill_dialog=%s exercises=%s so_bai_tap=%s',
+                (select count(*) from exercises where type = 'fill_dialog'),
+                (select count(*) from exercises), (select r ->> 'so_bai_tap' from kq)) as chi_tiet`,
   },
 ]
 
